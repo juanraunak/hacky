@@ -8,6 +8,9 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import { briefing } from './briefState';
+import { ROOM_X, ROOM_Z } from './study';
+import { HeldWeapon } from '../world3/HeldWeapon';
 import { PointerLockControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { Kid, type KidAnim } from '../world1/Character';
@@ -86,7 +89,7 @@ export function StudyPlayer() {
   const identity = useWorld(s => s.identity);
   const mode = useWorld(s => s.cameraMode);
   const isTouch = useWorld(s => s.isTouch);
-  const holding = useWorld(s => (s.identity ? (s.held[s.identity] ?? null) : null));
+  void useWorld(s => (s.identity ? (s.held[s.identity] ?? null) : null));
   const look = useMemo(() => lookFor(identity ?? 'nobody'), [identity]);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const camPos = useRef(new THREE.Vector3());
@@ -221,6 +224,22 @@ export function StudyPlayer() {
     local.speed += (mag - local.speed) * (1 - Math.exp(-dt * 12));
     anim.current.speed = local.speed;
 
+    // Third law: the gun shoves you, and in here you should feel it.
+    if (local.recoilX !== 0 || local.recoilZ !== 0) {
+      local.x += local.recoilX * dt;
+      local.z += local.recoilZ * dt;
+      // Stay in the room: a shove is a stagger, not an exit.
+      local.x = Math.max(-ROOM_X + 0.8, Math.min(ROOM_X - 0.8, local.x));
+      local.z = Math.max(-ROOM_Z + 0.8, Math.min(ROOM_Z - 0.8, local.z));
+      const decay = Math.exp(-dt * 2.6);
+      local.recoilX *= decay;
+      local.recoilZ *= decay;
+      if (Math.hypot(local.recoilX, local.recoilZ) < 0.4) {
+        local.recoilX = 0;
+        local.recoilZ = 0;
+      }
+    }
+
     if (group.current) {
       group.current.position.set(local.x, 0, local.z);
       group.current.rotation.y = local.heading;
@@ -256,6 +275,7 @@ export function StudyPlayer() {
       } else {
         camera.position.lerp(raw, 1 - Math.exp(-dt * 14));
       }
+      if (briefing.active) return;
       camera.lookAt(local.x + shakeX, TP_TARGET_HEIGHT + shakeY, local.z);
     }
 
@@ -377,7 +397,10 @@ export function StudyPlayer() {
     <>
       {first && <PointerLockControls />}
       <group ref={group}>
-        <Kid look={look} anim={anim} headless={first} holding={holding} />
+        {/* No pen: the briefing hands you World 3's weapons, and HeldWeapon
+            draws whichever one is in hand. */}
+        <Kid look={look} anim={anim} headless={first} holding={null} />
+        <HeldWeapon />
       </group>
     </>
   );

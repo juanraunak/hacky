@@ -86,7 +86,7 @@ export const MODE_MS: Record<BossMode, number> = {
 };
 
 export const SWORD_CHARGE_MS = 700;
-export const GUN_RECOIL = 13;
+export const GUN_RECOIL = 42; // you should visibly stagger backward
 export const GUN_RANGE = 62;
 export const GUN_COOLDOWN_MS = 460;
 export const MAG_SIZE = 6;

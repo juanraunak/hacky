@@ -28,7 +28,7 @@ export function LawCrates() {
     group.current.children.forEach((child, i) => {
       const p = PICKUPS[i];
       if (!p) return;
-      child.visible = !p.taken;
+      child.visible = !p.taken && !readCombat().owned.includes(p.id);
       child.rotation.y = t * 1.1 + i;
       child.position.y = pickupY(p) + Math.sin(t * 2 + i) * 0.28;
     });

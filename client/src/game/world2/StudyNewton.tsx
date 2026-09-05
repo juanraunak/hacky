@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { newtonEntrance } from './briefState';
 import { Html } from '@react-three/drei';
 import type { Group } from 'three';
 import { GEO, Part } from '../world1/toon';
@@ -43,6 +44,10 @@ function angleLerp(a: number, b: number, k: number): number {
   return a + d * k;
 }
 
+
+/** Where he actually is this frame, so a scene can throw from him or hit him. */
+export const newtonPos = { x: 0, z: 0 };
+
 export function StudyNewton() {
   const root = useRef<Group>(null);
   const hips = useRef<Group>(null);
@@ -65,12 +70,45 @@ export function StudyNewton() {
   const moving = useRef(0);
   const targetYaw = useRef(0);
   const nextTurn = useRef(0);
+  const nextFollow = useRef(0);
 
   useFrame(({ clock }, rawDt) => {
+    // He follows you. Ean's own path walker does the moving so his legs and
+    // turning animate properly; this just keeps re-pointing it at you.
+    if (root.current) {
+      if (newtonEntrance.playing) {
+        const k = Math.min(1, (performance.now() - newtonEntrance.startedAt) / 3400);
+        root.current.position.x = NEWTON_SPOT.x;
+        root.current.position.z = 7 + (NEWTON_SPOT.z - 7) * (k * k * (3 - 2 * k));
+        root.current.rotation.y = Math.PI;
+        if (k >= 1) newtonEntrance.playing = false;
+      }
+      newtonPos.x = root.current.position.x;
+      newtonPos.z = root.current.position.z;
+    }
+
     const g = root.current;
     if (!g) return;
     const dt = Math.min(rawDt, 0.05);
     const t = clock.elapsedTime;
+    // Re-aim at the player, but only when he has genuinely fallen behind and
+    // only when he is not already walking somewhere. Re-pathing him while he
+    // was still arriving is what made him jitter on the spot.
+    if (!newtonEntrance.playing && performance.now() > nextFollow.current) {
+      const away = Math.hypot(local.x - g.position.x, local.z - g.position.z);
+      const idle = useStudy.getState().path.length === 0;
+      if (idle && away > 5) {
+        nextFollow.current = performance.now() + 1800;
+        const back = Math.max(0.001, away);
+        // Stop a comfortable 3 units short, clamped to the open floor.
+        let tx = local.x - ((local.x - g.position.x) / back) * 3;
+        let tz = local.z - ((local.z - g.position.z) / back) * 3;
+        tx = Math.max(-8.2, Math.min(8.2, tx));
+        tz = Math.max(-3.4, Math.min(6.2, tz));
+        useStudy.getState().goTo(tx, tz);
+      }
+    }
+
     const path = useStudy.getState().path;
     const target = path[0];
 
@@ -313,6 +351,30 @@ function StudyBubble() {
       zIndexRange={[40, 0]}
       style={{ pointerEvents: 'none' }}
     >
+      {/* shield in the off hand, pistol in the other; he came prepared */}
+      <group position={[-0.46, 1.0, 0.26]} rotation={[0, -0.35, 0]} scale={0.85}>
+        <mesh>
+          <boxGeometry args={[0.52, 0.66, 0.07]} />
+          <meshToonMaterial color="#3aa0ff" />
+        </mesh>
+        <mesh position={[0, 0, 0.05]}>
+          <boxGeometry args={[0.56, 0.09, 0.04]} />
+          <meshToonMaterial color="#111111" />
+        </mesh>
+      </group>
+
+      {/* he is holding a pistol, and yes he knows */}
+      <group name="newton-gun" position={[0.42, 1.02, 0.3]} rotation={[0, 0.3, 0]} scale={0.8}>
+        <mesh position={[0, 0, 0.18]}>
+          <boxGeometry args={[0.09, 0.11, 0.34]} />
+          <meshToonMaterial color="#3a4a6e" />
+        </mesh>
+        <mesh position={[0, -0.11, 0.02]} rotation={[0.3, 0, 0]}>
+          <boxGeometry args={[0.08, 0.2, 0.09]} />
+          <meshToonMaterial color="#5a3a1e" />
+        </mesh>
+      </group>
+
       <div className={`bubble${fading ? ' bubble--fade' : ''}`}>{text || ' '}</div>
     </Html>
   );

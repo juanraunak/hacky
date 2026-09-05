@@ -34,7 +34,7 @@ export function ShotsView() {
       dummy.position.set(s.x, s.y, s.z);
       dummy.rotation.set(0, Math.atan2(s.vx, s.vz), 0);
       if (s.hostile) {
-        dummy.scale.setScalar(2.1 + Math.sin(performance.now() / 90) * 0.22);
+        dummy.scale.setScalar(0.85 + Math.sin(performance.now() / 90) * 0.1);
         dummy.updateMatrix();
         if (hostile.current && h < MAX) hostile.current.setMatrixAt(h++, dummy.matrix);
       } else {

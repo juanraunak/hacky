@@ -1,18 +1,19 @@
 // World 2 — Newton's study. Dim room, two candles, a drop test on the desk,
 // then the portal and five waves of apples that all fall at the same rate.
 
+import { useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { StudyRoom } from './world2/StudyRoom';
 import { StudyNewton } from './world2/StudyNewton';
 import { Notebook, Portal } from './world2/Portal';
-import { DropTest } from './world2/DropTest';
-import { Fight } from './world2/Fight';
-import { Armoury } from './world2/Armoury';
-import { Practice } from './world2/Practice';
 import { StudyPlayer } from './world2/StudyPlayer';
 import { StudyHud } from './world2/StudyHud';
-import { Director } from './world2/Director';
+import { Briefing } from './world2/Briefing';
+import { BriefCam } from './world2/BriefCam';
+import { Dummies } from './world2/Dummies';
+import { MeleeRing } from '../game/world3/MeleeRing';
+import { ShotsView } from '../game/world3/ShotsView';
 import { TouchInput } from './world1/TouchInput';
 import { RemotePlayers } from './world1/RemotePlayers';
 import { useWorld } from './world1/store';
@@ -22,13 +23,18 @@ import './world2/world2.css';
 const FLOOR = () => 0;
 
 export default function World2() {
+  // Third person everywhere, phone and laptop alike, same as World 3.
+  useEffect(() => {
+    useWorld.getState().setCameraMode('third');
+  }, []);
+
   const isTouch = useWorld(s => s.isTouch);
   const mode = useWorld(s => s.cameraMode);
 
   return (
     <div className="world1 world2">
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={[1, isTouch ? 1.15 : 1.5]}
         shadows
         gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
         camera={{ fov: 62, near: 0.1, far: 90, position: [0, 3, 6] }}
@@ -60,16 +66,16 @@ export default function World2() {
         <StudyNewton />
         <Notebook />
         <Portal />
-        <DropTest />
-        <Fight />
-        <Armoury />
-        <Practice />
         <RemotePlayers groundY={FLOOR} />
         <StudyPlayer />
-        <Director />
+        <BriefCam />
+        <Dummies />
+        <MeleeRing />
+        <ShotsView />
       </Canvas>
       {(isTouch || mode === 'third') && <TouchInput />}
       <StudyHud />
+      <Briefing />
     </div>
   );
 }

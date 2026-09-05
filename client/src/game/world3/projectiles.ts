@@ -41,7 +41,7 @@ export function throwOrb(fromY: number, toX: number, toZ: number) {
   const dy = groundHeight(toX, toZ) + 1.4 - fromY;
   const dz = toZ - applePos.z;
   const d = Math.hypot(dx, dy, dz) || 1;
-  const speed = 26; // you need time to get the shield up
+  const speed = 46; // quick enough to demand you are already braced
   shots.push({
     x: applePos.x,
     y: fromY,

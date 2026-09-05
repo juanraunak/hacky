@@ -33,6 +33,21 @@ export const SWORD_REACH = APPLE_RADIUS + 15;
 /** While true the player cannot move and the camera is on the boss. */
 export const cinematic = { active: false };
 
+/**
+ * Training mode. World 2 wants World 3's weapons — the same reach, the same
+ * recoil, the same charge — but pointed at straw dummies instead of the boss.
+ * When it is on, hits land on the dummy in front of you and the boss's health
+ * is left alone.
+ */
+export const training = {
+  active: false,
+  hits: 0,
+  swordHits: 0,
+  shots: 0,
+  blocks: 0,
+  lastEffect: 'none' as Effect,
+};
+
 export interface Feedback {
   effect: Effect;
   weapon: WeaponId;
@@ -194,6 +209,16 @@ export function setSwordCharge(v: number) {
 
 function land(weapon: WeaponId, chargeScale = 1): Effect {
   if (!state.owned.includes(weapon)) return 'none';
+  if (training.active) {
+    // Every law works in practice: this is the drill, not the test.
+    training.hits++;
+    if (weapon === 'sword') training.swordHits++;
+    if (weapon === 'gun') training.shots++;
+    training.lastEffect = 'strong';
+    state.feedback = { effect: 'strong', weapon, mode: state.mode, at: performance.now() };
+    emit();
+    return 'strong';
+  }
   const effect = MATRIX[state.mode][weapon];
   const dmg = Math.round(WEAPON_DAMAGE[weapon][effect] * chargeScale);
   if (dmg > 0) {
@@ -212,7 +237,9 @@ function land(weapon: WeaponId, chargeScale = 1): Effect {
 /** Sword: the swing only carries force if you accelerated it. F = ma. */
 export function swingSword(): Effect | null {
   const now = performance.now();
-  if (state.weapon !== 'sword' || !state.landed || state.down || now - state.lastSwingAt < 320) return null;
+  if (state.weapon !== 'sword') return null;
+  if (!training.active && (!state.landed || state.down)) return null;
+  if (now - state.lastSwingAt < 320) return null;
   const d = Math.hypot(local.x - applePos.x, local.z - applePos.z);
   if (d > SWORD_REACH) return null;
   state.lastSwingAt = now;
@@ -220,14 +247,16 @@ export function swingSword(): Effect | null {
   const effect = land('sword', scale);
   state.swordCharge = 0;
   // Cutting it while it is down is what gets it back on its feet.
-  if (effect === 'strong' && !state.down) setMode('airborne');
+  if (!training.active && effect === 'strong' && !state.down) setMode('airborne');
   return effect;
 }
 
 /** Gun: the shot goes out, and it drives you back just as hard. */
 export function fireGun(): Effect | null {
   const now = performance.now();
-  if (state.weapon !== 'gun' || !state.landed || state.down || now - state.lastShotAt < GUN_COOLDOWN_MS) return null;
+  if (state.weapon !== 'gun') return null;
+  if (!training.active && (!state.landed || state.down)) return null;
+  if (now - state.lastShotAt < GUN_COOLDOWN_MS) return null;
   if (now < state.reloadingUntil) return null;
   if (state.ammo <= 0) {
     state.reloadingUntil = now + RELOAD_MS;
@@ -248,7 +277,7 @@ export function fireGun(): Effect | null {
   local.recoilZ = (-dz / (d || 1)) * GUN_RECOIL;
   const effect = land('gun');
   // Shot out of the air, it comes down and starts its run-up again.
-  if (effect === 'strong' && state.mode === 'airborne' && !state.down && Math.random() < 0.34) {
+  if (!training.active && effect === 'strong' && state.mode === 'airborne' && !state.down && Math.random() < 0.34) {
     setMode('charging');
   }
   return effect;
@@ -261,6 +290,7 @@ export function bossHits(amount: number, pushX: number, pushZ: number): 'blocked
   state.playerHitAt = now;
 
   if (state.bracing) {
+    if (training.active) training.blocks++;
     // First law doing its job: net force cancelled. No damage, no knockback.
     state.feedback = { effect: 'strong', weapon: 'shield', mode: state.mode, at: now };
     // A charge stopped by a braced player rebounds off its own momentum.
@@ -315,8 +345,8 @@ export function resetCombat() {
   state.reloadingUntil = 0;
   state.feedback = null;
   state.justGot = null;
-  state.weapon = null;
-  state.owned = [];
+  // owned/weapon deliberately survive: the laws are granted by Newton in
+  // World 2 and carrying them forward is the whole point of the journey.
   emit();
 }
 

@@ -116,8 +116,8 @@ function Volcano({ x, z, h, r }: { x: number; z: number; h: number; r: number })
 function MountainRing() {
   const peaks = useMemo(
     () =>
-      Array.from({ length: 34 }, (_, i) => {
-        const a = (i / 34) * Math.PI * 2 + (i % 3) * 0.05;
+      Array.from({ length: TOUCH ? 20 : 34 }, (_, i) => {
+        const a = (i / (TOUCH ? 20 : 34)) * Math.PI * 2 + (i % 3) * 0.05;
         const d = 300 + ((i * 37) % 90);
         const h = 70 + ((i * 53) % 70);
         return { x: Math.cos(a) * d, z: Math.sin(a) * d, h, r: 46 + ((i * 29) % 34) };
@@ -166,7 +166,9 @@ function Volcanoes() {
 }
 
 /** Embers drifting up off the lava. Cheap: one instanced mesh, no physics. */
-function Embers({ count = 90 }: { count?: number }) {
+const TOUCH = typeof window !== 'undefined' && 'ontouchstart' in window;
+
+function Embers({ count = TOUCH ? 40 : 90 }: { count?: number }) {
   const mesh = useRef<InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const seeds = useMemo(

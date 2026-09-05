@@ -43,7 +43,7 @@ export default function World3({ roomCode, name = '', forcedCamera = null }: Wor
   return (
     <div className="world1 world3">
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={[1, isTouch ? 1.15 : 1.5]}
         shadows
         gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
         camera={{ fov: 82, near: 0.1, far: 900, position: [0, 5, 40] }}
