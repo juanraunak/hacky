@@ -175,8 +175,9 @@ export const advanceWorld = spacetimedb.reducer(
     if (!player) throw new SenderError('not in a room');
     const room = ctx.db.room.code.find(player.room_code);
     if (!room) throw new SenderError('no such room');
-    const next = world < 1 ? 1 : world > 4 ? 4 : world;
-    const phase = next >= 4 ? 'done' : `world${next}`;
+    // 0 sends the party back to the lobby so they can run it again together.
+    const next = world < 0 ? 0 : world > 4 ? 4 : world;
+    const phase = next === 0 ? 'lobby' : next >= 4 ? 'done' : `world${next}`;
     if (room.phase === phase) return;
     ctx.db.room.code.update({ ...room, phase, current_world: next });
   }

@@ -72,3 +72,41 @@
 .game-choice strong { display: block; font: 400 24px/1 'Bangers', Impact, sans-serif; letter-spacing: .4px; }
 .game-choice small { display: block; margin-top: 3px; font: 800 12px/1.2 'Nunito', system-ui, sans-serif; }
 .game-choice b { font: 400 19px/1 'Bangers', Impact, sans-serif; }
+
+.done-screen h1 {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(30px, 9vw, 64px);
+  letter-spacing: 0.04em;
+  color: #ffd93b;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 5px 0 #111;
+}
+
+.done-laws {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.done-laws span {
+  padding: 8px 14px;
+  border: 3px solid #111;
+  border-radius: 12px;
+  background: #fff8e7;
+  box-shadow: 0 4px 0 #111;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #111;
+}
+
+.done-laws b {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 17px;
+  color: #ff4d4d;
+  margin-right: 6px;
+}

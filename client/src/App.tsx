@@ -7,6 +7,7 @@ import NewtonGame from './game/NewtonGame';
 import World2 from './game/World2';
 import World3 from './game/World3';
 import { Journey } from './game/Journey';
+import { clearLaws, resetCombat } from './game/world3/combat';
 import { connectWorld } from './game/world1/sync';
 import './app-shell.css';
 
@@ -172,11 +173,25 @@ export default function App() {
 
   if (phase === 'done') {
     return (
-      <div className="app-message">
+      <div className="app-message done-screen">
         <h1>TOPIC COMPLETE</h1>
-        <p>Newton's laws of motion — all three worlds.</p>
-        <button type="button" className="app-button" onClick={() => (window.location.href = '/')}>
-          Play again
+        <p>Newton's laws of motion — the orchard, the study, and the giant apple.</p>
+        <div className="done-laws">
+          <span><b>1st</b> inertia</span>
+          <span><b>2nd</b> F = ma</span>
+          <span><b>3rd</b> action / reaction</span>
+        </div>
+        <button
+          type="button"
+          className="app-button"
+          onClick={() => {
+            // Everyone goes back together, same room, same party.
+            resetCombat();
+            clearLaws();
+            net.callReducer('advanceWorld', 0);
+          }}
+        >
+          Back to the lobby
         </button>
       </div>
     );

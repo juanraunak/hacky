@@ -324,6 +324,13 @@ export function respawnPlayer() {
   emit();
 }
 
+/** Full reset for a replay: hand the laws back in. */
+export function clearLaws() {
+  state.owned = [];
+  state.weapon = null;
+  emit();
+}
+
 export function resetCombat() {
   state.players = 1;
   state.maxHp = bossHpFor(1);
@@ -345,8 +352,13 @@ export function resetCombat() {
   state.reloadingUntil = 0;
   state.feedback = null;
   state.justGot = null;
-  // owned/weapon deliberately survive: the laws are granted by Newton in
-  // World 2 and carrying them forward is the whole point of the journey.
+  training.hits = 0;
+  training.swordHits = 0;
+  training.shots = 0;
+  training.blocks = 0;
+  // owned/weapon deliberately survive a World 3 remount: the laws are granted
+  // by Newton in World 2 and carrying them forward is the point of the
+  // journey. clearLaws() is for starting the whole run again.
   emit();
 }
 
