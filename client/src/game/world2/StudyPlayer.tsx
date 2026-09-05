@@ -59,6 +59,18 @@ export function StudyPlayer() {
   const camPos = useRef(new THREE.Vector3());
   const camInit = useRef(false);
 
+  // The study is one flat room: you can stand anywhere, so do not wait on a
+  // spawn row before you are allowed to walk. Waiting was why movement was
+  // dead here while World 1 felt fine.
+  useEffect(() => {
+    local.spawned = true;
+    local.x = 0;
+    local.z = 4;
+    local.heading = Math.PI;
+    local.yaw = 0;
+    local.pitch = 0.42;
+  }, []);
+
   // Spawn point from the database, once.
   useEffect(() => {
     const apply = () => {
