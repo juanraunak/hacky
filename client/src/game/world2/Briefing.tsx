@@ -8,7 +8,7 @@ import { useWorld } from '../world1/store';
 import { CELLAR_OPEN } from '../world1/store';
 import { grantWeapon, installAttackInput, selectWeapon, training } from '../world3/combat';
 import type { WeaponId } from '../world3/weapons';
-import { briefDone, briefing, drill, newtonEntrance } from './briefState';
+import { briefDone, briefing, drill, incoming, newtonEntrance } from './briefState';
 
 type Counter = 'blocks' | 'swordHits' | 'shots';
 
@@ -67,6 +67,17 @@ const SCENES: Scene[] = [
   },
   { say: 'You felt that. Every shot shoved you. Three laws, and you are out of time. Go.', ms: 3600 },
 ];
+
+/** Shouts the moment Newton winds up, so bracing is never a guess. */
+function IncomingCue() {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const id = window.setInterval(() => setOn(incoming.armed && incoming.at > 0), 90);
+    return () => window.clearInterval(id);
+  }, []);
+  if (!on) return null;
+  return <div className="incoming">INCOMING — BRACE!</div>;
+}
 
 /** Held here until the last person finishes their own run of the montage. */
 function WaitingForParty() {
@@ -218,6 +229,7 @@ export function Briefing() {
   if (scene.do) {
     return (
       <div className="brief-test">
+        {scene.do.throwAtYou && <IncomingCue />}
         <div className="brief-test-inner">
           <b>{scene.do.prompt}</b>
           <span className="brief-count">

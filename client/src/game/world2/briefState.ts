@@ -11,3 +11,6 @@ export const newtonEntrance = { playing: false, startedAt: 0 };
 
 /** True once THIS player has finished the montage. Their own pace. */
 export const briefDone = { value: false };
+
+/** Newton is winding up a throw; the HUD shouts so you can brace in time. */
+export const incoming = { armed: false, at: 0 };

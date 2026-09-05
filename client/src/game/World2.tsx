@@ -77,7 +77,7 @@ export default function World2() {
       {(isTouch || mode === 'third') && <TouchInput />}
       <StudyHud />
       <Briefing />
-      {isTouch && <TouchWeapons />}
+      <TouchWeapons />
     </div>
   );
 }

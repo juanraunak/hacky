@@ -452,8 +452,8 @@
 
 .tw-slots {
   position: absolute;
-  left: max(12px, env(safe-area-inset-left, 0px));
-  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: calc(max(20px, env(safe-area-inset-bottom, 0px)) + 118px);
   z-index: 46;
   display: flex;
   gap: 8px;
@@ -690,4 +690,21 @@
 
   .brief-wait { bottom: 12px; }
   .brief-wait b { font-size: 22px; }
+}
+
+.incoming {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  transform: translateX(-50%);
+  z-index: 49;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(20px, 6vw, 40px);
+  color: #ff4d4d;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #111;
+  animation: warn-pulse 420ms ease-in-out infinite;
 }

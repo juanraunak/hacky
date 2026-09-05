@@ -12,7 +12,7 @@ import { local } from '../world1/local';
 import { training } from '../world3/combat';
 import { applePos } from '../world3/layout';
 import { throwOrb } from '../world3/projectiles';
-import { drill } from './briefState';
+import { drill, incoming } from './briefState';
 import { newtonPos } from './StudyNewton';
 
 const STRAW = '#d9a441';
@@ -73,10 +73,16 @@ export function Dummies() {
     if (training.hits !== hits) setHits(training.hits);
 
     // The blocking drill: the middle dummy lobs something slow at you.
+    incoming.armed = drill.shove;
     if (drill.shove) {
       const now = performance.now();
+      // Wind up, shout, then throw. You should always know it is coming.
       if (now > nextShove.current) {
-        nextShove.current = now + 1000;
+        nextShove.current = now + 2400;
+        incoming.at = now + 800;
+      }
+      if (incoming.at && now > incoming.at) {
+        incoming.at = 0;
         throwOrb(1.7, local.x, local.z);
       }
     }

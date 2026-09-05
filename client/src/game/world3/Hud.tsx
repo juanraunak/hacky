@@ -267,7 +267,7 @@ export function Hud() {
         )}
       </div>
 
-      {isTouch && (
+      {(
         <div className="mobile-extra">
           <button
             type="button"
@@ -296,7 +296,7 @@ export function Hud() {
         </div>
       )}
 
-      {isTouch && (
+      {(
         <button
           type="button"
           className="fire"
