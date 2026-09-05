@@ -26,3 +26,49 @@
   color: #e8ecf4;
   cursor: pointer;
 }
+
+.title-screen {
+  --ink: #111111;
+  --paper: #fff8e7;
+  --gold: #ffd93b;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  background: #5cc24a;
+  color: var(--ink);
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  isolation: isolate;
+}
+
+.title-screen::before, .title-screen::after { content: ''; position: absolute; z-index: -1; border: 3px solid var(--ink); border-radius: 50%; }
+.title-screen::before { width: min(78vw, 660px); aspect-ratio: 1; background: #ffd79b; }
+.title-screen::after { width: min(94vw, 800px); aspect-ratio: 1; border-width: 9px; }
+.title-orbit { position: absolute; z-index: -1; border: 3px solid var(--ink); border-radius: 50%; background: #ff4d4d; }
+.title-orbit--one { width: 38px; height: 38px; transform: translate(-min(39vw, 330px), -min(25vw, 210px)); }
+.title-orbit--two { width: 22px; height: 22px; background: var(--gold); transform: translate(min(35vw, 290px), min(27vw, 220px)); }
+.title-card { width: min(100%, 430px); text-align: center; }
+.title-kicker, .title-note { margin: 0; font-size: 14px; }
+.title-card h1 { margin: 10px 0 22px; font-family: 'Bangers', Impact, sans-serif; font-size: clamp(86px, 22vw, 142px); font-weight: 400; line-height: .72; letter-spacing: 2px; color: var(--gold); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--ink); }
+.title-copy { max-width: 310px; margin: 0 auto 24px; font-size: 16px; line-height: 1.3; }
+.title-play { width: min(100%, 320px); padding: 14px 20px; border: 3px solid var(--ink); border-radius: 13px; box-shadow: 0 5px 0 var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; font: 400 32px/1 'Bangers', Impact, sans-serif; letter-spacing: .7px; touch-action: manipulation; }
+.title-play:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.title-play:focus-visible { outline: 3px solid #3aa0ff; outline-offset: 4px; }
+.title-note { margin-top: 15px; }
+
+.games-panel { position: relative; padding: 20px 14px 14px; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 5px 0 var(--ink); background: var(--paper); text-align: left; }
+.games-panel .title-kicker { margin: 0 0 10px; text-align: center; font-family: 'Bangers', Impact, sans-serif; font-size: 25px; }
+.back-button { position: absolute; top: 8px; left: 9px; padding: 4px 7px; border: 0; background: transparent; color: var(--ink); cursor: pointer; font: 800 12px/1 'Nunito', system-ui, sans-serif; }
+.game-choice { width: 100%; display: grid; grid-template-columns: 70px 1fr auto; align-items: center; gap: 11px; padding: 10px; border: 3px solid var(--ink); border-radius: 12px; box-shadow: 0 3px 0 var(--ink); background: #ffd79b; color: var(--ink); cursor: pointer; text-align: left; touch-action: manipulation; }
+.game-choice:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.game-choice:focus-visible, .back-button:focus-visible { outline: 3px solid #3aa0ff; outline-offset: 2px; }
+.game-choice-art { position: relative; display: block; height: 58px; overflow: hidden; border: 3px solid var(--ink); border-radius: 8px; background: #5cc24a; }
+.game-choice-art::before { content: ''; position: absolute; width: 42px; height: 58px; left: 8px; bottom: -7px; border-radius: 50% 50% 8px 8px; background: #3fae3a; box-shadow: 22px 5px 0 #4bbd44, 39px 13px 0 #36a233; }
+.game-choice-art i { position: absolute; width: 16px; height: 16px; right: 9px; bottom: 7px; border: 3px solid var(--ink); border-radius: 50%; background: #ff4d4d; }
+.game-choice strong { display: block; font: 400 24px/1 'Bangers', Impact, sans-serif; letter-spacing: .4px; }
+.game-choice small { display: block; margin-top: 3px; font: 800 12px/1.2 'Nunito', system-ui, sans-serif; }
+.game-choice b { font: 400 19px/1 'Bangers', Impact, sans-serif; }

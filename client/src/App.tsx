@@ -24,11 +24,13 @@ const flags = gameFlags();
 export default function App() {
   const route = useRoute();
   const [hostError, setHostError] = useState<Error | null>(null);
+  const [launching, setLaunching] = useState(false);
+  const [homeView, setHomeView] = useState<'home' | 'games'>('home');
 
-  // "/" creates a room and swaps the URL for /r/CODE. net.createRoom is
-  // idempotent, so StrictMode's second mount reuses the first room.
+  // The title screen deliberately creates nothing until the player presses
+  // play. Once requested, createRoom is idempotent under StrictMode.
   useEffect(() => {
-    if (route.kind !== 'host') return;
+    if (route.kind !== 'host' || !launching) return;
     let live = true;
     net
       .createRoom()
@@ -41,7 +43,7 @@ export default function App() {
     return () => {
       live = false;
     };
-  }, [route.kind]);
+  }, [route.kind, launching]);
 
   const code = route.kind === 'room' ? route.code : null;
   const { status, error, version } = useNet(code);
@@ -101,8 +103,41 @@ export default function App() {
     );
   }
 
+  if (route.kind === 'host' && !launching) {
+    return (
+      <main className="title-screen">
+        <div className="title-orbit title-orbit--one" aria-hidden="true" />
+        <div className="title-orbit title-orbit--two" aria-hidden="true" />
+        <section className="title-card" aria-labelledby="game-title">
+          <h1 id="game-title">Hacky</h1>
+          {homeView === 'home' ? (
+            <>
+              <p className="title-copy">Learning games made to play with your people.</p>
+              <button type="button" className="title-play" onClick={() => setHomeView('games')}>
+                See current games
+              </button>
+              <p className="title-note">More ways to start are coming soon</p>
+            </>
+          ) : (
+            <div className="games-panel" aria-label="Current games">
+              <button type="button" className="back-button" onClick={() => setHomeView('home')}>
+                Back
+              </button>
+              <p className="title-kicker">Current games</p>
+              <button type="button" className="game-choice" onClick={() => setLaunching(true)}>
+                <span className="game-choice-art" aria-hidden="true"><i /></span>
+                <span><strong>Newton’s Apple</strong><small>Explore Newton’s laws together</small></span>
+                <b>Play</b>
+              </button>
+            </div>
+          )}
+        </section>
+      </main>
+    );
+  }
+
   if (!code || status !== 'connected') {
-    return <div className="app-message">connecting...</div>;
+    return <div className="app-message">Opening your party…</div>;
   }
 
   // Everyone watches phase and transitions together. The lobby hands off as
