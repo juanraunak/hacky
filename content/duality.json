@@ -1,0 +1,129 @@
+{
+  "topic": "wave-particle duality",
+
+  "tools": [
+    { "id": "twin_gate",       "name": "The Twin Gate",       "icon": "⛩️" },
+    { "id": "clicking_ear",    "name": "The Clicking Ear",    "icon": "🔔" },
+    { "id": "path_brand",      "name": "The Path Brand",      "icon": "🏷️" },
+    { "id": "threshold_plate", "name": "The Threshold Plate", "icon": "⚡" },
+    { "id": "severed_twin",    "name": "The Severed Twin",    "icon": "🔗" }
+  ],
+
+  "monsters": [
+    {
+      "id": "photon",
+      "name": "The Bright Wanderer",
+      "props": ["massless", "quantized", "coherent"],
+      "sprite": "photon.png"
+    },
+    {
+      "id": "electron",
+      "name": "The Restless Spark",
+      "props": ["massive", "charged", "quantized", "coherent"],
+      "sprite": "electron.png"
+    },
+    {
+      "id": "buckyball",
+      "name": "The Sixty-Faced Drifter",
+      "props": ["massive", "molecular", "coherent", "warm"],
+      "sprite": "buckyball.png"
+    },
+    {
+      "id": "water_wave",
+      "name": "The Rolling Swell",
+      "props": ["classical", "continuous", "interfering"],
+      "sprite": "water_wave.png"
+    },
+    {
+      "id": "marble",
+      "name": "The Dull Pebble",
+      "props": ["classical", "massive", "localized"],
+      "sprite": "marble.png"
+    },
+    {
+      "id": "entangled_pair",
+      "name": "The Bound Twins",
+      "props": ["quantized", "correlated", "path-marked"],
+      "sprite": "entangled_pair.png"
+    },
+    {
+      "id": "decohered_beam",
+      "name": "The Fogged Beam",
+      "props": ["massless", "quantized", "incoherent"],
+      "sprite": "decohered_beam.png"
+    }
+  ],
+
+  "matrix": {
+    "twin_gate": {
+      "photon": "strong",
+      "electron": "strong",
+      "buckyball": "strong",
+      "water_wave": "strong",
+      "marble": "none",
+      "entangled_pair": "none",
+      "decohered_beam": "none"
+    },
+    "clicking_ear": {
+      "photon": "strong",
+      "electron": "strong",
+      "buckyball": "strong",
+      "water_wave": "none",
+      "marble": "weak",
+      "entangled_pair": "strong",
+      "decohered_beam": "strong"
+    },
+    "path_brand": {
+      "photon": "strong",
+      "electron": "strong",
+      "buckyball": "strong",
+      "water_wave": "none",
+      "marble": "none",
+      "entangled_pair": "none",
+      "decohered_beam": "none"
+    },
+    "threshold_plate": {
+      "photon": "strong",
+      "electron": "none",
+      "buckyball": "none",
+      "water_wave": "none",
+      "marble": "none",
+      "entangled_pair": "strong",
+      "decohered_beam": "strong"
+    },
+    "severed_twin": {
+      "photon": "none",
+      "electron": "none",
+      "buckyball": "none",
+      "water_wave": "none",
+      "marble": "none",
+      "entangled_pair": "strong",
+      "decohered_beam": "weak"
+    }
+  },
+
+  "boss": {
+    "id": "unasked_question",
+    "name": "The Unasked Question",
+    "props": ["superposed", "context-dependent", "erasable"],
+    "requires": ["twin_gate", "path_brand", "clicking_ear"]
+  },
+
+  "lore": {
+    "twin_gate": "Two openings ask a question that no single path can answer.",
+    "clicking_ear": "It hears arrivals, never amounts; if a thing comes in pieces, this is what finds out.",
+    "path_brand": "It blocks nothing and only records which way you went, and that alone is enough to erase the pattern.",
+    "threshold_plate": "Dim blue light frees electrons that the fiercest red never will, which is how colour turned out to be counted rather than measured.",
+    "severed_twin": "Ask both halves the same question far apart, and the answers agree more often than any arrangement made in advance could manage.",
+
+    "photon": "It arrives all at once or not at all, yet it reaches the screen by every route it could have taken.",
+    "electron": "Send them one at a time with hours between, and the fringes still assemble themselves out of single arrivals.",
+    "buckyball": "Sixty carbon atoms are heavy enough to picture and still light enough to go through both slits, so the line you were looking for is not there.",
+    "water_wave": "It interferes beautifully and proves nothing quantum, because interference is what waves do, not what quantum things do.",
+    "marble": "Its wavelength is real and smaller than a proton by a factor with twenty zeroes, which is the honest reason you never see it spread.",
+    "entangled_pair": "Neither twin carries a fringe of its own, because each one's path is already written on the other.",
+    "decohered_beam": "Still photons, still counted one by one, but the room has read their paths already and the fringes left with the secret.",
+
+    "unasked_question": "Wave or particle was never a property of the thing; it was a property of the question, and the question can be withdrawn after the answer arrives."
+  }
+}

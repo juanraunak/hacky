@@ -1,0 +1,7 @@
+{
+  "name": "hacky",
+  "private": true,
+  "scripts": {
+    "pub": "cd module && spacetime publish && spacetime generate --lang typescript --out-dir ../client/src/module_bindings && cd .. && git add -A"
+  }
+}
