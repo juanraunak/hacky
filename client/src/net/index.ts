@@ -313,6 +313,9 @@ export const net = {
       case 'startGame':
         conn.reducers.startGame({ contentJson: args[0] });
         return;
+      case 'advanceWorld':
+        conn.reducers.advanceWorld({ world: args[0] });
+        return;
       case 'setTopic':
         conn.reducers.setTopic({ topic: args[0] });
         return;

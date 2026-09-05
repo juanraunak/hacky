@@ -6,6 +6,7 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AdvanceWorldReducer from "../advance_world_reducer";
 import ClearStudyReducer from "../clear_study_reducer";
 import CreateRoomReducer from "../create_room_reducer";
 import DisbandRoomReducer from "../disband_room_reducer";
@@ -26,6 +27,7 @@ import StartFinalBattleReducer from "../start_final_battle_reducer";
 import StartGameReducer from "../start_game_reducer";
 import SwingReducer from "../swing_reducer";
 
+export type AdvanceWorldParams = __Infer<typeof AdvanceWorldReducer>;
 export type ClearStudyParams = __Infer<typeof ClearStudyReducer>;
 export type CreateRoomParams = __Infer<typeof CreateRoomReducer>;
 export type DisbandRoomParams = __Infer<typeof DisbandRoomReducer>;

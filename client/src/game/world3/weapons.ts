@@ -94,8 +94,9 @@ export const RELOAD_MS = 1500;
 
 /** More friends is a harder fight, not an easier one. */
 export function bossHpFor(players: number): number {
-  // Tuned for roughly three to four minutes solo, longer with a party.
-  return Math.round(880 * (1 + 0.85 * (Math.max(1, players) - 1)));
+  // The whole journey is 5-10 minutes, so World 3 gets about two and a half
+  // of them solo. Scaling still makes a party harder, not faster.
+  return Math.round(560 * (1 + 0.7 * (Math.max(1, players) - 1)));
 }
 
 export function aggressionFor(players: number): number {

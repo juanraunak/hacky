@@ -162,6 +162,26 @@ export const disbandRoom = spacetimedb.reducer(ctx => {
   ctx.db.room.code.delete(room.code);
 });
 
+/**
+ * Move the whole party to the next world. Any player may call it -- the worlds
+ * are cooperative and the phase is shared, so whoever reaches the portal first
+ * takes everyone through. Idempotent: calling it for a world you are already
+ * in does nothing.
+ */
+export const advanceWorld = spacetimedb.reducer(
+  { world: t.u32() },
+  (ctx, { world }) => {
+    const player = ctx.db.player.identity.find(ctx.sender);
+    if (!player) throw new SenderError('not in a room');
+    const room = ctx.db.room.code.find(player.room_code);
+    if (!room) throw new SenderError('no such room');
+    const next = world < 1 ? 1 : world > 4 ? 4 : world;
+    const phase = next >= 4 ? 'done' : `world${next}`;
+    if (room.phase === phase) return;
+    ctx.db.room.code.update({ ...room, phase, current_world: next });
+  }
+);
+
 export const setTopic = spacetimedb.reducer(
   { topic: t.string() },
   (ctx, { topic }) => {

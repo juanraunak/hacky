@@ -1,0 +1,52 @@
+.journey {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  z-index: 46;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.journey-go {
+  all: unset;
+  pointer-events: auto;
+  padding: 16px 30px;
+  border: 3px solid #111;
+  border-radius: 16px;
+  background: #ffd93b;
+  box-shadow: 0 6px 0 #111;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(20px, 5vw, 34px);
+  letter-spacing: 0.04em;
+  color: #111;
+  cursor: pointer;
+  touch-action: none;
+  animation: journey-pulse 1400ms ease-in-out infinite;
+}
+
+.journey-go:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #111;
+}
+
+.journey-go:disabled {
+  opacity: 0.6;
+  animation: none;
+}
+
+@keyframes journey-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.journey-note {
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: #fff8e7;
+  text-shadow: 0 2px 0 #111;
+}

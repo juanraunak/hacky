@@ -4,7 +4,10 @@ import { useRoute, replaceWithRoom } from './routing';
 import { animalName } from './lobby/names';
 import Lobby from './lobby/Lobby';
 import NewtonGame from './game/NewtonGame';
+import World2 from './game/World2';
 import World3 from './game/World3';
+import { Journey } from './game/Journey';
+import { connectWorld } from './game/world1/sync';
 import './app-shell.css';
 
 // Query flags the game reads on top of Juan's /r/CODE routing. Both are demo
@@ -50,6 +53,16 @@ export default function App() {
 
   const code = route.kind === 'room' ? route.code : null;
   const { status, error, version } = useNet(code);
+
+  // World 2 relies on a connection the other worlds open. Landing straight in
+  // it -- a refresh, or a late joiner -- would otherwise show an empty room.
+  const livePhase = net.room().phase;
+  useEffect(() => {
+    // Only World 2: World 1 and World 3 open their own, and two connectWorld
+    // calls would mean two sockets for one player.
+    if (!code || status !== 'connected' || livePhase !== 'world2') return;
+    return connectWorld({ roomCode: code, name: animalName(net.identity()) });
+  }, [code, status, livePhase]);
 
   // Join once the subscription is live. join_room is idempotent server-side:
   // an identity that already has a row is reconnected, never duplicated.
@@ -152,9 +165,39 @@ export default function App() {
   // Everyone watches phase and transitions together. The lobby hands off as
   // soon as phase leaves 'lobby'; which world it is, is the game's business.
   // For now every phase past the lobby is World 1.
-  if (net.room().phase === 'lobby') return <Lobby version={version} />;
-  if (net.room().phase === 'world3') {
-    return <World3 roomCode={code} name={animalName(net.identity())} forcedCamera={flags.cam} />;
+  const phase = net.room().phase;
+  if (phase === 'lobby') return <Lobby version={version} />;
+
+  const who = animalName(net.identity());
+
+  if (phase === 'done') {
+    return (
+      <div className="app-message">
+        <h1>TOPIC COMPLETE</h1>
+        <p>Newton's laws of motion — all three worlds.</p>
+        <button type="button" className="app-button" onClick={() => (window.location.href = '/')}>
+          Play again
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === 'world2') {
+    return (
+      <>
+        <World2 />
+        <Journey world={2} />
+      </>
+    );
+  }
+
+  if (phase === 'world3') {
+    return (
+      <>
+        <World3 roomCode={code} name={who} forcedCamera={flags.cam} />
+        <Journey world={3} />
+      </>
+    );
   }
   return (
     <NewtonGame
