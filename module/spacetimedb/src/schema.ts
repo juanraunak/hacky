@@ -48,6 +48,51 @@ const spacetimedb = schema({
       hp: t.i32(),
     }
   ),
+
+  // --- World 1 (Newton's tree) -------------------------------------------
+  // Added at the end, additive only. Adding tables is a safe migration; see
+  // CLAUDE.md gotcha 3. Reducers for these live in world.ts.
+
+  // Where each player stands in the 3D meadow. Separate from player.x/y so the
+  // existing player row keeps its shape. heading is radians around +Y.
+  player_position: table(
+    { public: true },
+    {
+      identity: t.identity().primaryKey(),
+      room_code: t.string().index('btree'),
+      x: t.f32(),
+      z: t.f32(),
+      heading: t.f32(),
+      updated_at: t.timestamp(),
+    }
+  ),
+
+  // One-shot scripted moments, e.g. the apple falling. A (room, world, name)
+  // triple is inserted at most once; fire_world_event ignores repeats, so every
+  // client sees the same single row and plays the moment together.
+  world_event: table(
+    { public: true },
+    {
+      id: t.u64().primaryKey().autoInc(),
+      room_code: t.string().index('btree'),
+      world: t.string(),
+      name: t.string(),
+      fired_at: t.timestamp(),
+      fired_by: t.identity(),
+    }
+  ),
+
+  // What a player is carrying. One row per player; a world item (the apple)
+  // is carried by at most one player in a room.
+  held_item: table(
+    { public: true },
+    {
+      identity: t.identity().primaryKey(),
+      room_code: t.string().index('btree'),
+      item: t.string(),
+      since: t.timestamp(),
+    }
+  ),
 });
 export default spacetimedb;
 

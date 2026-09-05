@@ -4,6 +4,7 @@
 // reducers vanish with no build error and no publish error.
 export * from './connection';
 export * from './game';
+export * from './world';
 
 // The entry file must expose the schema as the default export.
 export { default } from './schema';

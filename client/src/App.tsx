@@ -3,8 +3,21 @@ import { net, useNet } from './net';
 import { useRoute, replaceWithRoom } from './routing';
 import { animalName } from './lobby/names';
 import Lobby from './lobby/Lobby';
-import GameView from './placeholder/GameView';
+import World1 from './game/World1';
 import './app-shell.css';
+
+// Query flags the game reads on top of Juan's /r/CODE routing. Both are demo
+// conveniences: ?reset=1 replays the apple, ?cam=first|third forces a camera.
+function gameFlags() {
+  const params = new URLSearchParams(window.location.search);
+  const cam = params.get('cam');
+  return {
+    reset: params.get('reset') === '1',
+    cam: cam === 'first' ? ('first' as const) : cam === 'third' ? ('third' as const) : null,
+  };
+}
+
+const flags = gameFlags();
 
 export default function App() {
   const route = useRoute();
@@ -79,5 +92,14 @@ export default function App() {
 
   // Everyone watches phase and transitions together. The lobby hands off as
   // soon as phase leaves 'lobby'; which world it is, is the game's business.
-  return net.room().phase === 'lobby' ? <Lobby version={version} /> : <GameView />;
+  // For now every phase past the lobby is World 1.
+  if (net.room().phase === 'lobby') return <Lobby version={version} />;
+  return (
+    <World1
+      roomCode={code}
+      name={animalName(net.identity())}
+      resetOnEntry={flags.reset}
+      forcedCamera={flags.cam}
+    />
+  );
 }
