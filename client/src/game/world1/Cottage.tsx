@@ -25,6 +25,7 @@ import {
 import {
   COTTAGE,
   COTTAGE_BASE_H,
+  COTTAGE_DOOR,
   COTTAGE_DEPTH,
   COTTAGE_DOOR_H,
   COTTAGE_DOOR_W,
@@ -39,7 +40,9 @@ import {
   WINDOWS_BRIGHT_MS,
   groundHeight,
 } from './layout';
-import { NEWTON_LEAVES, useWorld } from './store';
+import { NEWTON_LEAVES, STUDY_ENTERED, useWorld } from './store';
+import { local } from './local';
+import { fireWorldEvent } from './sync';
 
 const W = COTTAGE_WIDTH;
 const D = COTTAGE_DEPTH;
@@ -55,6 +58,10 @@ const UPPER_FRONT = UPPER_D / 2;
 const DOOR_OPEN_ANGLE = 1.95;
 const DOOR_SWING_MS = 700;
 const BRIGHTEN_MS = 1200;
+/** The door swings open as you come up the path... */
+const WELCOME_RADIUS = 5.2;
+/** ...and this close, you have walked through it. */
+const ENTER_RADIUS = 3.1;
 // The old timber has settled: everything above the ground floor leans a little.
 const LEAN = 0.02;
 
@@ -122,14 +129,18 @@ export function Cottage() {
   const warm = useMemo(() => new THREE.Color(WINDOW_WARM), []);
   const bright = useMemo(() => new THREE.Color(WINDOW_BRIGHT), []);
   const insideDark = useMemo(() => new THREE.MeshBasicMaterial({ color: COTTAGE_DARK }), []);
+  const welcome = useRef(0);
+  const firedAt = useRef(0);
 
-  useFrame(() => {
-    const event = useWorld.getState().events[NEWTON_LEAVES];
+  useFrame((_, rawDt) => {
+    const state = useWorld.getState();
+    const event = state.events[NEWTON_LEAVES];
     let angle = 0;
     let lit = 0;
+    let home = false;
 
     if (event) {
-      const home = Date.now() - event.firedAt > ENDING_TOTAL_MS;
+      home = Date.now() - event.firedAt > ENDING_TOTAL_MS;
       if (home) {
         lit = 1;
       } else {
@@ -138,6 +149,19 @@ export function Cottage() {
         const closing = easeInOut(clamp01((t - DOOR_CLOSE_MS) / DOOR_SWING_MS));
         angle = DOOR_OPEN_ANGLE * (opening - closing);
         lit = clamp01((t - WINDOWS_BRIGHT_MS) / BRIGHTEN_MS);
+      }
+    }
+
+    // Once he is inside, the door opens again for whoever follows him up the
+    // path, and stepping into it takes the whole party through.
+    if (home && local.spawned && !state.events[STUDY_ENTERED]) {
+      const d = Math.hypot(local.x - COTTAGE_DOOR.x, local.z - COTTAGE_DOOR.z);
+      const want = d < WELCOME_RADIUS ? 1 : 0;
+      welcome.current += (want - welcome.current) * (1 - Math.exp(-Math.min(rawDt, 0.05) * 6));
+      angle = Math.max(angle, DOOR_OPEN_ANGLE * welcome.current);
+      if (d < ENTER_RADIUS && performance.now() - firedAt.current > 4000) {
+        firedAt.current = performance.now();
+        fireWorldEvent(STUDY_ENTERED);
       }
     }
 

@@ -10,6 +10,19 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AppleSpec = __t.object("AppleSpec", {
+  seq: __t.u32(),
+  size: __t.string(),
+  target: __t.identity(),
+  fromX: __t.f32(),
+  fromY: __t.f32(),
+  fromZ: __t.f32(),
+  toX: __t.f32(),
+  toZ: __t.f32(),
+  delayMs: __t.u32(),
+});
+export type AppleSpec = __Infer<typeof AppleSpec>;
+
 export const HeldItem = __t.object("HeldItem", {
   identity: __t.identity(),
   roomCode: __t.string(),
@@ -59,6 +72,24 @@ export const Room = __t.object("Room", {
   currentWorld: __t.u32(),
 });
 export type Room = __Infer<typeof Room>;
+
+export const StudyApple = __t.object("StudyApple", {
+  id: __t.u64(),
+  roomCode: __t.string(),
+  wave: __t.u32(),
+  seq: __t.u32(),
+  size: __t.string(),
+  target: __t.identity(),
+  fromX: __t.f32(),
+  fromY: __t.f32(),
+  fromZ: __t.f32(),
+  toX: __t.f32(),
+  toZ: __t.f32(),
+  spawnAt: __t.timestamp(),
+  dead: __t.bool(),
+  hitBy: __t.identity(),
+});
+export type StudyApple = __Infer<typeof StudyApple>;
 
 export const WorldEvent = __t.object("WorldEvent", {
   id: __t.u64(),

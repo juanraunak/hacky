@@ -18,7 +18,7 @@ function angleLerp(a: number, b: number, k: number): number {
   return a + d * k;
 }
 
-function RemoteKid({ id, name }: { id: string; name: string }) {
+function RemoteKid({ id, name, groundY }: { id: string; name: string; groundY: GroundFn }) {
   const group = useRef<Group>(null);
   const anim = useRef<KidAnim>({ speed: 0 });
   const look = useMemo(() => lookFor(id), [id]);
@@ -51,7 +51,7 @@ function RemoteKid({ id, name }: { id: string; name: string }) {
     c.x = nx;
     c.z = nz;
     c.h = angleLerp(c.h, p.heading, 1 - Math.exp(-dt * 12));
-    g.position.set(nx, groundHeight(nx, nz), nz);
+    g.position.set(nx, groundY(nx, nz), nz);
     g.rotation.y = c.h;
   });
 
@@ -65,7 +65,10 @@ function RemoteKid({ id, name }: { id: string; name: string }) {
   );
 }
 
-export function RemotePlayers() {
+export type GroundFn = (x: number, z: number) => number;
+
+/** `groundY` lets the study, whose floor is flat, reuse this unchanged. */
+export function RemotePlayers({ groundY = groundHeight }: { groundY?: GroundFn } = {}) {
   // Membership only; per-frame positions are read straight from the store.
   const ids = useWorld(s => {
     const out: string[] = [];
@@ -81,7 +84,7 @@ export function RemotePlayers() {
   return (
     <group>
       {ids.split(',').map(id => (
-        <RemoteKid key={id} id={id} name={party[id]?.name ?? ''} />
+        <RemoteKid key={id} id={id} name={party[id]?.name ?? ''} groundY={groundY} />
       ))}
     </group>
   );

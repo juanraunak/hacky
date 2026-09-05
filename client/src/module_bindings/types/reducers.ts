@@ -6,34 +6,42 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import ClearStudyReducer from "../clear_study_reducer";
 import CreateRoomReducer from "../create_room_reducer";
 import DisbandRoomReducer from "../disband_room_reducer";
 import DropItemReducer from "../drop_item_reducer";
 import EnterWorldReducer from "../enter_world_reducer";
+import EquipItemReducer from "../equip_item_reducer";
 import FireWorldEventReducer from "../fire_world_event_reducer";
 import JoinRoomReducer from "../join_room_reducer";
+import KillAppleReducer from "../kill_apple_reducer";
 import LeaveRoomReducer from "../leave_room_reducer";
 import MovePlayerReducer from "../move_player_reducer";
 import PickUpItemReducer from "../pick_up_item_reducer";
 import ResetWorldReducer from "../reset_world_reducer";
 import SetPositionReducer from "../set_position_reducer";
 import SetTopicReducer from "../set_topic_reducer";
+import SpawnWaveReducer from "../spawn_wave_reducer";
 import StartFinalBattleReducer from "../start_final_battle_reducer";
 import StartGameReducer from "../start_game_reducer";
 import SwingReducer from "../swing_reducer";
 
+export type ClearStudyParams = __Infer<typeof ClearStudyReducer>;
 export type CreateRoomParams = __Infer<typeof CreateRoomReducer>;
 export type DisbandRoomParams = __Infer<typeof DisbandRoomReducer>;
 export type DropItemParams = __Infer<typeof DropItemReducer>;
 export type EnterWorldParams = __Infer<typeof EnterWorldReducer>;
+export type EquipItemParams = __Infer<typeof EquipItemReducer>;
 export type FireWorldEventParams = __Infer<typeof FireWorldEventReducer>;
 export type JoinRoomParams = __Infer<typeof JoinRoomReducer>;
+export type KillAppleParams = __Infer<typeof KillAppleReducer>;
 export type LeaveRoomParams = __Infer<typeof LeaveRoomReducer>;
 export type MovePlayerParams = __Infer<typeof MovePlayerReducer>;
 export type PickUpItemParams = __Infer<typeof PickUpItemReducer>;
 export type ResetWorldParams = __Infer<typeof ResetWorldReducer>;
 export type SetPositionParams = __Infer<typeof SetPositionReducer>;
 export type SetTopicParams = __Infer<typeof SetTopicReducer>;
+export type SpawnWaveParams = __Infer<typeof SpawnWaveReducer>;
 export type StartFinalBattleParams = __Infer<typeof StartFinalBattleReducer>;
 export type StartGameParams = __Infer<typeof StartGameReducer>;
 export type SwingParams = __Infer<typeof SwingReducer>;

@@ -93,3 +93,26 @@ export function lookFor(identity: string): Look {
   const hair = HAIRS[(h >>> 8) % HAIRS.length];
   return { jacket, hair };
 }
+
+// --- World 2: Newton's study ---------------------------------------------
+export const STUDY_FLOOR = '#6b4a2e';
+export const STUDY_RUG = '#7a3340';
+export const STUDY_WALL = '#5a4f47';
+export const STUDY_WALL_DARK = '#463d37';
+export const STUDY_CEILING = '#2f2a26';
+export const STUDY_BEAM = '#3a2b1c';
+export const DESK_WOOD = '#7a5233';
+export const BOOK_COLOURS = ['#8f1420', '#2a5e8f', '#3f7a3a', '#7a5a2a', '#5b3a7a'];
+export const CANDLE_WAX = '#f3f3f3';
+export const CANDLE_FLAME = '#ffb03a';
+export const STONE_ITEM = '#8a8a9a';
+export const PEN_BODY = '#3a2b1c';
+export const PEN_PLUME = '#f3f3f3';
+export const FEATHER_WHITE = '#f7f4ec';
+export const INKPOT = '#2a2a3a';
+
+// The portal. Opaque, flat, dark red - it swirls by rotating, not by fading.
+export const PORTAL_FRAME = '#6f6f80';
+export const PORTAL_DEEP = '#4a0a12';
+export const PORTAL_MID = '#8f1420';
+export const PORTAL_EDGE = '#c21f2e';
