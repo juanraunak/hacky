@@ -53,3 +53,35 @@
 
 .leave-yes { background: #ff4d4d; color: #fff8e7; }
 .leave-no { background: #ffd93b; color: #111; }
+
+.leave-bar {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top, 0px));
+  right: max(10px, env(safe-area-inset-right, 0px));
+  z-index: 55;
+  display: flex;
+  gap: 7px;
+  pointer-events: auto;
+}
+
+.leave-bar .leave-btn {
+  position: static;
+}
+
+.lobby-btn {
+  all: unset;
+  padding: 7px 12px;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #ffd93b;
+  color: #111;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.lobby-btn:active {
+  transform: translateY(2px);
+}

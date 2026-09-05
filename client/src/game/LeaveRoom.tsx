@@ -3,10 +3,21 @@
 
 import { useState } from 'react';
 import { net } from '../net';
+import { clearLaws, resetCombat } from './world3/combat';
 import './leave.css';
 
 export function LeaveRoom() {
   const [confirm, setConfirm] = useState(false);
+  const host = net.isHost();
+
+  // Only the party leader can pull everyone back. Anyone could otherwise end
+  // a run the rest of the party is still enjoying.
+  const toLobby = () => {
+    resetCombat();
+    clearLaws();
+    net.callReducer('advanceWorld', 0);
+    setConfirm(false);
+  };
 
   const go = () => {
     // Tell the server, then leave regardless: a failed reducer must never
@@ -23,9 +34,23 @@ export function LeaveRoom() {
 
   if (!confirm) {
     return (
-      <button type="button" className="leave-btn" onPointerDown={e => { e.stopPropagation(); setConfirm(true); }}>
-        LEAVE
-      </button>
+      <div className="leave-bar">
+        {host && (
+          <button
+            type="button"
+            className="lobby-btn"
+            onPointerDown={e => {
+              e.stopPropagation();
+              toLobby();
+            }}
+          >
+            TO LOBBY
+          </button>
+        )}
+        <button type="button" className="leave-btn" onPointerDown={e => { e.stopPropagation(); setConfirm(true); }}>
+          LEAVE
+        </button>
+      </div>
     );
   }
 
