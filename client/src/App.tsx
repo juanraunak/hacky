@@ -4,6 +4,7 @@ import { useRoute, replaceWithRoom } from './routing';
 import { animalName } from './lobby/names';
 import Lobby from './lobby/Lobby';
 import World1 from './game/World1';
+import World3 from './game/World3';
 import './app-shell.css';
 
 // Query flags the game reads on top of Juan's /r/CODE routing. Both are demo
@@ -144,6 +145,7 @@ export default function App() {
   // soon as phase leaves 'lobby'; which world it is, is the game's business.
   // For now every phase past the lobby is World 1.
   if (net.room().phase === 'lobby') return <Lobby version={version} />;
+  if (net.room().phase === 'world3') return <World3 version={version} />;
   return (
     <World1
       roomCode={code}

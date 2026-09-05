@@ -46,6 +46,7 @@ import PickUpItemReducer from "./pick_up_item_reducer";
 import ResetWorldReducer from "./reset_world_reducer";
 import SetPositionReducer from "./set_position_reducer";
 import SetTopicReducer from "./set_topic_reducer";
+import StartFinalBattleReducer from "./start_final_battle_reducer";
 import StartGameReducer from "./start_game_reducer";
 import SwingReducer from "./swing_reducer";
 
@@ -160,6 +161,7 @@ const reducersSchema = __reducers(
   __reducerSchema("reset_world", ResetWorldReducer),
   __reducerSchema("set_position", SetPositionReducer),
   __reducerSchema("set_topic", SetTopicReducer),
+  __reducerSchema("start_final_battle", StartFinalBattleReducer),
   __reducerSchema("start_game", StartGameReducer),
   __reducerSchema("swing", SwingReducer),
 );

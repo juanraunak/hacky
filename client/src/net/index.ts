@@ -316,6 +316,9 @@ export const net = {
       case 'setTopic':
         conn.reducers.setTopic({ topic: args[0] });
         return;
+      case 'startFinalBattle':
+        conn.reducers.startFinalBattle({});
+        return;
       case 'leaveRoom':
         conn.reducers.leaveRoom({});
         return;

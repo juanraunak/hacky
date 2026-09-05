@@ -105,3 +105,35 @@ export const startGame = spacetimedb.reducer(
     }
   }
 );
+
+/**
+ * The party's final arena. The monster row is the authoritative shared boss
+ * bar; clients render the crater and apple volleys from that one row. The
+ * boss identifier comes from authored content, so the teaching matrix remains
+ * content-owned rather than being baked into the combat engine.
+ */
+export const startFinalBattle = spacetimedb.reducer(ctx => {
+  const hosted = hostedRoom(ctx);
+  if (!hosted) throw new SenderError('only the host can start the final battle');
+  if (hosted.phase === 'done') throw new SenderError('the party has already finished');
+
+  let bossId = 'boss';
+  try {
+    const parsed = JSON.parse(hosted.content_json) as { boss?: { id?: unknown } };
+    if (typeof parsed.boss?.id === 'string' && parsed.boss.id) bossId = parsed.boss.id;
+  } catch {
+    // A malformed content file is still a playable, harmless visual arena.
+  }
+
+  let boss = null;
+  for (const monster of ctx.db.monster.room_code.filter(hosted.code)) {
+    if (monster.kind === bossId) {
+      boss = monster;
+      break;
+    }
+  }
+  if (!boss) {
+    ctx.db.monster.insert({ id: 0, room_code: hosted.code, kind: bossId, x: 0, y: -8, hp: 360 });
+  }
+  ctx.db.room.code.update({ ...hosted, phase: 'world3', current_world: 3 });
+});

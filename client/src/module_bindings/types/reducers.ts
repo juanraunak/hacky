@@ -18,6 +18,7 @@ import PickUpItemReducer from "../pick_up_item_reducer";
 import ResetWorldReducer from "../reset_world_reducer";
 import SetPositionReducer from "../set_position_reducer";
 import SetTopicReducer from "../set_topic_reducer";
+import StartFinalBattleReducer from "../start_final_battle_reducer";
 import StartGameReducer from "../start_game_reducer";
 import SwingReducer from "../swing_reducer";
 
@@ -33,6 +34,7 @@ export type PickUpItemParams = __Infer<typeof PickUpItemReducer>;
 export type ResetWorldParams = __Infer<typeof ResetWorldReducer>;
 export type SetPositionParams = __Infer<typeof SetPositionReducer>;
 export type SetTopicParams = __Infer<typeof SetTopicReducer>;
+export type StartFinalBattleParams = __Infer<typeof StartFinalBattleReducer>;
 export type StartGameParams = __Infer<typeof StartGameReducer>;
 export type SwingParams = __Infer<typeof SwingReducer>;
 
