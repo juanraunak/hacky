@@ -786,3 +786,27 @@
   .hit-text { top: 26%; }
   .journey { bottom: 6%; }
 }
+
+.victory-next {
+  margin-top: 16px;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: rgb(255 248 231 / 70%);
+}
+
+/* the cut: a hard fade to black over the whole screen */
+.cut {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  background: #05030a;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease-in;
+}
+
+.cut[data-on='true'] {
+  opacity: 1;
+}

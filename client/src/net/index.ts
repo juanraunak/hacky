@@ -244,11 +244,26 @@ function subscribeRoom(connection: DbConnection, code: string): Promise<void> {
         `SELECT * FROM player WHERE room_code = '${code}'`,
         `SELECT * FROM monster WHERE room_code = '${code}'`,
         `SELECT * FROM room WHERE code = '${code}'`,
-        `SELECT * FROM boss WHERE room_code = '${code}'`,
       ]);
   });
 
   return subscribing;
+}
+
+/**
+ * The boss is subscribed on its own. It arrived later than the rest and a
+ * rejected query here must not take the room, players and monsters with it --
+ * that turned one bad subscription into "could not connect".
+ */
+function subscribeBoss(connection: DbConnection, code: string): void {
+  try {
+    connection
+      .subscriptionBuilder()
+      .onError(() => console.warn('[net] boss subscription rejected; fight will be local'))
+      .subscribe([`SELECT * FROM boss WHERE room_code = '${code}'`]);
+  } catch (err) {
+    console.warn('[net] boss subscription threw', err);
+  }
 }
 
 // --- the boundary -------------------------------------------------------
@@ -257,7 +272,10 @@ export const net = {
   async connect(roomCode: string): Promise<void> {
     const code = sanitizeCode(roomCode);
     const connection = await connectOnce();
-    if (code) await subscribeRoom(connection, code);
+    if (code) {
+      await subscribeRoom(connection, code);
+      subscribeBoss(connection, code);
+    }
   },
 
   players(): Player[] {

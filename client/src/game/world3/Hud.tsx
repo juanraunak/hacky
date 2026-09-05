@@ -4,8 +4,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWorld } from '../world1/store';
 import type { WeaponId } from './weapons';
+import { net } from '../../net';
 import {
   PHASES,
+  resetCombat,
   fireGun,
   setBracing,
   setSwordCharge,
@@ -118,21 +120,40 @@ function Downed({ at }: { at: number }) {
   );
 }
 
-/** The pay-off. Held back until the apple has actually come apart. */
+/**
+ * The pay-off, then out. Held until the apple has actually come apart, read
+ * for a few beats, then a clean cut to black and back to the party screen --
+ * nobody should have to find a button after winning.
+ */
 function Victory({ at }: { at: number }) {
-  const [show, setShow] = useState(false);
+  const [step, setStep] = useState(0); // 0 nothing, 1 card, 2 cutting out
+
   useEffect(() => {
-    const t = window.setTimeout(() => setShow(true), 1900);
-    return () => window.clearTimeout(t);
+    const timers = [
+      window.setTimeout(() => setStep(1), 1900), // debris has landed
+      window.setTimeout(() => setStep(2), 5200), // start the cut
+      window.setTimeout(() => {
+        // Strip any ?world= flag or the lobby would bounce straight back in.
+        window.history.replaceState({}, '', window.location.pathname);
+        resetCombat();
+        net.callReducer('advanceWorld', 0);
+      }, 6400),
+    ];
+    return () => timers.forEach(window.clearTimeout);
   }, [at]);
-  if (!show) return null;
+
+  if (step === 0) return null;
   return (
-    <div className="victory">
-      <div>
-        <div className="victory-line">TOPIC COMPLETE</div>
-        <div className="victory-sub">THE GIANT APPLE IS DOWN</div>
+    <>
+      <div className="victory">
+        <div>
+          <div className="victory-line">TOPIC COMPLETE</div>
+          <div className="victory-sub">THE GIANT APPLE IS DOWN</div>
+          <div className="victory-next">back to your party…</div>
+        </div>
       </div>
-    </div>
+      <div className="cut" data-on={step === 2} />
+    </>
   );
 }
 
