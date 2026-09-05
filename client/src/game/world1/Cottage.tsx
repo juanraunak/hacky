@@ -1,25 +1,36 @@
-// Newton's cottage: a small stone house thirty units from the tree, door
-// facing back down the path. The door opens for him at the end of the story
-// and the windows warm up once he is inside. Everything keys off the same
-// world_event as his walk, so late joiners find him already home.
+// Newton's house: two storeys of old dark timber, thirty units from the tree,
+// door facing back down the path. Leaning chimney, jettied upper floor, a
+// porch over a door tall enough to walk through. The only warm thing about it
+// is the light in the windows.
+//
+// The door opens for him at the end of the story and the windows brighten
+// once he is inside. It all keys off the same world_event as his walk, so a
+// late joiner finds him already home.
 
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GEO, Part, prismGeometry } from './toon';
 import {
+  COTTAGE_BEAM,
   COTTAGE_DARK,
   COTTAGE_DOOR_WOOD,
   COTTAGE_ROOF,
   COTTAGE_STONE,
+  COTTAGE_UPPER,
   COTTAGE_WALL,
   WINDOW_BRIGHT,
   WINDOW_WARM,
 } from './palette';
 import {
   COTTAGE,
+  COTTAGE_BASE_H,
   COTTAGE_DEPTH,
-  COTTAGE_HEIGHT,
+  COTTAGE_DOOR_H,
+  COTTAGE_DOOR_W,
+  COTTAGE_FLOOR1_H,
+  COTTAGE_FLOOR2_H,
+  COTTAGE_JETTY,
   COTTAGE_WIDTH,
   COTTAGE_YAW,
   DOOR_CLOSE_MS,
@@ -30,12 +41,22 @@ import {
 } from './layout';
 import { NEWTON_LEAVES, useWorld } from './store';
 
-const DOOR_W = 1.3;
-const DOOR_H = 2.3;
+const W = COTTAGE_WIDTH;
+const D = COTTAGE_DEPTH;
+const J = COTTAGE_JETTY;
+const FLOOR1_Y = COTTAGE_BASE_H;
+const FLOOR2_Y = FLOOR1_Y + COTTAGE_FLOOR1_H;
+const EAVE_Y = FLOOR2_Y + COTTAGE_FLOOR2_H;
+const UPPER_W = W + J * 2;
+const UPPER_D = D + J * 2;
+const FRONT = D / 2; // the lower front wall
+const UPPER_FRONT = UPPER_D / 2;
+
 const DOOR_OPEN_ANGLE = 1.95;
 const DOOR_SWING_MS = 700;
 const BRIGHTEN_MS = 1200;
-const FRONT = COTTAGE_DEPTH / 2;
+// The old timber has settled: everything above the ground floor leans a little.
+const LEAN = 0.02;
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -45,37 +66,52 @@ function easeInOut(u: number) {
   return u * u * (3 - 2 * u);
 }
 
-function Window({ x, material }: { x: number; material: THREE.Material }) {
+interface PaneProps {
+  x: number;
+  y: number;
+  z: number;
+  size: number;
+  material: THREE.Material;
+  barred?: boolean;
+}
+
+function Window({ x, y, z, size, material, barred = false }: PaneProps) {
+  const glass = size * 0.76;
   return (
-    <group position={[x, 1.9, 0]}>
+    <group position={[x, y, z]}>
+      <Part color={COTTAGE_BEAM} scale={[size, size, 0.22]} outline={0.06} />
+      <mesh geometry={GEO.box} material={material} position={[0, 0, 0.14]} scale={[glass, glass, 0.06]} />
       <Part
-        color={COTTAGE_STONE}
-        position={[0, 0, FRONT - 0.06]}
-        scale={[1.38, 1.38, 0.18]}
-        outline={0.06}
-      />
-      <mesh geometry={GEO.box} material={material} position={[0, 0, FRONT + 0.05]} scale={[1.04, 1.04, 0.06]} />
-      <Part
-        color={COTTAGE_DOOR_WOOD}
-        position={[0, 0, FRONT + 0.09]}
-        scale={[1.06, 0.1, 0.05]}
+        color={COTTAGE_BEAM}
+        position={[0, 0, 0.18]}
+        scale={[glass + 0.04, 0.1, 0.05]}
         outline={0.12}
         castShadow={false}
       />
       <Part
-        color={COTTAGE_DOOR_WOOD}
-        position={[0, 0, FRONT + 0.09]}
-        scale={[0.1, 1.06, 0.05]}
+        color={COTTAGE_BEAM}
+        position={[0, 0, 0.18]}
+        scale={[0.1, glass + 0.04, 0.05]}
         outline={0.12}
         castShadow={false}
       />
+      {barred && (
+        <Part
+          color={COTTAGE_DOOR_WOOD}
+          position={[0, 0, 0.24]}
+          rotation={[0, 0, 0.42]}
+          scale={[size * 1.35, 0.2, 0.07]}
+          outline={0.1}
+          castShadow={false}
+        />
+      )}
     </group>
   );
 }
 
 export function Cottage() {
   const door = useRef<THREE.Group>(null);
-  const roof = useMemo(() => prismGeometry(3.9, 3.45, 2.0), []);
+  const roof = useMemo(() => prismGeometry(UPPER_W / 2 + 0.55, UPPER_D / 2 + 0.55, 3.4), []);
 
   // Its own material instance: the panes brighten, and nothing else in the
   // world should brighten with them.
@@ -113,83 +149,173 @@ export function Cottage() {
 
   return (
     <group position={[COTTAGE.x, y, COTTAGE.z]} rotation={[0, COTTAGE_YAW, 0]}>
-      {/* stone base course, then the walls */}
+      {/* stone footing */}
       <Part
         color={COTTAGE_STONE}
-        position={[0, 0.26, 0]}
-        scale={[COTTAGE_WIDTH + 0.35, 0.52, COTTAGE_DEPTH + 0.35]}
-        outline={0.025}
+        position={[0, COTTAGE_BASE_H / 2, 0]}
+        scale={[W + 0.5, COTTAGE_BASE_H, D + 0.5]}
+        outline={0.03}
         receiveShadow
       />
+
+      {/* ground floor, with the corner posts showing */}
       <Part
         color={COTTAGE_WALL}
-        position={[0, COTTAGE_HEIGHT / 2 + 0.35, 0]}
-        scale={[COTTAGE_WIDTH, COTTAGE_HEIGHT, COTTAGE_DEPTH]}
-        outline={0.022}
+        position={[0, FLOOR1_Y + COTTAGE_FLOOR1_H / 2, 0]}
+        scale={[W, COTTAGE_FLOOR1_H, D]}
+        outline={0.02}
         receiveShadow
       />
+      {[
+        [W / 2 - 0.14, D / 2 - 0.14],
+        [-(W / 2 - 0.14), D / 2 - 0.14],
+        [W / 2 - 0.14, -(D / 2 - 0.14)],
+        [-(W / 2 - 0.14), -(D / 2 - 0.14)],
+      ].map(([px, pz], i) => (
+        <Part
+          key={i}
+          color={COTTAGE_BEAM}
+          position={[px, FLOOR1_Y + COTTAGE_FLOOR1_H / 2, pz]}
+          scale={[0.44, COTTAGE_FLOOR1_H, 0.44]}
+          outline={0.05}
+        />
+      ))}
+      {/* plank seams, so the wall reads as boards and not a slab */}
+      {[-3.3, 3.3].map(px => (
+        <Part
+          key={px}
+          color={COTTAGE_BEAM}
+          position={[px, FLOOR1_Y + COTTAGE_FLOOR1_H / 2, FRONT + 0.02]}
+          scale={[0.16, COTTAGE_FLOOR1_H * 0.94, 0.06]}
+          outline={0.1}
+          castShadow={false}
+        />
+      ))}
 
-      {/* pitched roof and chimney */}
-      <Part
-        geometry={roof}
-        color={COTTAGE_ROOF}
-        position={[0, COTTAGE_HEIGHT + 0.35, 0]}
-        scale={1}
-        outline={0.022}
-      />
+      {/* everything above the ground floor has settled out of true */}
+      <group rotation={[0, 0, LEAN]}>
+        <Part
+          color={COTTAGE_BEAM}
+          position={[0, FLOOR2_Y, 0]}
+          scale={[UPPER_W + 0.25, 0.38, UPPER_D + 0.25]}
+          outline={0.035}
+        />
+        <Part
+          color={COTTAGE_UPPER}
+          position={[0, FLOOR2_Y + COTTAGE_FLOOR2_H / 2 + 0.19, 0]}
+          scale={[UPPER_W, COTTAGE_FLOOR2_H, UPPER_D]}
+          outline={0.02}
+          receiveShadow
+        />
+        <Part
+          geometry={roof}
+          color={COTTAGE_ROOF}
+          position={[0, EAVE_Y + 0.2, 0]}
+          rotation={[0, 0, 0.012]}
+          outline={0.02}
+        />
+        <Window
+          x={-2.4}
+          y={FLOOR2_Y + 1.75}
+          z={UPPER_FRONT - 0.08}
+          size={1.35}
+          material={paneMaterial}
+          barred
+        />
+        <Window
+          x={2.4}
+          y={FLOOR2_Y + 1.75}
+          z={UPPER_FRONT - 0.08}
+          size={1.35}
+          material={paneMaterial}
+        />
+      </group>
+
+      {/* leaning chimney, running the full height of the gable end */}
       <Part
         color={COTTAGE_STONE}
-        position={[2.3, 4.85, -1.0]}
-        scale={[0.9, 2.7, 0.9]}
-        outline={0.05}
+        position={[-5.35, 5.1, -2.2]}
+        rotation={[0, 0, 0.035]}
+        scale={[1.15, 10.4, 1.15]}
+        outline={0.03}
       />
       <Part
-        color={COTTAGE_ROOF}
-        position={[2.3, 6.28, -1.0]}
-        scale={[1.15, 0.3, 1.15]}
-        outline={0.08}
+        color={COTTAGE_BEAM}
+        position={[-5.53, 10.5, -2.2]}
+        scale={[1.5, 0.38, 1.5]}
+        outline={0.06}
       />
 
-      {/* the dark of the doorway, so an open door shows an inside */}
+      {/* the doorway: dark inside, heavy lintel, a step, and a porch roof */}
       <mesh
         geometry={GEO.box}
         material={insideDark}
-        position={[0, DOOR_H / 2 + 0.05, FRONT - 0.14]}
-        scale={[DOOR_W, DOOR_H, 0.12]}
+        position={[0, COTTAGE_DOOR_H / 2 + 0.05, FRONT - 0.18]}
+        scale={[COTTAGE_DOOR_W, COTTAGE_DOOR_H, 0.14]}
+      />
+      <Part
+        color={COTTAGE_BEAM}
+        position={[0, COTTAGE_DOOR_H + 0.24, FRONT + 0.04]}
+        scale={[COTTAGE_DOOR_W + 0.7, 0.38, 0.42]}
+        outline={0.06}
       />
       <Part
         color={COTTAGE_STONE}
-        position={[0, DOOR_H + 0.22, FRONT + 0.02]}
-        scale={[1.95, 0.32, 0.34]}
-        outline={0.07}
-      />
-      <Part
-        color={COTTAGE_STONE}
-        position={[0, 0.09, FRONT + 0.62]}
-        scale={[2.1, 0.22, 1.0]}
+        position={[0, 0.12, FRONT + 0.8]}
+        scale={[COTTAGE_DOOR_W + 0.9, 0.26, 1.3]}
         outline={0.05}
         receiveShadow
       />
+      {[-1.72, 1.72].map(px => (
+        <Part
+          key={px}
+          color={COTTAGE_BEAM}
+          position={[px, 2.0, FRONT + 1.35]}
+          scale={[0.24, 4.0, 0.24]}
+          outline={0.06}
+        />
+      ))}
+      <Part
+        color={COTTAGE_ROOF}
+        position={[0, 4.12, FRONT + 0.85]}
+        rotation={[-0.16, 0, 0]}
+        scale={[4.2, 0.24, 2.0]}
+        outline={0.035}
+      />
 
       {/* the door itself, hinged on its left edge, swinging outward */}
-      <group ref={door} position={[-DOOR_W / 2, 0, FRONT - 0.02]}>
+      <group ref={door} position={[-COTTAGE_DOOR_W / 2, 0, FRONT - 0.04]}>
         <Part
           color={COTTAGE_DOOR_WOOD}
-          position={[DOOR_W / 2, DOOR_H / 2 + 0.05, 0]}
-          scale={[DOOR_W, DOOR_H, 0.14]}
-          outline={0.05}
+          position={[COTTAGE_DOOR_W / 2, COTTAGE_DOOR_H / 2 + 0.05, 0]}
+          scale={[COTTAGE_DOOR_W, COTTAGE_DOOR_H, 0.16]}
+          outline={0.045}
+        />
+        <Part
+          color={COTTAGE_BEAM}
+          position={[COTTAGE_DOOR_W / 2, 1.25, 0.11]}
+          scale={[COTTAGE_DOOR_W - 0.18, 0.2, 0.07]}
+          outline={0.09}
+          castShadow={false}
+        />
+        <Part
+          color={COTTAGE_BEAM}
+          position={[COTTAGE_DOOR_W / 2, 2.55, 0.11]}
+          scale={[COTTAGE_DOOR_W - 0.18, 0.2, 0.07]}
+          outline={0.09}
+          castShadow={false}
         />
         <Part
           color={COTTAGE_STONE}
-          position={[DOOR_W - 0.22, DOOR_H / 2 + 0.05, 0.1]}
-          scale={[0.12, 0.12, 0.12]}
-          outline={0.2}
+          position={[COTTAGE_DOOR_W - 0.3, 1.85, 0.14]}
+          scale={[0.16, 0.16, 0.16]}
+          outline={0.18}
           castShadow={false}
         />
       </group>
 
-      <Window x={-2.15} material={paneMaterial} />
-      <Window x={2.15} material={paneMaterial} />
+      <Window x={-3.05} y={2.0} z={FRONT - 0.08} size={1.75} material={paneMaterial} />
+      <Window x={3.05} y={2.0} z={FRONT - 0.08} size={1.75} material={paneMaterial} />
     </group>
   );
 }

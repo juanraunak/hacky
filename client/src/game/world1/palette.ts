@@ -20,12 +20,15 @@ export const HILL = '#4fae45';
 export const HILL_DARK = '#469b3d';
 export const DIRT = '#c08a52';
 
-// Newton's cottage
-export const COTTAGE_WALL = '#a89a86';
-export const COTTAGE_STONE = '#8d8071';
-export const COTTAGE_ROOF = '#a1543a';
-export const COTTAGE_DOOR_WOOD = '#7a4a2a';
-export const COTTAGE_DARK = '#241d18'; // the dark of the doorway
+// Newton's house: two storeys of old dark timber. The only warm thing about
+// it is the light in the windows, which is the point.
+export const COTTAGE_WALL = '#5e4630';
+export const COTTAGE_UPPER = '#543d2a';
+export const COTTAGE_BEAM = '#3a2b1c';
+export const COTTAGE_STONE = '#7d7566';
+export const COTTAGE_ROOF = '#3d3946';
+export const COTTAGE_DOOR_WOOD = '#4a3520';
+export const COTTAGE_DARK = '#1a1512'; // the dark of the doorway
 export const WINDOW_WARM = '#ffb03a';
 export const WINDOW_BRIGHT = '#fff0b8';
 

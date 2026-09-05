@@ -41,10 +41,15 @@ export interface Circle {
 // Thirty units from the tree, on the reachable side, door facing the tree.
 
 export const COTTAGE = { x: 24, z: 0 } as const;
-export const COTTAGE_WIDTH = 7; // along its local x
-export const COTTAGE_DEPTH = 6; // along its local z; the door is on +z
-export const COTTAGE_HEIGHT = 3.2;
-export const COTTAGE_RADIUS = 4.3;
+export const COTTAGE_WIDTH = 9; // along its local x
+export const COTTAGE_DEPTH = 8; // along its local z; the door is on +z
+export const COTTAGE_BASE_H = 0.5; // stone footing
+export const COTTAGE_FLOOR1_H = 3.6;
+export const COTTAGE_FLOOR2_H = 3.0;
+export const COTTAGE_JETTY = 0.45; // the upper storey overhangs the lower
+export const COTTAGE_RADIUS = 5.8;
+export const COTTAGE_DOOR_W = 2.1;
+export const COTTAGE_DOOR_H = 3.3; // Newton stands about 2.9, and stoops for nobody
 
 // Facing = the unit vector from the cottage toward the tree.
 const toTreeX = TREE.x - COTTAGE.x;
@@ -66,7 +71,7 @@ export const DIRT_PATH: [number, number][] = [
   [8.5, -9.8],
   [13.0, -7.2],
   [17.5, -4.6],
-  [20.9, -2.4],
+  [20.4, -2.7],
 ];
 
 // Newton's route: up off the trunk, onto the path, through the door, inside.
