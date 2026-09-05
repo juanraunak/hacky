@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# env
+.env
+.env.local
+
+# build output
+dist/
+build/
+.vercel/
+
+# local SpacetimeDB server config — never share
+spacetime.local.json
+
+# os
+.DS_Store
+
+# NOTE: module_bindings is intentionally NOT ignored.
+# Generated bindings are committed so nobody has to run the CLI.
