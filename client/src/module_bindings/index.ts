@@ -35,7 +35,9 @@ import {
 
 // Import all reducer arg schemas
 import CreateRoomReducer from "./create_room_reducer";
+import DisbandRoomReducer from "./disband_room_reducer";
 import JoinRoomReducer from "./join_room_reducer";
+import LeaveRoomReducer from "./leave_room_reducer";
 import SetPositionReducer from "./set_position_reducer";
 import SetTopicReducer from "./set_topic_reducer";
 import StartGameReducer from "./start_game_reducer";
@@ -96,7 +98,9 @@ const tablesSchema = __schema({
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
   __reducerSchema("create_room", CreateRoomReducer),
+  __reducerSchema("disband_room", DisbandRoomReducer),
   __reducerSchema("join_room", JoinRoomReducer),
+  __reducerSchema("leave_room", LeaveRoomReducer),
   __reducerSchema("set_position", SetPositionReducer),
   __reducerSchema("set_topic", SetTopicReducer),
   __reducerSchema("start_game", StartGameReducer),

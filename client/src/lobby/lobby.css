@@ -141,3 +141,12 @@
   color: #8b96ab;
   padding: 18px;
 }
+
+.lobby-leave {
+  align-self: center;
+  margin-top: 4px;
+  background: transparent !important;
+  border-color: #3a2630 !important;
+  color: #c98b9b !important;
+  font-size: 14px !important;
+}

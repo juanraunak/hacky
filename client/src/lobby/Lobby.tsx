@@ -192,6 +192,17 @@ export function Lobby({ version }: LobbyProps) {
       ) : (
         <div className="lobby-card lobby-waiting">waiting for host</div>
       )}
+
+      <button
+        type="button"
+        className="lobby-leave"
+        onClick={() => {
+          net.callReducer(isHost ? 'disbandRoom' : 'leaveRoom');
+          if (!isHost) window.location.href = '/';
+        }}
+      >
+        {isHost ? 'Disband party' : 'Leave party'}
+      </button>
     </div>
   );
 }

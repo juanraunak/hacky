@@ -144,6 +144,13 @@ export function GameView() {
   return (
     <div className="game-view">
       <canvas ref={canvasRef} className="game-canvas" />
+      <button
+        type="button"
+        className="game-disband"
+        onClick={() => net.callReducer('disbandRoom')}
+      >
+        Disband
+      </button>
       <Controls
         onInput={vec => {
           input.current = vec;

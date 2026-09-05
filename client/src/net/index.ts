@@ -316,6 +316,12 @@ export const net = {
       case 'setTopic':
         conn.reducers.setTopic({ topic: args[0] });
         return;
+      case 'leaveRoom':
+        conn.reducers.leaveRoom({});
+        return;
+      case 'disbandRoom':
+        conn.reducers.disbandRoom({});
+        return;
       default:
         console.warn('[net] unknown reducer:', name, args);
         return;
@@ -334,6 +340,19 @@ export const net = {
 
   error(): Error | null {
     return lastError;
+  },
+
+  /**
+   * Whether the subscribed room row actually exists. room() synthesises an
+   * empty Room when it does not, so this is how the app tells "still loading"
+   * apart from "the host disbanded the party".
+   */
+  hasRoom(): boolean {
+    if (!conn || !subscribedCode) return false;
+    for (const row of conn.db.room.iter()) {
+      if ((row as unknown as RoomRow).code === subscribedCode) return true;
+    }
+    return false;
   },
 
   /** Host badge without leaking Identity into the Room type. */

@@ -15,3 +15,14 @@
   color: #e8ecf4;
   margin: 0;
 }
+
+.app-button {
+  margin-top: 14px;
+  font: 600 15px/1 system-ui, sans-serif;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid #333c4f;
+  background: #222a38;
+  color: #e8ecf4;
+  cursor: pointer;
+}

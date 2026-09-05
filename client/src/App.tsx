@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { net, useNet } from './net';
 import { useRoute, replaceWithRoom } from './routing';
 import { animalName } from './lobby/names';
@@ -44,12 +44,31 @@ export default function App() {
     };
   }, [code, status]);
 
+  // Once the room row has been seen, its disappearance means the host
+  // disbanded. Before that it just means the subscription has not landed yet.
+  const hasRoom = net.hasRoom();
+  const everHadRoom = useRef(false);
+  if (hasRoom) everHadRoom.current = true;
+  const disbanded = everHadRoom.current && !hasRoom;
+
   const failure = hostError ?? error;
   if (failure) {
     return (
       <div className="app-message">
         <h1>Could not connect</h1>
         <p>{failure.message}</p>
+      </div>
+    );
+  }
+
+  if (disbanded) {
+    return (
+      <div className="app-message">
+        <h1>Party disbanded</h1>
+        <p>The host ended this party.</p>
+        <button type="button" className="app-button" onClick={() => (window.location.href = '/')}>
+          Start a new party
+        </button>
       </div>
     );
   }

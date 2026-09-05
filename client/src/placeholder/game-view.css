@@ -10,3 +10,19 @@
   width: 100%;
   height: 100dvh;
 }
+
+/* Testing affordance: reset the party without digging through the database.
+   Goes away with the rest of this placeholder. */
+.game-disband {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 20;
+  font: 600 13px/1 system-ui, sans-serif;
+  padding: 9px 13px;
+  border-radius: 999px;
+  border: 1px solid #3a2630;
+  background: rgb(20 14 18 / 78%);
+  color: #c98b9b;
+  cursor: pointer;
+}

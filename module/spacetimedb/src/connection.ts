@@ -142,6 +142,26 @@ export const joinRoom = spacetimedb.reducer(
   }
 );
 
+/** Leave the party. The row is deleted, so rejoining is a clean first join. */
+export const leaveRoom = spacetimedb.reducer(ctx => {
+  if (!ctx.db.player.identity.find(ctx.sender)) return;
+  ctx.db.player.identity.delete(ctx.sender);
+});
+
+/**
+ * Host tears the whole party down: every player row, then the room itself.
+ * Everyone still connected sees the room vanish and gets bounced to a fresh
+ * start. This is what makes the thing testable more than once.
+ */
+export const disbandRoom = spacetimedb.reducer(ctx => {
+  const room = hostedRoom(ctx);
+  if (!room) throw new SenderError('only the host can disband the party');
+  for (const player of [...ctx.db.player.room_code.filter(room.code)]) {
+    ctx.db.player.identity.delete(player.identity);
+  }
+  ctx.db.room.code.delete(room.code);
+});
+
 export const setTopic = spacetimedb.reducer(
   { topic: t.string() },
   (ctx, { topic }) => {
