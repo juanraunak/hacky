@@ -8,3 +8,6 @@ export const drill = { shove: false };
 
 /** He walks in from the door before anything else happens. */
 export const newtonEntrance = { playing: false, startedAt: 0 };
+
+/** True once THIS player has finished the montage. Their own pace. */
+export const briefDone = { value: false };

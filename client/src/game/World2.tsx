@@ -10,6 +10,7 @@ import { Notebook, Portal } from './world2/Portal';
 import { StudyPlayer } from './world2/StudyPlayer';
 import { StudyHud } from './world2/StudyHud';
 import { Briefing } from './world2/Briefing';
+import { TouchWeapons } from './world2/TouchWeapons';
 import { BriefCam } from './world2/BriefCam';
 import { Dummies } from './world2/Dummies';
 import { MeleeRing } from '../game/world3/MeleeRing';
@@ -34,8 +35,8 @@ export default function World2() {
   return (
     <div className="world1 world2">
       <Canvas
-        dpr={[1, isTouch ? 1.15 : 1.5]}
-        shadows
+        dpr={[1, isTouch ? 1 : 1.5]}
+        shadows={!isTouch}
         gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
         camera={{ fov: 62, near: 0.1, far: 90, position: [0, 3, 6] }}
         onCreated={({ gl }) => {
@@ -52,7 +53,7 @@ export default function World2() {
           position={[4, 9, 4]}
           intensity={0.72}
           color="#ffd9a8"
-          shadow-mapSize={[1024, 1024]}
+          shadow-mapSize={isTouch ? [512, 512] : [1024, 1024]}
           shadow-camera-left={-12}
           shadow-camera-right={12}
           shadow-camera-top={12}
@@ -76,6 +77,7 @@ export default function World2() {
       {(isTouch || mode === 'third') && <TouchInput />}
       <StudyHud />
       <Briefing />
+      {isTouch && <TouchWeapons />}
     </div>
   );
 }

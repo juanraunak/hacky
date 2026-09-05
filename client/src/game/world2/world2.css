@@ -441,3 +441,90 @@
   color: #fff8e7;
   text-shadow: 0 2px 0 #111;
 }
+
+/* --- phone weapon controls ---------------------------------------------- */
+
+.tw-slots {
+  position: absolute;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  z-index: 46;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.tw-slot {
+  all: unset;
+  position: relative;
+  width: 72px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #111;
+  border-radius: 13px;
+  background: #fff8e7;
+  box-shadow: 0 5px 0 #111;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.tw-slot[data-on='true'] {
+  background: #ffd93b;
+  transform: translateY(-5px);
+  box-shadow: 0 9px 0 #111;
+}
+
+.tw-slot b {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 22px;
+  color: #111;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.tw-slot span {
+  position: absolute;
+  bottom: 5px;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: #111;
+}
+
+.tw-slot i { display: none; }
+
+.tw-fire {
+  all: unset;
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  z-index: 46;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #111;
+  border-radius: 50%;
+  background: #ff4d4d;
+  box-shadow: 0 6px 0 #111;
+  color: #fff8e7;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 22px;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.tw-fire:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #111;
+}
+
+/* keep the briefing panel clear of the thumb controls */
+.brief {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+}

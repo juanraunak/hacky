@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { net } from '../net';
 import { useWorld, APPLE_EVENT, CELLAR_OPEN } from './world1/store';
 import { readCombat } from './world3/combat';
+import { briefDone } from './world2/briefState';
 import './journey.css';
 
 const DONE_EVENT: Record<number, string> = {
@@ -30,14 +31,21 @@ export function Journey({ world }: { world: 1 | 2 | 3 }) {
   // World 3 finishes on the boss dying, which is combat state rather than a
   // database event, so poll it. Cheap, and only while World 3 is mounted.
   useEffect(() => {
-    if (world !== 3) return;
+    if (world === 1) return;
     const id = window.setInterval(() => setTick(t => t + 1), 400);
     return () => window.clearInterval(id);
   }, [world]);
   void tick;
 
+  // World 2 also requires that YOU finished your own tutorial: the cellar
+  // event is shared, and without this a fast player could pull someone else
+  // out of the study mid-lesson.
   const ready =
-    world === 3 ? readCombat().down : Boolean(events[DONE_EVENT[world]]);
+    world === 3
+      ? readCombat().down
+      : world === 2
+        ? briefDone.value && Boolean(events[DONE_EVENT[2]])
+        : Boolean(events[DONE_EVENT[world]]);
 
   useEffect(() => {
     setGoing(false);

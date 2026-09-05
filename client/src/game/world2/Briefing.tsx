@@ -8,7 +8,7 @@ import { useWorld } from '../world1/store';
 import { CELLAR_OPEN } from '../world1/store';
 import { grantWeapon, installAttackInput, selectWeapon, training } from '../world3/combat';
 import type { WeaponId } from '../world3/weapons';
-import { briefing, drill, newtonEntrance } from './briefState';
+import { briefDone, briefing, drill, newtonEntrance } from './briefState';
 
 type Counter = 'blocks' | 'swordHits' | 'shots';
 
@@ -101,6 +101,7 @@ export function Briefing() {
   const advance = () => {
     if (step + 1 >= SCENES.length) {
       briefing.active = false;
+      briefDone.value = true;
       setDone(true);
       // Each player announces their own finish. The cellar only opens once
       // everybody has been through it, so nobody is dragged into the fight
@@ -171,6 +172,7 @@ export function Briefing() {
   // handlers or nothing braces, swings or fires. This was why the shield did
   // nothing here.
   useEffect(() => {
+    briefDone.value = false;
     training.active = true;
     const off = installAttackInput();
     return () => {
