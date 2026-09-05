@@ -21,7 +21,7 @@ export function StudyPlayer() {
       collide={resolveStudy}
       walkSpeed={WALK_SPEED}
       spawnAt={{ x: 0, z: 4, heading: Math.PI }}
-      cameraTakenOver={briefing.active}
+      cameraTakenOver={() => briefing.active}
     >
       <HeldWeapon />
     </PlayerRig>

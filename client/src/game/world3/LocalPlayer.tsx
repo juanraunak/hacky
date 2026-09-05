@@ -14,8 +14,8 @@ export function LocalPlayer() {
       walkSpeed={WALK_SPEED}
       distance={8.5}
       distancePortrait={10.5}
-      frozen={cinematic.active}
-      cameraTakenOver={false}
+      frozen={() => cinematic.active}
+
       allowJump
       allowSprint
     >

@@ -33,6 +33,8 @@ const LOOK_SPEED_TOUCH = 0.0062;
 const LOOK_SPEED_MOUSE = 0.0045;
 const PITCH_MIN = 0.08;
 const PITCH_MAX = 1.05;
+/** ART-STYLE.md: top-down at about 52 degrees. */
+const DEFAULT_PITCH = 0.91;
 const SEND_INTERVAL_MS = 100;
 
 const KEY_DIRS: Record<string, [number, number]> = {
@@ -67,9 +69,13 @@ export interface PlayerRigProps {
    * out to wait for the server's spawn row, which is what World 1 wants.
    */
   spawnAt?: { x: number; z: number; heading: number };
-  /** Freeze input and hand the camera to something else (a cutscene). */
-  frozen?: boolean;
-  cameraTakenOver?: boolean;
+  /**
+   * Freeze input and hand the camera to something else (a cutscene).
+   * Functions, not booleans: these flip at runtime and the rig re-renders
+   * almost never, so a plain boolean is read once and then wrong forever.
+   */
+  frozen?: () => boolean;
+  cameraTakenOver?: () => boolean;
   /** Jump and sprint are opt-in per world. */
   allowJump?: boolean;
   allowSprint?: boolean;
@@ -84,8 +90,8 @@ export function PlayerRig({
   distance = 6,
   distancePortrait = 7.6,
   spawnAt,
-  frozen = false,
-  cameraTakenOver = false,
+  frozen,
+  cameraTakenOver,
   allowJump = false,
   allowSprint = false,
   children,
@@ -110,7 +116,7 @@ export function PlayerRig({
       local.z = spawnAt.z;
       local.heading = spawnAt.heading;
       local.yaw = spawnAt.heading + Math.PI;
-      local.pitch = 0.42;
+      local.pitch = DEFAULT_PITCH;
       local.spawned = true;
       return;
     }
@@ -203,9 +209,10 @@ export function PlayerRig({
     }
 
     // --- walk: camera-relative, then face where you are going -------------
-    let mx = frozen ? 0 : input.move.x;
-    let my = frozen ? 0 : input.move.y;
-    for (const code of frozen ? [] : input.keys) {
+    const held = frozen?.() ?? false;
+    let mx = held ? 0 : input.move.x;
+    let my = held ? 0 : input.move.y;
+    for (const code of held ? [] : input.keys) {
       const dir = KEY_DIRS[code];
       if (dir) {
         mx += dir[0];
@@ -265,7 +272,7 @@ export function PlayerRig({
     }
 
     // --- camera: passive, fixed orbit, player always centred --------------
-    if (cameraTakenOver) return;
+    if (cameraTakenOver?.()) return;
 
     const s = useWorld.getState();
     let shakeX = 0;

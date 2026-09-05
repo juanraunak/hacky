@@ -92,7 +92,11 @@ export default function App() {
 
   // Straight into World 1, no lobby, no join on Juan's side. The world's own
   // enter_world creates the room if it does not exist yet.
-  if (code && flags.world2) {
+  // Test flags only apply while the room is still in the lobby; once the
+  // party actually advances, the room's phase wins so transitions work.
+  const flagOk = net.room().phase === 'lobby';
+
+  if (code && flags.world2 && flagOk) {
     return (
       <>
         <World2 />
@@ -102,13 +106,13 @@ export default function App() {
     );
   }
 
-  if (code && flags.world3) {
+  if (code && flags.world3 && flagOk) {
     return (
       <World3 roomCode={code} name={nameOr(net.identity())} forcedCamera={flags.cam} />
     );
   }
 
-  if (code && flags.world) {
+  if (code && flags.world && flagOk) {
     return (
       <NewtonGame
         roomCode={code}
