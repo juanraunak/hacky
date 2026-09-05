@@ -60,7 +60,7 @@ import { thud } from './sound';
 const TP_TARGET_HEIGHT = 1.35;
 const TP_DISTANCE = 5.2;
 const TP_DISTANCE_PORTRAIT = 6.4;
-const LOOK_SPEED_TOUCH = 0.0062;
+const LOOK_SPEED_TOUCH = 0.0034; // gentler on a thumb
 const LOOK_SPEED_MOUSE = 0.0045;
 const SEND_INTERVAL_MS = 100;
 
@@ -187,7 +187,9 @@ export function StudyPlayer() {
       const d = consumeLook();
       const k = isTouch ? LOOK_SPEED_TOUCH : LOOK_SPEED_MOUSE;
       local.yaw -= d.x * k;
-      local.pitch = Math.min(1.05, Math.max(0.08, local.pitch + d.y * k * 0.7));
+      const hi = isTouch ? 0.58 : 1.05;
+      const lo = isTouch ? 0.14 : 0.08;
+      local.pitch = Math.min(hi, Math.max(lo, local.pitch + d.y * k * 0.7));
     }
 
     let mx = input.move.x;

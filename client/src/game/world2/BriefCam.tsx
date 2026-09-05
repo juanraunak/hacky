@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { NEWTON_SPOT } from './study';
+import { newtonPos } from './StudyNewton';
 import { local } from '../world1/local';
 import { briefing } from './briefState';
 
@@ -25,22 +26,27 @@ export function BriefCam() {
       return;
     }
     held.current = true;
-    // Not a lock: you keep running. The camera simply leans toward Newton so
-    // he stays in frame while he is talking, then lets go entirely.
-    want.current.set(
-      local.x * 0.55 + (NEWTON_SPOT.x + 1.2) * 0.45,
-      2.15,
-      local.z * 0.55 + (NEWTON_SPOT.z + 4.2) * 0.45
-    );
-    camera.position.lerp(want.current, 1 - Math.exp(-dt * 2.2));
-    camera.lookAt(
-      (NEWTON_SPOT.x + local.x) / 2,
-      1.45,
-      (NEWTON_SPOT.z + local.z) / 2
-    );
+
+    // Over the shoulder: sit behind the player on the line to Newton, so you
+    // are always in shot in the foreground and he is in front of you. Sitting
+    // between the two put the player behind the camera entirely.
+    const dx = NEWTON_SPOT.x - local.x;
+    const dz = newtonZ() - local.z;
+    const d = Math.hypot(dx, dz) || 1;
+    const backX = local.x - (dx / d) * 4.2;
+    const backZ = local.z - (dz / d) * 4.2;
+
+    want.current.set(backX, 2.6, backZ);
+    camera.position.lerp(want.current, 1 - Math.exp(-dt * 3));
+    // Aim a little past the player, toward Newton, so both are framed.
+    camera.lookAt(local.x + dx * 0.45, 1.4, local.z + dz * 0.45);
   });
 
   return null;
+}
+
+function newtonZ(): number {
+  return newtonPos.z || NEWTON_SPOT.z;
 }
 
 export default BriefCam;

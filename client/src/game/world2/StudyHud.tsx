@@ -38,6 +38,8 @@ function heldLabel(item: string | null): string | null {
   return item;
 }
 
+const SHOW_RESET = false; // leftover from the old flow; the briefing replaces it
+
 export function StudyHud() {
   const connection = useWorld(s => s.connection);
   const mode = useWorld(s => s.cameraMode);
@@ -117,7 +119,7 @@ export function StudyHud() {
         </div>
       )}
 
-      {connection === 'online' && !paused && (
+      {SHOW_RESET && connection === 'online' && !paused && (
         <button type="button" className="reset-button" onClick={() => resetWorld()}>
           Reset
         </button>
