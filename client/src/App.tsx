@@ -177,12 +177,37 @@ export default function App() {
           <h1 id="game-title">Hacky</h1>
           {homeView === 'home' ? (
             <>
-              <p className="title-copy">Learning games made to play with your people.</p>
+              <p className="title-copy">
+                Turn a topic into a game your whole group plays together, on the
+                phones already in their pockets.
+              </p>
+
+              {/* "Learning games made to play with your people" told nobody what
+                  this is. Three steps do: what you give it, how people get in,
+                  and what actually happens once they are in. */}
+              <ol className="title-how">
+                <li>
+                  <b>1</b>
+                  <span>Pick what to learn — scan a page of the textbook, or type the topic.</span>
+                </li>
+                <li>
+                  <b>2</b>
+                  <span>Share the code. Everyone joins on their own phone — no app, no login.</span>
+                </li>
+                <li>
+                  <b>3</b>
+                  <span>
+                    Fight your way through it together. Working out{' '}
+                    <em>what beats what</em> is the lesson — no quizzes, no flashcards.
+                  </span>
+                </li>
+              </ol>
 
               {/* The two ways in that are still being built. They are shown
                   because they are the plan, and marked because they are not
                   ready -- a dead button that looks live is worse than an
                   honest one. */}
+              <p className="title-ways">Ways in</p>
               <button type="button" className="title-soon" disabled>
                 Scan your book
                 <i>coming soon</i>

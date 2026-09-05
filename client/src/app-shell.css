@@ -111,6 +111,51 @@
   margin-right: 6px;
 }
 
+/* What this thing actually is. Testers could not tell from the one-liner, so
+   the three steps say it plainly before anyone has to guess. */
+.title-how {
+  width: min(100%, 340px);
+  margin: 0 auto 20px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.title-how li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  align-items: start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font: 800 13px/1.35 'Nunito', system-ui, sans-serif;
+}
+
+.title-how b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--gold);
+  font: 400 16px/1 'Bangers', Impact, sans-serif;
+}
+
+.title-how em {
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.title-ways {
+  margin: 0 0 9px;
+  font: 800 10px/1 'Nunito', system-ui, sans-serif;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #8a7a5a;
+}
+
 /* The not-yet-built ways in. Visible so the plan reads, plainly marked so
    nobody taps them expecting something. */
 .title-soon {
