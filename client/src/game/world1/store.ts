@@ -27,6 +27,20 @@ export interface WorldEvent {
   firedBy: string;
 }
 
+export interface Apple {
+  id: string;
+  wave: number;
+  seq: number;
+  size: string;
+  target: string;
+  from: { x: number; y: number; z: number };
+  to: { x: number; z: number };
+  /** Local ms when this apple leaves the portal. */
+  spawnAt: number;
+  dead: boolean;
+  hitBy: string;
+}
+
 export interface LeafPuff {
   id: number;
   at: number;
@@ -45,6 +59,7 @@ export interface World1State {
   positions: Record<string, Position>;
   events: Record<string, WorldEvent>;
   held: Record<string, string>; // identity -> item
+  apples: Record<string, Apple>;
 
   cameraMode: CameraMode;
   isTouch: boolean;
@@ -65,6 +80,8 @@ export interface World1State {
   removeEvent: (name: string) => void;
   setHeld: (identity: string, item: string) => void;
   clearHeld: (identity: string) => void;
+  upsertApple: (apple: Apple) => void;
+  removeApple: (id: string) => void;
   setCameraMode: (mode: CameraMode) => void;
   shake: (strength?: number, durationMs?: number) => void;
   puff: (x: number, y: number, z: number) => void;
@@ -87,6 +104,7 @@ export const useWorld = create<World1State>((set, get) => ({
   positions: {},
   events: {},
   held: {},
+  apples: {},
 
   cameraMode: hasTouch ? 'third' : 'first',
   isTouch: hasTouch,
@@ -136,6 +154,14 @@ export const useWorld = create<World1State>((set, get) => ({
       return { held };
     }),
 
+  upsertApple: apple => set(s => ({ apples: { ...s.apples, [apple.id]: apple } })),
+  removeApple: id =>
+    set(s => {
+      const apples = { ...s.apples };
+      delete apples[id];
+      return { apples };
+    }),
+
   setCameraMode: cameraMode => set({ cameraMode }),
 
   shake: (strength = 0.18, durationMs = 350) =>
@@ -152,5 +178,31 @@ export const useWorld = create<World1State>((set, get) => ({
 }));
 
 export const APPLE_EVENT = 'apple_fell';
+/** Newton stands, says his last line, and walks home to the cottage. */
+export const NEWTON_LEAVES = 'newton_leaves';
+// One world id for the whole Newton game; the event names namespace the
+// chapter. That way the Reset button clears the meadow and the study together.
 export const WORLD_ID = 'world1';
 export const APPLE_ITEM = 'apple';
+
+// World 2, the study.
+export const STUDY_ENTERED = 'study_entered';
+export const STONE_DROPPED = 'study_stone';
+export const PEN_DROPPED = 'study_pen';
+export const FEATHER_DROPPED = 'study_feather';
+export const PORTAL_OPEN = 'study_portal';
+export const FIGHT_READY = 'study_ready';
+export const FIGHT_DONE = 'study_fight_done';
+export const PEN_ITEM = 'pen';
+
+// The rack. One each; nobody carries two. Each one is a law of motion you
+// have to use rather than read.
+export const SWORD_ITEM = 'sword'; // second law: force is mass times acceleration
+export const SHIELD_ITEM = 'shield'; // first law: no net force, no acceleration
+export const GUN_ITEM = 'gun'; // third law: every push has an equal push back
+export const WEAPONS = [SHIELD_ITEM, SWORD_ITEM, GUN_ITEM] as const;
+export const CELLAR_OPEN = 'study_cellar';
+
+export function isWeapon(item: string | null): boolean {
+  return item === SWORD_ITEM || item === SHIELD_ITEM || item === GUN_ITEM;
+}

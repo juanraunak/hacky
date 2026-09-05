@@ -31,3 +31,23 @@ export function pauseAfter(ch: string): number {
   if (ch === ',') return COMMA_PAUSE_MS;
   return 0;
 }
+
+// The ending. He gets up and goes home, and the party can follow.
+export const FAREWELL = 'Wait — follow me.';
+export const FAREWELL_DELAY_MS = 350;
+export const FAREWELL_HOLD_MS = 2800;
+
+function beatDuration(text: string): number {
+  let ms = 0;
+  for (const ch of Array.from(text)) ms += TYPE_MS + pauseAfter(ch);
+  return ms;
+}
+
+/** How long the whole monologue takes, used to spot a story already over. */
+export const MONOLOGUE_TOTAL_MS =
+  BEATS.reduce(
+    (sum, beat, i) => sum + beatDuration(beat.text) + (i === 0 ? FIRST_BEAT_HOLD_MS : BEAT_GAP_MS),
+    0
+  ) +
+  FINAL_HOLD_MS +
+  FADE_MS;

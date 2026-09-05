@@ -1,4 +1,5 @@
 import { t, SenderError } from 'spacetimedb/server';
+import { Timestamp } from 'spacetimedb';
 import spacetimedb from './schema';
 import type { Ctx } from './schema';
 
@@ -159,4 +160,82 @@ export const resetWorld = spacetimedb.reducer({ world: t.string() }, (ctx, { wor
   for (const ev of events) ctx.db.world_event.id.delete(ev.id);
   const held = [...ctx.db.held_item.room_code.filter(code)];
   for (const h of held) ctx.db.held_item.identity.delete(h.identity);
+  for (const apple of [...ctx.db.study_apple.room_code.filter(code)]) {
+    ctx.db.study_apple.id.delete(apple.id);
+  }
+});
+
+// --- World 2: the study --------------------------------------------------
+
+// Per-player kit. Unlike pick_up_item this has no room exclusivity: the pen,
+// and later a sword or a bow, is one each, not one between all of you.
+export const equipItem = spacetimedb.reducer({ item: t.string() }, (ctx, { item }) => {
+  const code = roomOf(ctx);
+  const row = { identity: ctx.sender, room_code: code, item, since: ctx.timestamp };
+  if (ctx.db.held_item.identity.find(ctx.sender)) {
+    ctx.db.held_item.identity.update(row);
+  } else {
+    ctx.db.held_item.insert(row);
+  }
+});
+
+const AppleSpec = t.object('AppleSpec', {
+  seq: t.u32(),
+  size: t.string(),
+  target: t.identity(),
+  from_x: t.f32(),
+  from_y: t.f32(),
+  from_z: t.f32(),
+  to_x: t.f32(),
+  to_z: t.f32(),
+  delay_ms: t.u32(),
+});
+
+// One client in the room conducts the fight and calls this once per wave.
+// Insert-once per (room, wave): a second caller changes nothing, so two
+// clients racing to conduct cannot double-spawn a wave.
+export const spawnWave = spacetimedb.reducer(
+  { wave: t.u32(), apples: t.array(AppleSpec) },
+  (ctx, { wave, apples }) => {
+    const code = roomOf(ctx);
+    for (const existing of ctx.db.study_apple.room_code.filter(code)) {
+      if (existing.wave === wave) return;
+    }
+    const base = ctx.timestamp.microsSinceUnixEpoch;
+    for (const a of apples) {
+      ctx.db.study_apple.insert({
+        id: 0n,
+        room_code: code,
+        wave,
+        seq: a.seq,
+        size: a.size,
+        target: a.target,
+        from_x: a.from_x,
+        from_y: a.from_y,
+        from_z: a.from_z,
+        to_x: a.to_x,
+        to_z: a.to_z,
+        spawn_at: new Timestamp(base + BigInt(a.delay_ms) * 1000n),
+        dead: false,
+        hit_by: ctx.sender,
+      });
+    }
+  }
+);
+
+// First swing to land wins. A second caller finds it already dead and stops,
+// so two players hitting the same apple never double-count.
+export const killApple = spacetimedb.reducer({ appleId: t.u64() }, (ctx, { appleId }) => {
+  const apple = ctx.db.study_apple.id.find(appleId);
+  if (!apple || apple.dead) return;
+  const player = ctx.db.player.identity.find(ctx.sender);
+  if (!player || player.room_code !== apple.room_code) return;
+  ctx.db.study_apple.id.update({ ...apple, dead: true, hit_by: ctx.sender });
+});
+
+export const clearStudy = spacetimedb.reducer(ctx => {
+  const code = roomOf(ctx);
+  for (const apple of [...ctx.db.study_apple.room_code.filter(code)]) {
+    ctx.db.study_apple.id.delete(apple.id);
+  }
 });

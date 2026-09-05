@@ -93,6 +93,29 @@ const spacetimedb = schema({
       since: t.timestamp(),
     }
   ),
+
+  // World 2: the apples the portal throws at the party. One row per apple so
+  // every phone sees the same ones on the same arcs. The flight is pure
+  // interpolation from spawn_at, so nothing has to be streamed per frame.
+  study_apple: table(
+    { public: true },
+    {
+      id: t.u64().primaryKey().autoInc(),
+      room_code: t.string().index('btree'),
+      wave: t.u32(),
+      seq: t.u32(),
+      size: t.string(), // small | medium | big — all fall at the same rate
+      target: t.identity(),
+      from_x: t.f32(),
+      from_y: t.f32(),
+      from_z: t.f32(),
+      to_x: t.f32(),
+      to_z: t.f32(),
+      spawn_at: t.timestamp(),
+      dead: t.bool(),
+      hit_by: t.identity(),
+    }
+  ),
 });
 export default spacetimedb;
 

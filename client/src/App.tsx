@@ -3,7 +3,7 @@ import { net, useNet } from './net';
 import { useRoute, replaceWithRoom } from './routing';
 import { animalName } from './lobby/names';
 import Lobby from './lobby/Lobby';
-import World1 from './game/World1';
+import NewtonGame from './game/NewtonGame';
 import World3 from './game/World3';
 import './app-shell.css';
 
@@ -81,7 +81,7 @@ export default function App() {
 
   if (code && flags.world) {
     return (
-      <World1
+      <NewtonGame
         roomCode={code}
         name={animalName(net.identity())}
         resetOnEntry={flags.reset}
@@ -157,7 +157,7 @@ export default function App() {
     return <World3 roomCode={code} name={animalName(net.identity())} forcedCamera={flags.cam} />;
   }
   return (
-    <World1
+    <NewtonGame
       roomCode={code}
       name={animalName(net.identity())}
       resetOnEntry={flags.reset}

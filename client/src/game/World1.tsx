@@ -6,6 +6,7 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Meadow } from './world1/Meadow';
 import { Newton } from './world1/Newton';
+import { Cottage } from './world1/Cottage';
 import { Apple } from './world1/Apple';
 import { LocalPlayer } from './world1/LocalPlayer';
 import { RemotePlayers } from './world1/RemotePlayers';
@@ -13,28 +14,19 @@ import { ThoughtBubble } from './world1/ThoughtBubble';
 import { LeafPuffs } from './world1/LeafPuff';
 import { TouchInput } from './world1/TouchInput';
 import { Hud } from './world1/Hud';
-import { connectWorld } from './world1/sync';
 import { useWorld, type CameraMode } from './world1/store';
 import { SKY } from './world1/palette';
 import './world1/world1.css';
 
 export interface World1Props {
-  roomCode: string;
-  /** Display name. Empty means "make one up from the identity". */
+  /** Kept so the caller can pass the room through; the connection is
+   *  NewtonGame's job now. */
+  roomCode?: string;
   name?: string;
-  /** Demo helper: forget the apple on entry so it can fall again. */
-  resetOnEntry?: boolean;
   forcedCamera?: CameraMode | null;
 }
 
-export default function World1({
-  roomCode,
-  name = '',
-  resetOnEntry = false,
-  forcedCamera = null,
-}: World1Props) {
-  useEffect(() => connectWorld({ roomCode, name, reset: resetOnEntry }), [roomCode, name, resetOnEntry]);
-
+export default function World1({ forcedCamera = null }: World1Props) {
   useEffect(() => {
     if (forcedCamera) useWorld.getState().setCameraMode(forcedCamera);
   }, [forcedCamera]);
@@ -58,6 +50,7 @@ export default function World1({
         <hemisphereLight args={['#bfe6ff', '#4f8f3a', 0.95]} />
         <Meadow />
         <Newton />
+        <Cottage />
         <Apple />
         <RemotePlayers />
         <LocalPlayer />

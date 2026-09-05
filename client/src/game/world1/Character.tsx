@@ -7,8 +7,7 @@ import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
 import { GEO, Part } from './toon';
 import { EYE, SCARF, SHOE, SKIN, TROUSER, type Look } from './palette';
-import { AppleMesh } from './AppleMesh';
-import { APPLE_ITEM } from './store';
+import { HeldItem } from './HeldItems';
 
 export interface KidAnim {
   /** 0 standing, 1 walking at full speed. */
@@ -81,11 +80,7 @@ export function Kid({ look, anim, headless = false, holding = null }: KidProps) 
         <group ref={rightArm} position={[-0.43, 1.14, 0]}>
           <Part color={look.jacket} position={[0, -0.26, 0]} scale={[0.2, 0.5, 0.2]} />
           <Part geometry={GEO.sphere} color={SKIN} position={[0, -0.56, 0]} scale={0.14} outline={0.08} />
-          {holding === APPLE_ITEM && (
-            <group position={[0, -0.62, 0.16]}>
-              <AppleMesh />
-            </group>
-          )}
+          <HeldItem item={holding} />
         </group>
         {/* scarf */}
         <Part

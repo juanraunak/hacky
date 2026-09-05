@@ -1,0 +1,196 @@
+/* World 2 chrome. Same comic panels as World 1: paper #fff8e7, ink #111,
+   3px borders, hard offset shadows, Bangers for anything shouted. */
+
+.world2 {
+  background: #17120f;
+}
+
+/* The hard cut into the study. No fade: black, then the room. */
+.blackout {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+}
+
+.hit-flash {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-shout);
+  font-size: 72px;
+  line-height: 1;
+  letter-spacing: 3px;
+  color: #ff4d4d;
+  -webkit-text-stroke: 2.5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 5px 5px 0 var(--ink);
+  animation: hit-slam 420ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  pointer-events: none;
+}
+
+@keyframes hit-slam {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4) rotate(-8deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.08) rotate(-3deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(-3deg);
+  }
+}
+
+@media (orientation: portrait) {
+  .hit-flash {
+    font-size: 52px;
+  }
+}
+
+.held-item--label {
+  width: auto;
+  min-width: 56px;
+  padding: 0 14px;
+  font-family: var(--font-shout);
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+/* The one card. Dim the room behind it so the pause reads as a pause. */
+.card-wrap--dim {
+  background: rgb(0 0 0 / 55%);
+  pointer-events: auto;
+}
+
+.card--wide {
+  max-width: min(420px, 86vw);
+  padding: 22px 26px 20px;
+}
+
+.card-icon {
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+}
+
+.card--wide .card-title {
+  font-size: 40px;
+}
+
+.card--wide .card-body {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.card-button {
+  margin-top: 18px;
+  min-height: 44px;
+  padding: 10px 30px;
+  cursor: pointer;
+  background: var(--gold);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 5px 0 var(--ink);
+  font-family: var(--font-shout);
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 1px;
+  touch-action: manipulation;
+}
+
+.card-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+/* The page on the wall. Rendered in world space, so it stays on the wall. */
+.notebook {
+  width: 260px;
+  padding: 16px 18px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 0 5px 0 var(--ink);
+  font: 800 15px/1.45 var(--font-body);
+  color: var(--ink);
+  text-align: left;
+}
+
+.notebook b {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-shout);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.notebook p {
+  margin: 0 0 6px;
+}
+
+.notebook i {
+  opacity: 0.45;
+  font-style: normal;
+}
+
+/* --- the three laws, on screen ------------------------------------------ */
+
+.hit-flash--nothing {
+  color: #8a8a9a;
+  font-size: 46px;
+}
+
+.hit-flash--held {
+  color: #4be36b;
+  font-size: 58px;
+}
+
+/* The sword's wind-up. The notch is where a tap becomes a blow. */
+.charge {
+  position: absolute;
+  left: 50%;
+  bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 88px));
+  transform: translateX(-50%);
+  width: min(240px, 56vw);
+  height: 20px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--ink);
+  overflow: hidden;
+}
+
+.charge-fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 60ms linear;
+}
+
+.charge-notch {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--ink);
+}
+
+.brace {
+  position: absolute;
+  left: 50%;
+  bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 88px));
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  background: #4be36b;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ink);
+  font-family: var(--font-shout);
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
