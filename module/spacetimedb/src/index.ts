@@ -80,8 +80,13 @@ function spawnCoord(ctx: Ctx): number {
 }
 
 // content_json shape this reads:
-//   { "damage": { "<toolId>": { "<monsterKind>": <number> } } }
+//   { "matrix": { "<toolId>": { "<monsterKind>": "strong" | "weak" | "none" } } }
+// The effect stays a string in the content file because the client renders its
+// hit feedback from that vocabulary; only this reducer turns it into a number.
 // Anything missing or malformed means zero damage rather than a thrown reducer.
+const STRONG_DAMAGE = 40;
+const WEAK_DAMAGE = 10;
+
 function damageFor(contentJson: string, toolId: string, kind: string): number {
   if (!contentJson) return 0;
   let parsed: unknown;
@@ -90,9 +95,15 @@ function damageFor(contentJson: string, toolId: string, kind: string): number {
   } catch {
     return 0;
   }
-  const matrix = (parsed as { damage?: Record<string, Record<string, number>> } | null)?.damage;
-  const value = matrix?.[toolId]?.[kind];
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  const matrix = (parsed as { matrix?: Record<string, Record<string, string>> } | null)?.matrix;
+  switch (matrix?.[toolId]?.[kind]) {
+    case 'strong':
+      return STRONG_DAMAGE;
+    case 'weak':
+      return WEAK_DAMAGE;
+    default:
+      return 0; // covers 'none', an unknown effect, and a missing entry
+  }
 }
 
 export const init = spacetimedb.init(_ctx => {
@@ -126,11 +137,18 @@ export const joinRoom = spacetimedb.reducer(
       throw new SenderError(`no room with code ${code}`);
     }
 
-    // Reconnect: the row already exists, so flip it back to connected and stop.
-    // A second row for one identity would be a duplicate player in the world.
+    // One identity is only ever one player row; a second would be a duplicate
+    // player in the world. So an existing row is either a reconnect to the same
+    // room or a move to a different one.
     const existing = ctx.db.player.identity.find(ctx.sender);
     if (existing) {
-      ctx.db.player.identity.update({ ...existing, connected: true });
+      ctx.db.player.identity.update({
+        ...existing,
+        room_code: code,
+        // Tools belong to the room, so a switch starts empty like a fresh join.
+        tools: existing.room_code === code ? existing.tools : [],
+        connected: true,
+      });
       return;
     }
 
