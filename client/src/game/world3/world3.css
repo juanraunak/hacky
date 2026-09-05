@@ -264,3 +264,385 @@
   color: #fff8e7;
   text-shadow: 0 3px 0 #111;
 }
+
+/* --- weapons ------------------------------------------------------------ */
+
+.slots {
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: max(46px, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.slot {
+  all: unset;
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border: 3px solid #111;
+  border-radius: 14px;
+  background: #fff8e7;
+  box-shadow: 0 5px 0 #111;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.slot[data-on='true'] {
+  background: #ffd93b;
+  transform: translateY(-6px);
+  box-shadow: 0 9px 0 #111;
+}
+
+.slot-glyph {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 30px;
+  color: #111;
+  line-height: 1;
+}
+
+.slot-num {
+  position: absolute;
+  right: 5px;
+  bottom: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #111;
+  opacity: 0.55;
+}
+
+.charge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -14px;
+  height: 8px;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #2a1020;
+  overflow: hidden;
+}
+
+.charge-fill {
+  height: 100%;
+  background: #4be36b;
+}
+
+.bracing {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -26px;
+  text-align: center;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 18px;
+  color: #3aa0ff;
+  -webkit-text-stroke: 3px #111;
+  paint-order: stroke fill;
+}
+
+/* --- hit feedback ------------------------------------------------------- */
+
+.hit-text {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  transform: translateX(-50%);
+  z-index: 32;
+  pointer-events: none;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(26px, 8vw, 62px);
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #111;
+  animation: hit-pop 620ms ease-out both;
+}
+
+.hit-text[data-effect='strong'] { color: #ff4d4d; }
+.hit-text[data-effect='weak'] { color: #ffb02e; font-size: clamp(20px, 5vw, 40px); }
+.hit-text[data-effect='none'] { color: #8a8a9a; font-size: clamp(18px, 4.4vw, 34px); }
+
+@keyframes hit-pop {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.4); }
+  35% { opacity: 1; transform: translateX(-50%) scale(1.12); }
+  100% { opacity: 0; transform: translateX(-50%) scale(1) translateY(-26px); }
+}
+
+/* big thumb target: on a phone the canvas drag is the camera, so firing needs
+   its own button rather than a tap anywhere */
+.fire {
+  all: unset;
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: calc(max(46px, env(safe-area-inset-bottom, 0px)) + 84px);
+  width: 108px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #111;
+  border-radius: 50%;
+  background: #ff4d4d;
+  box-shadow: 0 6px 0 #111;
+  color: #fff8e7;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 24px;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.fire:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #111;
+}
+
+.mobile-extra {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left, 0px));
+  bottom: calc(max(46px, env(safe-area-inset-bottom, 0px)) + 44px);
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.mini {
+  all: unset;
+  padding: 10px 14px;
+  border: 3px solid #111;
+  border-radius: 12px;
+  background: #fff8e7;
+  box-shadow: 0 4px 0 #111;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 16px;
+  color: #111;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.mini:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #111;
+}
+
+.hit-law {
+  display: block;
+  margin-top: 6px;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(11px, 2.6vw, 16px);
+  letter-spacing: 0.14em;
+  color: #ffd93b;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+}
+
+.ammo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -30px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pip {
+  width: 8px;
+  height: 16px;
+  border: 2px solid #111;
+  border-radius: 3px;
+  background: #ffd93b;
+}
+
+.pip[data-spent='true'] {
+  background: #2a1020;
+}
+
+.ammo-reload {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 15px;
+  color: #ff8c3a;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+}
+
+/* the hotbar is laws, not weapons */
+.slot {
+  width: 84px;
+  height: 70px;
+}
+
+.slot-law {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: #111;
+}
+
+.slot-glyph {
+  margin-bottom: 10px;
+}
+
+.boss-mode {
+  margin-top: 6px;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(15px, 3.6vw, 22px);
+  letter-spacing: 0.06em;
+  color: #fff8e7;
+  -webkit-text-stroke: 3px #111;
+  paint-order: stroke fill;
+}
+
+.boss-mode[data-mode='stunned'] { color: #ffd93b; }
+.boss-mode[data-mode='charging'] { color: #ff4d4d; }
+.boss-mode[data-mode='airborne'] { color: #3aa0ff; }
+
+/* blocking has to feel like something */
+.blocked {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translateX(-50%);
+  z-index: 33;
+  pointer-events: none;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(24px, 7vw, 54px);
+  color: #3aa0ff;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  animation: hit-pop 620ms ease-out both;
+}
+
+/* --- gathering the laws -------------------------------------------------- */
+
+.gather {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 26%;
+  text-align: center;
+  pointer-events: none;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(20px, 5.5vw, 40px);
+  color: #ffd93b;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #111;
+}
+
+.gather span {
+  display: block;
+  margin-top: 6px;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: #fff8e7;
+  -webkit-text-stroke: 2px #111;
+}
+
+.pickup-tag {
+  text-align: center;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  color: #fff8e7;
+  text-shadow: 0 2px 0 #111;
+  white-space: nowrap;
+}
+
+.pickup-tag b {
+  display: block;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 18px;
+  color: #ffd93b;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+}
+
+.pickup-tag span {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.got {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  animation: hit-pop 900ms ease-out both;
+}
+
+.got b {
+  display: block;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(24px, 7vw, 48px);
+  color: #4be36b;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+}
+
+.got span {
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: #fff8e7;
+  -webkit-text-stroke: 2px #111;
+}
+
+/* --- the boss talking ---------------------------------------------------- */
+
+.shout {
+  position: absolute;
+  left: 50%;
+  top: 15%;
+  transform: translateX(-50%);
+  max-width: min(620px, 88vw);
+  text-align: center;
+  pointer-events: none;
+  padding: 12px 18px;
+  border: 3px solid #111;
+  border-radius: 16px;
+  background: #fff8e7;
+  box-shadow: 0 5px 0 #111;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(15px, 3.4vw, 24px);
+  letter-spacing: 0.03em;
+  color: #111;
+  animation: shout-in 380ms ease-out both;
+}
+
+@keyframes shout-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-14px) scale(0.9); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.boss-law {
+  display: block;
+  margin-top: 3px;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #ffd93b;
+  -webkit-text-stroke: 0;
+}
+
+.slot[data-locked='true'] {
+  opacity: 0.3;
+  filter: grayscale(1);
+}

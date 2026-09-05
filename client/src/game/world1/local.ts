@@ -35,6 +35,13 @@ export const local = {
   pitch: 0.42,
   /** Walking speed estimate for the animation. */
   speed: 0,
+  /** Impulse from gun recoil or a boss hit; decays in LocalPlayer. */
+  recoilX: 0,
+  recoilZ: 0,
+  /** Height above the ground, and vertical speed. */
+  y: 0,
+  vy: 0,
+  sprinting: false,
 };
 
 export function consumeLook(): Vec2 {

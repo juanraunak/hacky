@@ -9,6 +9,9 @@ import type { Group, InstancedMesh } from 'three';
 import { GEO, Part, toonMaterial } from '../world1/toon';
 import { ARENA_RADIUS, RUBBLE, TERRAIN_RADIUS, groundHeight } from './layout';
 import { GiantApple } from './Apple';
+import { ShotsView } from './ShotsView';
+import { MeleeRing } from './MeleeRing';
+import { LawCrates } from './LawCrates';
 
 const FLOOR = '#6b4152';
 const FLOOR_DARK = '#5b3a4d';
@@ -237,6 +240,9 @@ export function Arena() {
       <Floor />
       <Rubble />
       <GiantApple />
+      <ShotsView />
+      <MeleeRing />
+      <LawCrates />
     </group>
   );
 }

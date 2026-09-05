@@ -7,6 +7,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { Kid, type KidAnim } from '../world1/Character';
+import { HeldWeapon } from './HeldWeapon';
 import { lookFor } from '../world1/palette';
 import { WALK_SPEED, groundHeight, resolveCollisions } from './layout';
 import { consumeLook, input, local } from '../world1/local';
@@ -83,12 +84,22 @@ export function LocalPlayer() {
         s.setCameraMode(next);
         return;
       }
+      if (e.code === 'Space' && !e.repeat) {
+        e.preventDefault();
+        if (local.y <= 0.01) local.vy = 15;
+        return;
+      }
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+        local.sprinting = true;
+        return;
+      }
       if (KEY_DIRS[e.code]) {
         e.preventDefault();
         input.keys.add(e.code);
       }
     };
     const up = (e: KeyboardEvent) => {
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') local.sprinting = false;
       input.keys.delete(e.code);
     };
     const blur = () => input.keys.clear();
@@ -190,7 +201,7 @@ export function LocalPlayer() {
     if (mag > 0.02 && local.spawned) {
       const dx = fx * my + rx * mx;
       const dz = fz * my + rz * mx;
-      const step = WALK_SPEED * dt;
+      const step = WALK_SPEED * (local.sprinting ? 1.85 : 1) * dt;
       const moved = resolveCollisions(local.x + dx * step, local.z + dz * step);
       local.x = moved.x;
       local.z = moved.z;
@@ -200,7 +211,29 @@ export function LocalPlayer() {
     local.speed += (mag - local.speed) * (1 - Math.exp(-dt * 12));
     anim.current.speed = local.speed;
 
-    const gy = groundHeight(local.x, local.z);
+    // Recoil: the gun's third-law kick, and shoves from the boss.
+    if (local.recoilX !== 0 || local.recoilZ !== 0) {
+      const step = resolveCollisions(local.x + local.recoilX * dt, local.z + local.recoilZ * dt);
+      local.x = step.x;
+      local.z = step.z;
+      const decay = Math.exp(-dt * 4.5);
+      local.recoilX *= decay;
+      local.recoilZ *= decay;
+      if (Math.hypot(local.recoilX, local.recoilZ) < 0.4) {
+        local.recoilX = 0;
+        local.recoilZ = 0;
+      }
+    }
+
+    // Jump: one impulse, then gravity until the ground catches you.
+    local.vy -= 38 * dt;
+    local.y += local.vy * dt;
+    if (local.y <= 0) {
+      local.y = 0;
+      local.vy = 0;
+    }
+
+    const gy = groundHeight(local.x, local.z) + local.y;
     if (group.current) {
       group.current.position.set(local.x, gy, local.z);
       group.current.rotation.y = local.heading;
@@ -249,6 +282,7 @@ export function LocalPlayer() {
       {first && <PointerLockControls />}
       <group ref={group}>
         <Kid look={look} anim={anim} headless={first} holding={holding} />
+        <HeldWeapon />
         {/* The one shadow-casting light rides with the player so its 1024
             shadow map only has to cover the ground you can actually see. */}
         <directionalLight

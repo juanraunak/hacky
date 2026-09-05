@@ -14,8 +14,9 @@ import { INK } from '../world1/palette';
 import { local } from '../world1/local';
 import { useWorld } from '../world1/store';
 import { APPLE_CENTER_Y, APPLE_RADIUS, applePos, groundHeight } from './layout';
-import { PHASES, cinematic, damagePlayer, markLanded, phaseOf, readCombat } from './combat';
+import { PHASES, cinematic, bossHits, markLanded, phaseOf, readCombat } from './combat';
 import { Explosion } from './Explosion';
+import { throwOrb } from './projectiles';
 
 const RED = '#ff4d4d';
 const RED_DARK = '#c9302f';
@@ -108,6 +109,9 @@ export function GiantApple() {
   const walkSpeed = useRef(0);
   const mounted = useRef(performance.now());
   const blewAt = useRef(0);
+  const recoilDir = useRef({ x: 0, z: 1 });
+  const nextOrb = useRef(0);
+  const nextSlam = useRef(0);
   const blowOrigin = useRef(new THREE.Vector3());
   const flash = useRef(0);
   const recoil = useRef(0);
@@ -156,12 +160,17 @@ export function GiantApple() {
       hitsSeen.current = c.hits;
       flash.current = 1;
       recoil.current = 1;
+      const rd = Math.hypot(local.x - applePos.x, local.z - applePos.z) || 1;
+      recoilDir.current.x = (local.x - applePos.x) / rd;
+      recoilDir.current.z = (local.z - applePos.z) / rd;
       shake(0.5 + rageBase * 0.5, 220);
     }
     flash.current = Math.max(0, flash.current - dt * 4.5);
     recoil.current = Math.max(0, recoil.current - dt * 3.2);
 
     // --- pose ------------------------------------------------------------
+    // Visible state, no words: it armours up, lifts, or drops into a charge.
+    const mode = c.mode;
     const focus = partyFocus();
     const dx = focus.cx - applePos.x;
     const dz = focus.cz - applePos.z;
@@ -204,7 +213,8 @@ export function GiantApple() {
       const away = Math.hypot(toX, toZ) || 1;
       const hold = R + 11;
       const drive = away > hold ? 1 : away < hold * 0.7 ? -0.7 : 0;
-      const speed = (3.2 + rageBase * 3.4) * drive;
+      const rush = mode === 'charging' && c.charging ? 3.4 : mode === 'airborne' ? 0.4 : 1;
+      const speed = (3.2 + rageBase * 3.4) * drive * rush;
       applePos.x += (toX / away) * speed * dt;
       applePos.z += (toZ / away) * speed * dt;
       const ad = Math.hypot(applePos.x, applePos.z);
@@ -218,12 +228,15 @@ export function GiantApple() {
       walkSpeed.current += (0 - walkSpeed.current) * (1 - Math.exp(-dt * 6));
     }
 
+    const lift = mode === 'airborne' ? 13 + Math.sin(t * 1.6) * 1.6 : 0;
+    const crouch = mode === 'charging' ? -2.6 : mode === 'stunned' ? -6.5 : 0;
+
     const seethe = Math.sin(t * (1.4 + rage * 3.2));
     const hover = fall.current.landed ? 0.5 + seethe * (0.3 + rage * 0.55) : 0;
     g.position.set(
-      applePos.x - c.fromX * recoil.current * 1.8,
-      ground + APPLE_CENTER_Y + fall.current.y + hover - sink.current * R * 2.1,
-      applePos.z - c.fromZ * recoil.current * 1.8
+      applePos.x - recoilDir.current.x * recoil.current * 1.8,
+      ground + APPLE_CENTER_Y + fall.current.y + hover + lift + crouch - sink.current * R * 2.1,
+      applePos.z - recoilDir.current.z * recoil.current * 1.8
     );
 
     if (fall.current.landed) {
@@ -270,11 +283,44 @@ export function GiantApple() {
       eyes.current.rotation.y += (clamped - eyes.current.rotation.y) * (1 - Math.exp(-dt * 8));
     }
 
-    // It swings back. Standing inside its reach costs you health.
+    const now = performance.now();
+
+    // Volleys. It lobs these while it hovers or armours up, and only a braced
+    // shield stops one; more players means more of them.
+    if (fall.current.landed && !c.down && mode !== 'charging') {
+      if (now > nextOrb.current) {
+        nextOrb.current = now + (1500 - phase * 220) / Math.max(1, c.players * 0.7);
+        const focusNow = partyFocus();
+        throwOrb(g.position.y, focusNow.nx, focusNow.nz);
+      }
+    }
+
+    // The slam: it goes up, comes down, and everything not braced flies.
+    if (fall.current.landed && !c.down && phase >= 1 && now > nextSlam.current) {
+      nextSlam.current = now + 9000 - phase * 1800;
+      shake(2.0, 700);
+      const myD = Math.hypot(local.x - applePos.x, local.z - applePos.z) || 1;
+      if (myD < 46) {
+        const px = (local.x - applePos.x) / myD;
+        const pz = (local.z - applePos.z) / myD;
+        bossHits(24 + phase * 8, px * 62, pz * 62);
+      }
+    }
+
+    // It fights the way its state says it fights.
     if (fall.current.landed && !c.down) {
       const myDist = Math.hypot(local.x - applePos.x, local.z - applePos.z);
-      if (myDist < R + 6.5 && damagePlayer(8 + phase * 3)) {
-        shake(0.7, 260);
+      const px = (local.x - applePos.x) / (myDist || 1);
+      const pz = (local.z - applePos.z) / (myDist || 1);
+      if (c.mode === 'charging' && c.charging) {
+        // Mass in motion: a wide, hard shove.
+        if (myDist < R + 13) {
+          const hit = bossHits(22 + phase * 6, px * 34, pz * 34);
+          if (hit) shake(hit === 'blocked' ? 0.5 : 1.2, 320);
+        }
+      } else if (myDist < R + 6.5) {
+        const hit = bossHits(9 + phase * 3, px * 12, pz * 12);
+        if (hit) shake(hit === 'blocked' ? 0.35 : 0.7, 260);
       }
     }
 
