@@ -12,21 +12,21 @@ _(Awaiting the SHARED CONTEXT block.)_
 
 ## Ownership (do not edit outside your lane)
 
-- **Juan:** `/module`, `/client/lobby`, `/client/net`, `/client/controls`
-- **Ean:** `/client/game`
+- **Juan:** `/module`, `/client/src/lobby`, `/client/src/net`, `/client/src/controls`
+- **Ean:** `/client/src/game`
 
 Ean: never import the SpacetimeDB SDK directly. All database access goes
-through `/client/net`.
+through `/client/src/net`.
 
 ## Layout
 
 ```
 module/            SpacetimeDB module (TypeScript). Do not restructure.
 client/            Vite + React + TypeScript
-  lobby/           join, avatars, topic input, QR
-  net/             connection, subscriptions, reducer calls
-  controls/        thumbstick + action buttons
-  game/            Ean's. Leave empty.
+  src/lobby/       join, avatars, topic input, QR
+  src/net/         connection, subscriptions, reducer calls
+  src/controls/    thumbstick + action buttons
+  src/game/        Ean's. Leave empty.
   src/module_bindings/   generated, committed — do not gitignore
 content/           content.json per topic
 ```

@@ -40,11 +40,11 @@ Wipes all data. Use when the schema changed and a migration is not possible.
 | Folder | Owner |
 | --- | --- |
 | `/module` | Juan |
-| `/client/lobby` | Juan |
-| `/client/net` | Juan |
-| `/client/controls` | Juan |
-| `/client/game` | Ean |
+| `/client/src/lobby` | Juan |
+| `/client/src/net` | Juan |
+| `/client/src/controls` | Juan |
+| `/client/src/game` | Ean |
 
 Nobody edits the other's folders.
 
-**Ean:** never import the SpacetimeDB SDK. Everything goes through `/client/net`.
+**Ean:** never import the SpacetimeDB SDK. Everything goes through `/client/src/net`.
