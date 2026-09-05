@@ -103,7 +103,15 @@ export default function App() {
   // enter_world creates the room if it does not exist yet.
   // Test flags only apply while the room is still in the lobby; once the
   // party actually advances, the room's phase wins so transitions work.
-  const flagOk = net.room().phase === 'lobby';
+  //
+  // ...and only until the party has actually been somewhere. Finishing a run
+  // sets the phase back to 'lobby', and a ?world= flag still in the URL then
+  // pulled you straight back into that world -- beat the giant apple, land in
+  // Newton's study. net.room() also reports 'lobby' before the row arrives,
+  // so this covers a mid-run reload too.
+  const everLeftLobby = useRef(false);
+  if (livePhase && livePhase !== 'lobby') everLeftLobby.current = true;
+  const flagOk = net.room().phase === 'lobby' && !everLeftLobby.current;
 
   if (code && flags.world2 && flagOk) {
     return (
