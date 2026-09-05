@@ -71,6 +71,16 @@ The game layer calls these and nothing else. It never imports the SpacetimeDB
 SDK or `module_bindings`. That is what lets the netcode be swapped, faked, or
 rewritten without touching the game.
 
+`net` also carries additions that do not change any signature above:
+`status()`, `error()`, `isHost()`, `createRoom()`, `onChange()`, `getVersion()`,
+and the `useNet(roomCode)` hook, which builds the connection inside `useMemo`
+and re-renders on cache changes. The game view does not need the hook: it polls
+`net.players()` per animation frame, which is what interpolation wants anyway.
+
+Reads come from the local cache, scoped by three room subscriptions. Auth is
+anonymous: SpacetimeDB mints an Identity on first connect and the token is kept
+in `localStorage`, so reopening the link rejoins as the same player.
+
 **2. `<Controls />` — the sole input boundary.** `/client/src/controls`
 
 ```tsx

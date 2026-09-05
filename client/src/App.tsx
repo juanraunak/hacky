@@ -1,122 +1,63 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { net, useNet } from './net';
+import { useRoute, replaceWithRoom } from './routing';
+import { animalName } from './lobby/names';
+import Lobby from './lobby/Lobby';
+import GameView from './placeholder/GameView';
+import './app-shell.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const route = useRoute();
+  const [hostError, setHostError] = useState<Error | null>(null);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+  // "/" creates a room and swaps the URL for /r/CODE. net.createRoom is
+  // idempotent, so StrictMode's second mount reuses the first room.
+  useEffect(() => {
+    if (route.kind !== 'host') return;
+    let live = true;
+    net
+      .createRoom()
+      .then(code => {
+        if (live) replaceWithRoom(code);
+      })
+      .catch((err: unknown) => {
+        if (live) setHostError(err instanceof Error ? err : new Error(String(err)));
+      });
+    return () => {
+      live = false;
+    };
+  }, [route.kind]);
 
-      <div className="ticks"></div>
+  const code = route.kind === 'room' ? route.code : null;
+  const { status, error, version } = useNet(code);
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  // Join once the subscription is live. join_room is idempotent server-side:
+  // an identity that already has a row is reconnected, never duplicated.
+  useEffect(() => {
+    if (!code || status !== 'connected') return;
+    let live = true;
+    net.connect(code).then(() => {
+      if (live) net.callReducer('joinRoom', code, animalName(net.identity()));
+    });
+    return () => {
+      live = false;
+    };
+  }, [code, status]);
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  const failure = hostError ?? error;
+  if (failure) {
+    return (
+      <div className="app-message">
+        <h1>Could not connect</h1>
+        <p>{failure.message}</p>
+      </div>
+    );
+  }
+
+  if (!code || status !== 'connected') {
+    return <div className="app-message">connecting...</div>;
+  }
+
+  // Everyone watches phase and transitions together.
+  return net.room().phase === 'playing' ? <GameView /> : <Lobby version={version} />;
 }
-
-export default App

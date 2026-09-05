@@ -1,0 +1,12 @@
+.game-view {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  background: #10131a;
+}
+
+.game-canvas {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+}

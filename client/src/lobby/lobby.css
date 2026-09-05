@@ -1,0 +1,143 @@
+.lobby {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: 20px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  background: #10131a;
+  color: #e8ecf4;
+  font: 15px/1.45 system-ui, sans-serif;
+}
+
+.lobby h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b96ab;
+}
+
+.lobby-card {
+  background: #171c26;
+  border: 1px solid #232a38;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.lobby-url {
+  font: 700 clamp(18px, 6vw, 30px) / 1.2 ui-monospace, monospace;
+  word-break: break-all;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.lobby-qr {
+  width: 168px;
+  height: 168px;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  background: #fff;
+  display: block;
+  margin-top: 14px;
+}
+
+.lobby-players {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lobby-player {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.lobby-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  border: 2px solid rgb(255 255 255 / 22%);
+}
+
+.lobby-dot[data-offline='true'] {
+  opacity: 0.35;
+}
+
+.lobby-badge {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #2b3348;
+  color: #9fb2d6;
+}
+
+.lobby button {
+  font: 600 16px/1 system-ui, sans-serif;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1px solid #333c4f;
+  background: #222a38;
+  color: #e8ecf4;
+  cursor: pointer;
+}
+
+.lobby button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lobby-start {
+  background: #3a6df0;
+  border-color: #3a6df0;
+  color: #fff;
+  width: 100%;
+  padding: 17px;
+  font-size: 18px;
+}
+
+.lobby-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+}
+
+.lobby-option[data-disabled='true'] {
+  opacity: 0.4;
+}
+
+.lobby-option input {
+  margin-top: 3px;
+}
+
+.lobby-note {
+  color: #8b96ab;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.lobby-topic-field {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  padding: 11px;
+  border-radius: 8px;
+  border: 1px solid #333c4f;
+  background: #10131a;
+  color: #e8ecf4;
+  font: 15px system-ui, sans-serif;
+}
+
+.lobby-waiting {
+  text-align: center;
+  color: #8b96ab;
+  padding: 18px;
+}

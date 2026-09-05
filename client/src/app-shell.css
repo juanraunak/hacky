@@ -1,0 +1,17 @@
+.app-message {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+  background: #10131a;
+  color: #8b96ab;
+  font: 15px/1.5 system-ui, sans-serif;
+}
+
+.app-message h1 {
+  font-size: 18px;
+  color: #e8ecf4;
+  margin: 0;
+}
