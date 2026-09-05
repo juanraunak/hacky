@@ -161,8 +161,22 @@ export default function App() {
           {homeView === 'home' ? (
             <>
               <p className="title-copy">Learning games made to play with your people.</p>
+
+              {/* The two ways in that are still being built. They are shown
+                  because they are the plan, and marked because they are not
+                  ready -- a dead button that looks live is worse than an
+                  honest one. */}
+              <button type="button" className="title-soon" disabled>
+                Scan your book
+                <i>coming soon</i>
+              </button>
+              <button type="button" className="title-soon" disabled>
+                Type a topic
+                <i>coming soon</i>
+              </button>
+
               <button type="button" className="title-play" onClick={() => setHomeView('games')}>
-                See current games
+                Play a ready-made game
               </button>
             </>
           ) : (

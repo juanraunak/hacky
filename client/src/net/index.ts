@@ -255,12 +255,16 @@ function subscribeRoom(connection: DbConnection, code: string): Promise<void> {
  * rejected query here must not take the room, players and monsters with it --
  * that turned one bad subscription into "could not connect".
  */
-function subscribeBoss(connection: DbConnection, code: string): void {
+function subscribeBoss(connection: DbConnection): void {
   try {
     connection
       .subscriptionBuilder()
       .onError(() => console.warn('[net] boss subscription rejected; fight will be local'))
-      .subscribe([`SELECT * FROM boss WHERE room_code = '${code}'`]);
+      // No WHERE: every other table has a btree index on room_code and this
+      // one only has the primary key, which a subscription filter cannot use.
+      // The table holds one row per active room, so taking all of it is
+      // cheap, and boss() filters to this room anyway.
+      .subscribe(['SELECT * FROM boss']);
   } catch (err) {
     console.warn('[net] boss subscription threw', err);
   }
@@ -274,7 +278,7 @@ export const net = {
     const connection = await connectOnce();
     if (code) {
       await subscribeRoom(connection, code);
-      subscribeBoss(connection, code);
+      subscribeBoss(connection);
     }
   },
 

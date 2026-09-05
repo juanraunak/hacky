@@ -110,3 +110,35 @@
   color: #ff4d4d;
   margin-right: 6px;
 }
+
+/* The not-yet-built ways in. Visible so the plan reads, plainly marked so
+   nobody taps them expecting something. */
+.title-soon {
+  position: relative;
+  width: min(100%, 320px);
+  margin: 0 auto 10px;
+  padding: 12px 20px;
+  display: block;
+  border: 3px solid var(--ink);
+  border-radius: 13px;
+  box-shadow: 0 4px 0 var(--ink);
+  background: #efe4cb;
+  color: var(--ink);
+  font: 400 24px/1 'Bangers', Impact, sans-serif;
+  letter-spacing: .6px;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.title-soon i {
+  display: block;
+  margin-top: 5px;
+  font: 800 10px/1 'Nunito', system-ui, sans-serif;
+  letter-spacing: .18em;
+  font-style: normal;
+  color: #8a7a5a;
+}
+
+.title-play {
+  margin-top: 6px;
+}
