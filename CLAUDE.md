@@ -53,21 +53,40 @@ Nobody edits the other's folders.
 ## The two client interface points
 
 Everything crossing between Juan's code and Ean's code goes through exactly
-these two. If you need something that isn't here, ask for it to be added rather
-than reaching around.
+these two. **Both signatures are final.** Real implementations land under them
+without the game layer changing a line, so build against them now.
 
-**1. `/client/src/net` — the only code that touches SpacetimeDB.**
-Ean: never import the SpacetimeDB SDK or `module_bindings` directly. `/net` owns
-the connection, the subscriptions, and every reducer call, and hands `/game`
-plain data and plain callbacks. This is what lets the netcode change without
-touching the game, and lets the game run against fakes.
+**1. `net` — the sole SpacetimeDB boundary.** `/client/src/net`
 
-**2. `content.json` — the content contract.**
-The `"strong" | "weak" | "none"` vocabulary is shared. The server turns it into
-damage; the client renders hit feedback from the same three words. Neither side
-invents a fourth value.
+```ts
+net.connect(roomCode: string): Promise<void>
+net.players():  Player[]
+net.monsters(): Monster[]
+net.room():     Room
+net.callReducer(name: string, ...args: unknown[]): void
+net.identity(): string
+```
+
+The game layer calls these and nothing else. It never imports the SpacetimeDB
+SDK or `module_bindings`. That is what lets the netcode be swapped, faked, or
+rewritten without touching the game.
+
+**2. `<Controls />` — the sole input boundary.** `/client/src/controls`
+
+```tsx
+<Controls
+  onInput={(vec: { x: number; y: number }) => void}   // normalized
+  onAction={(slotIndex: number) => void}              // 0-3
+/>
+```
+
+The game layer never touches touch or keyboard events. Thumbstick, action
+buttons, WASD, and every `preventDefault` live behind this component.
 
 ## content.json shape
+
+A **data contract**, not an interface point — both sides read it, neither side
+calls the other through it.
 
 ```jsonc
 {
@@ -103,8 +122,19 @@ strong -> 40    weak -> 10    none -> 0
 Missing, unknown, or malformed content yields 0 damage and never throws, so bad
 content degrades to a dead swing instead of a broken room.
 
-There is **no HP or difficulty scaling rule yet** — nothing currently spawns
-monsters or sets their starting HP. When we add one, it goes here.
+## Scaling
+
+```
+slotsPerPlayer = clamp(6 - floor(playerCount / 3), 2, 4)
+```
+
+Assigned in `joinRoom` from the tool ids in `room.content_json`.
+
+Two players carry nearly every tool and can solve a room alone with effort.
+Fifteen carry two each, so a boss that needs several property-counters landing
+together forces specialisation and shouting — which is the point.
+
+Map size stays **fixed**. Monster count scales with player count.
 
 ## Module gotchas — SpacetimeDB 2.9.0
 
