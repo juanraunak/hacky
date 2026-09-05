@@ -20,7 +20,7 @@ const EYE_HEIGHT = 1.62;
 const TP_TARGET_HEIGHT = 1.35;
 const TP_DISTANCE = 8.5;
 const TP_DISTANCE_PORTRAIT = 10.5;
-const LOOK_SPEED_TOUCH = 0.0034; // gentler on a thumb
+const LOOK_SPEED_TOUCH = 0.0062;
 const LOOK_SPEED_MOUSE = 0.0045;
 const SEND_INTERVAL_MS = 100;
 
@@ -156,9 +156,7 @@ export function LocalPlayer() {
       // Full look: all the way up to the sky, all the way down at your feet.
       // Touch gets a narrow, safe band: enough to look up at the boss, never
       // enough to lose your own character off the edge of the screen.
-      const hi = isTouch ? 0.62 : 1.45;
-      const lo = isTouch ? 0.1 : -1.25;
-      local.pitch = Math.min(hi, Math.max(lo, local.pitch + d.y * k * 0.7));
+      local.pitch = Math.min(1.05, Math.max(0.08, local.pitch + d.y * k * 0.7));
     }
 
     // --- walk ---------------------------------------------------------
@@ -214,14 +212,6 @@ export function LocalPlayer() {
       if (!first) local.heading = angleLerp(local.heading, Math.atan2(dx, dz), 1 - Math.exp(-dt * 14));
     }
     if (first) local.heading = local.yaw + Math.PI;
-    // Ease the camera back behind you once your thumb leaves the look side.
-    if (isTouch && mag > 0.05 && now - lastLook.current > 420) {
-      let back = local.heading + Math.PI - local.yaw;
-      while (back > Math.PI) back -= Math.PI * 2;
-      while (back < -Math.PI) back += Math.PI * 2;
-      local.yaw += back * (1 - Math.exp(-dt * 2.4));
-    }
-
     local.speed += (mag - local.speed) * (1 - Math.exp(-dt * 12));
     anim.current.speed = local.speed;
 

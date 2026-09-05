@@ -58,9 +58,9 @@ import { beginPush, chipPost, fireBolt, pushDistance, stepBolts, stepPush } from
 import { thud } from './sound';
 
 const TP_TARGET_HEIGHT = 1.35;
-const TP_DISTANCE = 5.2;
-const TP_DISTANCE_PORTRAIT = 6.4;
-const LOOK_SPEED_TOUCH = 0.0034; // gentler on a thumb
+const TP_DISTANCE = 6;            // World 1's values, verbatim
+const TP_DISTANCE_PORTRAIT = 7.6;
+const LOOK_SPEED_TOUCH = 0.0062;
 const LOOK_SPEED_MOUSE = 0.0045;
 const SEND_INTERVAL_MS = 100;
 
@@ -190,9 +190,7 @@ export function StudyPlayer() {
       if (Math.abs(d.x) > 0.5 || Math.abs(d.y) > 0.5) lastLook.current = now;
       const k = isTouch ? LOOK_SPEED_TOUCH : LOOK_SPEED_MOUSE;
       local.yaw -= d.x * k;
-      const hi = isTouch ? 0.58 : 1.05;
-      const lo = isTouch ? 0.14 : 0.08;
-      local.pitch = Math.min(hi, Math.max(lo, local.pitch + d.y * k * 0.7));
+      local.pitch = Math.min(1.05, Math.max(0.08, local.pitch + d.y * k * 0.7));
     }
 
     let mx = input.move.x;
@@ -226,14 +224,6 @@ export function StudyPlayer() {
       }
     }
     if (first) local.heading = local.yaw + Math.PI;
-    // Ease the camera back behind you once your thumb leaves the look side.
-    if (isTouch && mag > 0.05 && now - lastLook.current > 420) {
-      let back = local.heading + Math.PI - local.yaw;
-      while (back > Math.PI) back -= Math.PI * 2;
-      while (back < -Math.PI) back += Math.PI * 2;
-      local.yaw += back * (1 - Math.exp(-dt * 2.4));
-    }
-
     local.speed += (mag - local.speed) * (1 - Math.exp(-dt * 12));
     anim.current.speed = local.speed;
 
@@ -267,6 +257,8 @@ export function StudyPlayer() {
       shakeX = (Math.random() * 2 - 1) * a;
       shakeY = (Math.random() * 2 - 1) * a;
     }
+    if (briefing.active) return; // BriefCam owns the camera while he talks
+
     if (first) {
       camera.position.set(local.x + shakeX, EYE_HEIGHT + shakeY, local.z);
     } else {
@@ -287,7 +279,6 @@ export function StudyPlayer() {
       } else {
         camera.position.lerp(raw, 1 - Math.exp(-dt * 14));
       }
-      if (briefing.active) return;
       camera.lookAt(local.x + shakeX, TP_TARGET_HEIGHT + shakeY, local.z);
     }
 
