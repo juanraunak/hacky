@@ -39,7 +39,7 @@ const SCENES: Scene[] = [
     ms: 5000,
   },
   {
-    do: { weapon: 'shield', prompt: 'HOLD to brace — block 3', counter: 'blocks', need: 3, throwAtYou: true },
+    do: { weapon: 'shield', prompt: 'HOLD to brace — block 2', counter: 'blocks', need: 2, throwAtYou: true },
   },
   { say: 'Good. Nothing moved you. That is the whole of the first law.', ms: 3000 },
 
@@ -51,7 +51,7 @@ const SCENES: Scene[] = [
     ms: 5600,
   },
   {
-    do: { weapon: 'sword', prompt: 'HOLD to charge, release to swing — hit me 3 times', counter: 'swordHits', need: 3 },
+    do: { weapon: 'sword', prompt: 'HOLD to charge, swing — hit me twice', counter: 'swordHits', need: 2 },
   },
   { say: 'Ow. Ow. That genuinely hurts, and that is the point — you accelerated it.', ms: 3400 },
 
@@ -63,7 +63,7 @@ const SCENES: Scene[] = [
     ms: 5600,
   },
   {
-    do: { weapon: 'gun', prompt: 'FIRE 3 shots — feel yourself pushed back', counter: 'shots', need: 3 },
+    do: { weapon: 'gun', prompt: 'FIRE twice — feel the push back', counter: 'shots', need: 2 },
   },
   { say: 'You felt that. Every shot shoved you. Three laws, and you are out of time. Go.', ms: 3600 },
 ];

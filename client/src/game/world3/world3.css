@@ -646,3 +646,57 @@
   opacity: 0.3;
   filter: grayscale(1);
 }
+
+/* --- phone layout ------------------------------------------------------- */
+/* On a phone the bottom-left corner had your health bar AND the jump/run
+   buttons stacked on each other. Health moves up under the boss bar; the
+   thumbs get the bottom corners to themselves. */
+
+@media (pointer: coarse), (max-width: 820px) {
+  .you {
+    left: max(10px, env(safe-area-inset-left, 0px));
+    top: 92px;
+    bottom: auto;
+    width: min(150px, 40vw);
+  }
+
+  .you-label {
+    font-size: 15px;
+  }
+
+  .you-bar {
+    height: 13px;
+  }
+
+  .mobile-extra {
+    bottom: max(18px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .fire {
+    width: 92px;
+    height: 92px;
+    bottom: calc(max(18px, env(safe-area-inset-bottom, 0px)) + 76px);
+  }
+
+  .slots {
+    bottom: max(18px, env(safe-area-inset-bottom, 0px));
+    gap: 7px;
+  }
+
+  .slot {
+    width: 66px;
+    height: 58px;
+  }
+
+  .slot-law {
+    font-size: 8px;
+  }
+
+  .boss {
+    width: min(560px, 92vw);
+  }
+
+  .hit-text {
+    top: 30%;
+  }
+}

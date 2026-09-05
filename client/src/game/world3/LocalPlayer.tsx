@@ -216,7 +216,7 @@ export function LocalPlayer() {
       const step = resolveCollisions(local.x + local.recoilX * dt, local.z + local.recoilZ * dt);
       local.x = step.x;
       local.z = step.z;
-      const decay = Math.exp(-dt * 2.6); // let the shove carry
+      const decay = Math.exp(-dt * 5.5); // short, sharp shove
       local.recoilX *= decay;
       local.recoilZ *= decay;
       if (Math.hypot(local.recoilX, local.recoilZ) < 0.4) {

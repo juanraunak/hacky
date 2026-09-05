@@ -231,7 +231,7 @@ export function StudyPlayer() {
       // Stay in the room: a shove is a stagger, not an exit.
       local.x = Math.max(-ROOM_X + 0.8, Math.min(ROOM_X - 0.8, local.x));
       local.z = Math.max(-ROOM_Z + 0.8, Math.min(ROOM_Z - 0.8, local.z));
-      const decay = Math.exp(-dt * 2.6);
+      const decay = Math.exp(-dt * 5.5);
       local.recoilX *= decay;
       local.recoilZ *= decay;
       if (Math.hypot(local.recoilX, local.recoilZ) < 0.4) {

@@ -76,7 +76,7 @@ export function Dummies() {
     if (drill.shove) {
       const now = performance.now();
       if (now > nextShove.current) {
-        nextShove.current = now + 1250;
+        nextShove.current = now + 1000;
         throwOrb(1.7, local.x, local.z);
       }
     }

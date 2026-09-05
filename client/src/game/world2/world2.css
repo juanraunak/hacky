@@ -528,3 +528,53 @@
 .brief {
   padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
+
+/* --- phone layout ------------------------------------------------------- */
+/* The briefing panel lived at the bottom, which is exactly where the thumb
+   controls are. On a phone it moves to the top and the corners are left for
+   the weapon slots and the fire button. */
+
+@media (pointer: coarse), (max-width: 820px) {
+  .brief {
+    align-items: flex-start;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 0;
+  }
+
+  .brief-panel {
+    padding: 12px 14px 26px;
+  }
+
+  .brief-line {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .brief-law {
+    font-size: 11px;
+    padding: 6px 9px;
+  }
+
+  .brief-next {
+    padding: 8px 18px;
+    font-size: 18px;
+  }
+
+  .brief-test {
+    top: auto;
+    bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .tw-slot {
+    width: 64px;
+    height: 56px;
+  }
+
+  .tw-fire {
+    width: 92px;
+    height: 92px;
+  }
+
+  .brief-wait {
+    bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  }
+}
