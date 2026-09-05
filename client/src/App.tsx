@@ -14,6 +14,8 @@ function gameFlags() {
   return {
     reset: params.get('reset') === '1',
     cam: cam === 'first' ? ('first' as const) : cam === 'third' ? ('third' as const) : null,
+    // ?world=1 skips the lobby and drops straight into the meadow. Testing only.
+    world: params.get('world') === '1',
   };
 }
 
@@ -47,7 +49,7 @@ export default function App() {
   // Join once the subscription is live. join_room is idempotent server-side:
   // an identity that already has a row is reconnected, never duplicated.
   useEffect(() => {
-    if (!code || status !== 'connected') return;
+    if (!code || status !== 'connected' || flags.world) return;
     let live = true;
     net.connect(code).then(() => {
       if (live) net.callReducer('joinRoom', code, animalName(net.identity()));
@@ -63,6 +65,19 @@ export default function App() {
   const everHadRoom = useRef(false);
   if (hasRoom) everHadRoom.current = true;
   const disbanded = everHadRoom.current && !hasRoom;
+
+  // Straight into World 1, no lobby, no join on Juan's side. The world's own
+  // enter_world creates the room if it does not exist yet.
+  if (code && flags.world) {
+    return (
+      <World1
+        roomCode={code}
+        name={animalName(net.identity())}
+        resetOnEntry={flags.reset}
+        forcedCamera={flags.cam}
+      />
+    );
+  }
 
   const failure = hostError ?? error;
   if (failure) {
