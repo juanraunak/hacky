@@ -46,15 +46,15 @@
 }
 
 .title-screen::before, .title-screen::after { content: ''; position: absolute; z-index: -1; border: 3px solid var(--ink); border-radius: 50%; }
-.title-screen::before { width: min(78vw, 660px); aspect-ratio: 1; background: #ffd79b; }
-.title-screen::after { width: min(94vw, 800px); aspect-ratio: 1; border-width: 9px; }
+.title-screen::before { width: min(78vw, 68vh, 660px); aspect-ratio: 1; background: #ffd79b; }
+.title-screen::after { width: min(94vw, 84vh, 800px); aspect-ratio: 1; border-width: 9px; }
 .title-orbit { position: absolute; z-index: -1; border: 3px solid var(--ink); border-radius: 50%; background: #ff4d4d; }
-.title-orbit--one { width: 38px; height: 38px; transform: translate(-min(39vw, 330px), -min(25vw, 210px)); }
-.title-orbit--two { width: 22px; height: 22px; background: var(--gold); transform: translate(min(35vw, 290px), min(27vw, 220px)); }
+.title-orbit--one { width: 38px; height: 38px; transform: translate(calc(-1 * min(34vw, 300px)), calc(-1 * min(30vh, 240px))); }
+.title-orbit--two { width: 22px; height: 22px; background: var(--gold); transform: translate(min(32vw, 270px), min(32vh, 250px)); }
 .title-card { width: min(100%, 430px); text-align: center; }
 .title-kicker, .title-note { margin: 0; font-size: 14px; }
-.title-card h1 { margin: 10px 0 22px; font-family: 'Bangers', Impact, sans-serif; font-size: clamp(86px, 22vw, 142px); font-weight: 400; line-height: .72; letter-spacing: 2px; color: var(--gold); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--ink); }
-.title-copy { max-width: 310px; margin: 0 auto 24px; font-size: 16px; line-height: 1.3; }
+.title-card h1 { margin: 10px 0 22px; font-family: 'Bangers', Impact, sans-serif; font-size: clamp(64px, 17vw, 128px); font-weight: 400; line-height: .78; letter-spacing: 2px; color: var(--gold); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--ink); }
+.title-copy { max-width: 300px; margin: 0 auto 22px; font-size: 15px; line-height: 1.35; }
 .title-play { width: min(100%, 320px); padding: 14px 20px; border: 3px solid var(--ink); border-radius: 13px; box-shadow: 0 5px 0 var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; font: 400 32px/1 'Bangers', Impact, sans-serif; letter-spacing: .7px; touch-action: manipulation; }
 .title-play:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
 .title-play:focus-visible { outline: 3px solid #3aa0ff; outline-offset: 4px; }

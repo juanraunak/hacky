@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { net, useNet } from './net';
 import { useRoute, replaceWithRoom } from './routing';
-import { animalName } from './lobby/names';
+import { NamePrompt } from './lobby/NamePrompt';
+import { nameOr, readName } from './lobby/playerName';
 import Lobby from './lobby/Lobby';
 import NewtonGame from './game/NewtonGame';
 import World2 from './game/World2';
@@ -32,6 +33,7 @@ export default function App() {
   const route = useRoute();
   const [hostError, setHostError] = useState<Error | null>(null);
   const [launching, setLaunching] = useState(false);
+  const [myName, setMyName] = useState<string | null>(() => readName());
   const [homeView, setHomeView] = useState<'home' | 'games'>('home');
 
   // The title screen deliberately creates nothing until the player presses
@@ -62,7 +64,7 @@ export default function App() {
     // Only World 2: World 1 and World 3 open their own, and two connectWorld
     // calls would mean two sockets for one player.
     if (!code || status !== 'connected' || livePhase !== 'world2') return;
-    return connectWorld({ roomCode: code, name: animalName(net.identity()) });
+    return connectWorld({ roomCode: code, name: nameOr(net.identity()) });
   }, [code, status, livePhase]);
 
   // Join once the subscription is live. join_room is idempotent server-side:
@@ -71,7 +73,7 @@ export default function App() {
     if (!code || status !== 'connected' || flags.world || flags.world3) return;
     let live = true;
     net.connect(code).then(() => {
-      if (live) net.callReducer('joinRoom', code, animalName(net.identity()));
+      if (live) net.callReducer('joinRoom', code, nameOr(net.identity()));
     });
     return () => {
       live = false;
@@ -89,7 +91,7 @@ export default function App() {
   // enter_world creates the room if it does not exist yet.
   if (code && flags.world3) {
     return (
-      <World3 roomCode={code} name={animalName(net.identity())} forcedCamera={flags.cam} />
+      <World3 roomCode={code} name={nameOr(net.identity())} forcedCamera={flags.cam} />
     );
   }
 
@@ -97,11 +99,17 @@ export default function App() {
     return (
       <NewtonGame
         roomCode={code}
-        name={animalName(net.identity())}
+        name={nameOr(net.identity())}
         resetOnEntry={flags.reset}
         forcedCamera={flags.cam}
       />
     );
+  }
+
+  // Ask once, before any party is created or joined, so the name is yours and
+  // not an animal we picked for you.
+  if (!myName) {
+    return <NamePrompt identity={net.identity()} onDone={setMyName} />;
   }
 
   const failure = hostError ?? error;
@@ -139,7 +147,6 @@ export default function App() {
               <button type="button" className="title-play" onClick={() => setHomeView('games')}>
                 See current games
               </button>
-              <p className="title-note">More ways to start are coming soon</p>
             </>
           ) : (
             <div className="games-panel" aria-label="Current games">
@@ -169,7 +176,7 @@ export default function App() {
   const phase = net.room().phase;
   if (phase === 'lobby') return <Lobby version={version} />;
 
-  const who = animalName(net.identity());
+  const who = nameOr(net.identity());
 
   if (phase === 'done') {
     return (
@@ -217,7 +224,7 @@ export default function App() {
   return (
     <NewtonGame
       roomCode={code}
-      name={animalName(net.identity())}
+      name={nameOr(net.identity())}
       resetOnEntry={flags.reset}
       forcedCamera={flags.cam}
     />

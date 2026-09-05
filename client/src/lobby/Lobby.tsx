@@ -74,7 +74,10 @@ export function Lobby({ version }: LobbyProps) {
         className="lobby-disband"
         onClick={() => {
           net.callReducer(isHost ? 'disbandRoom' : 'leaveRoom');
-          if (!isHost) window.location.href = '/';
+          // Either way you land back on the home screen, not in a party.
+          window.setTimeout(() => {
+            window.location.href = '/';
+          }, 150);
         }}
       >
         {isHost ? 'Disband' : 'Leave'}
