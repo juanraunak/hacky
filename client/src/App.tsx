@@ -239,16 +239,20 @@ export default function App() {
           type="button"
           className="app-button"
           onClick={() => {
-            // Everyone goes back together, same room, same party.
             resetCombat();
             clearLaws();
-            // Drop any ?world= test flag: with one still in the URL, landing
-            // back in the lobby immediately re-entered that world.
-            window.history.replaceState({}, '', `/r/${code}`);
+            // Send the room back to the lobby for anyone still in it, then
+            // leave for the title screen. A real navigation, not a phase
+            // change: `flags` is read once at page load, so staying in the
+            // room with a ?world= flag still in it landed you straight back
+            // in that world the moment the phase became 'lobby'.
             net.callReducer('advanceWorld', 0);
+            window.setTimeout(() => {
+              window.location.href = '/';
+            }, 400);
           }}
         >
-          Back to the lobby
+          Back to the start
         </button>
       </div>
     );
