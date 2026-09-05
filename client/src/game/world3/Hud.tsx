@@ -122,7 +122,7 @@ function Downed({ at }: { at: number }) {
 
 /**
  * The pay-off, then out. Held until the apple has actually come apart, read
- * for a few beats, then a clean cut to black and back to the party screen --
+ * for a few beats, then a clean cut to black and back to the title screen --
  * nobody should have to find a button after winning.
  */
 function Victory({ at }: { at: number }) {
@@ -135,11 +135,12 @@ function Victory({ at }: { at: number }) {
       window.setTimeout(() => {
         net.callReducer('logEvent', 'finished', '');
         resetCombat();
+        // Send the room back to the lobby for anyone still in it, then leave
+        // the room entirely: beating the apple ends the run, so the way out is
+        // the title screen you started from, not the party you just finished.
         net.callReducer('advanceWorld', 0);
-        // Land on the clean room URL. A reload guarantees the party screen,
-        // with no stale flag and no phase that has not propagated yet.
         window.setTimeout(() => {
-          window.location.href = window.location.pathname;
+          window.location.href = '/';
         }, 700);
       }, 6400),
     ];
@@ -153,7 +154,7 @@ function Victory({ at }: { at: number }) {
         <div>
           <div className="victory-line">TOPIC COMPLETE</div>
           <div className="victory-sub">THE GIANT APPLE IS DOWN</div>
-          <div className="victory-next">back to your party…</div>
+          <div className="victory-next">back to the start…</div>
         </div>
       </div>
       <div className="cut" data-on={step === 2} />
