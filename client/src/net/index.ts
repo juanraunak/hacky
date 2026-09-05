@@ -205,7 +205,12 @@ function connectOnce(): Promise<DbConnection> {
 function wireTableCallbacks(connection: DbConnection): void {
   if (wired) return;
   wired = true;
-  for (const table of [connection.db.player, connection.db.monster, connection.db.room]) {
+  for (const table of [
+    connection.db.player,
+    connection.db.monster,
+    connection.db.room,
+    connection.db.boss,
+  ]) {
     table.onInsert(bump);
     table.onDelete(bump);
     table.onUpdate(bump);
@@ -239,6 +244,7 @@ function subscribeRoom(connection: DbConnection, code: string): Promise<void> {
         `SELECT * FROM player WHERE room_code = '${code}'`,
         `SELECT * FROM monster WHERE room_code = '${code}'`,
         `SELECT * FROM room WHERE code = '${code}'`,
+        `SELECT * FROM boss WHERE room_code = '${code}'`,
       ]);
   });
 
@@ -312,6 +318,15 @@ export const net = {
         return;
       case 'startGame':
         conn.reducers.startGame({ contentJson: args[0] });
+        return;
+      case 'bossReset':
+        conn.reducers.bossReset({ maxHp: args[0] });
+        return;
+      case 'bossHit':
+        conn.reducers.bossHit({ damage: args[0] });
+        return;
+      case 'bossMode':
+        conn.reducers.bossMode({ mode: args[0] });
         return;
       case 'advanceWorld':
         conn.reducers.advanceWorld({ world: args[0] });
@@ -390,6 +405,24 @@ export const net = {
   onChange(listener: () => void): () => void {
     listeners.add(listener);
     return () => listeners.delete(listener);
+  },
+
+  /** The room's shared boss, or null before the fight has been started. */
+  boss(): { hp: number; maxHp: number; down: boolean; mode: string } | null {
+    if (!conn || !subscribedCode) return null;
+    for (const row of conn.db.boss.iter()) {
+      const b = row as unknown as {
+        roomCode: string;
+        hp: number;
+        maxHp: number;
+        down: boolean;
+        mode: string;
+      };
+      if (b.roomCode === subscribedCode) {
+        return { hp: b.hp, maxHp: b.maxHp, down: b.down, mode: b.mode };
+      }
+    }
+    return null;
   },
 
   /** Monotonic counter for useSyncExternalStore. */

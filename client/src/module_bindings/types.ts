@@ -23,6 +23,16 @@ export const AppleSpec = __t.object("AppleSpec", {
 });
 export type AppleSpec = __Infer<typeof AppleSpec>;
 
+export const Boss = __t.object("Boss", {
+  roomCode: __t.string(),
+  hp: __t.i32(),
+  maxHp: __t.i32(),
+  down: __t.bool(),
+  mode: __t.string(),
+  modeSince: __t.timestamp(),
+});
+export type Boss = __Infer<typeof Boss>;
+
 export const HeldItem = __t.object("HeldItem", {
   identity: __t.identity(),
   roomCode: __t.string(),

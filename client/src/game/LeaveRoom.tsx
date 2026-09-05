@@ -15,6 +15,7 @@ export function LeaveRoom() {
   const toLobby = () => {
     resetCombat();
     clearLaws();
+    window.history.replaceState({}, '', window.location.pathname);
     net.callReducer('advanceWorld', 0);
     setConfirm(false);
   };

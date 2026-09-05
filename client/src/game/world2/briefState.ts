@@ -1,7 +1,7 @@
 // Shared flag so the camera and the player controller both know Newton has
 // the floor. Kept outside React because both read it every frame.
 
-export const briefing = { active: true };
+export const briefing = { active: false }; // the rig owns the camera, always
 
 /** True only during the shield drill, when something is thrown at you. */
 export const drill = { shove: false };

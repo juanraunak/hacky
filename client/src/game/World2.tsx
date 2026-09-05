@@ -11,7 +11,6 @@ import { StudyPlayer } from './world2/StudyPlayer';
 import { StudyHud } from './world2/StudyHud';
 import { Briefing } from './world2/Briefing';
 import { TouchWeapons } from './world2/TouchWeapons';
-import { BriefCam } from './world2/BriefCam';
 import { Dummies } from './world2/Dummies';
 import { MeleeRing } from '../game/world3/MeleeRing';
 import { ShotsView } from '../game/world3/ShotsView';
@@ -69,7 +68,6 @@ export default function World2() {
         <Portal />
         <RemotePlayers groundY={FLOOR} />
         <StudyPlayer />
-        <BriefCam />
         <Dummies />
         <MeleeRing />
         <ShotsView />

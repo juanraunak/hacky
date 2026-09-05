@@ -35,6 +35,9 @@ import {
 
 // Import all reducer arg schemas
 import AdvanceWorldReducer from "./advance_world_reducer";
+import BossHitReducer from "./boss_hit_reducer";
+import BossModeReducer from "./boss_mode_reducer";
+import BossResetReducer from "./boss_reset_reducer";
 import ClearStudyReducer from "./clear_study_reducer";
 import CreateRoomReducer from "./create_room_reducer";
 import DisbandRoomReducer from "./disband_room_reducer";
@@ -58,6 +61,7 @@ import SwingReducer from "./swing_reducer";
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import BossRow from "./boss_table";
 import HeldItemRow from "./held_item_table";
 import MonsterRow from "./monster_table";
 import PlayerRow from "./player_table";
@@ -70,6 +74,17 @@ import WorldEventRow from "./world_event_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  boss: __table({
+    name: 'boss',
+    indexes: [
+      { accessor: 'room_code', name: 'boss_room_code_idx_btree', algorithm: 'btree', columns: [
+        'roomCode',
+      ] },
+    ],
+    constraints: [
+      { name: 'boss_room_code_key', constraint: 'unique', columns: ['roomCode'] },
+    ],
+  }, BossRow),
   heldItem: __table({
     name: 'held_item',
     indexes: [
@@ -170,6 +185,9 @@ const tablesSchema = __schema({
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
   __reducerSchema("advance_world", AdvanceWorldReducer),
+  __reducerSchema("boss_hit", BossHitReducer),
+  __reducerSchema("boss_mode", BossModeReducer),
+  __reducerSchema("boss_reset", BossResetReducer),
   __reducerSchema("clear_study", ClearStudyReducer),
   __reducerSchema("create_room", CreateRoomReducer),
   __reducerSchema("disband_room", DisbandRoomReducer),

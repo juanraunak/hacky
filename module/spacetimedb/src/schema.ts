@@ -84,6 +84,19 @@ const spacetimedb = schema({
 
   // What a player is carrying. One row per player; a world item (the apple)
   // is carried by at most one player in a room.
+  // One boss per room. Additive, so it auto-migrates.
+  boss: table(
+    { public: true },
+    {
+      room_code: t.string().primaryKey(),
+      hp: t.i32(),
+      max_hp: t.i32(),
+      down: t.bool(),
+      mode: t.string(),
+      mode_since: t.timestamp(),
+    }
+  ),
+
   held_item: table(
     { public: true },
     {

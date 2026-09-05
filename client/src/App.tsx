@@ -212,6 +212,9 @@ export default function App() {
             // Everyone goes back together, same room, same party.
             resetCombat();
             clearLaws();
+            // Drop any ?world= test flag: with one still in the URL, landing
+            // back in the lobby immediately re-entered that world.
+            window.history.replaceState({}, '', `/r/${code}`);
             net.callReducer('advanceWorld', 0);
           }}
         >

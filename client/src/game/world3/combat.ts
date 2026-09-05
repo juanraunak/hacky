@@ -6,6 +6,7 @@
 import { useSyncExternalStore } from 'react';
 import { local } from '../world1/local';
 import { useWorld } from '../world1/store';
+import { net } from '../../net';
 import { APPLE_RADIUS, applePos, groundHeight } from './layout';
 import { fireBullet } from './projectiles';
 import {
@@ -127,6 +128,23 @@ export function phaseOf(hp: number): number {
 }
 
 /** Party size drives both the pool and the pressure. */
+/** Adopt the server's boss: health, death and phase are shared. */
+export function syncBoss() {
+  const b = net.boss();
+  if (!b) return;
+  const changed =
+    b.hp !== state.hp || b.maxHp !== state.maxHp || b.down !== state.down || b.mode !== state.mode;
+  state.hp = b.hp;
+  state.maxHp = b.maxHp;
+  if (b.down && !state.down) state.downAt = performance.now();
+  state.down = b.down;
+  if (b.mode === 'charging' || b.mode === 'stunned' || b.mode === 'airborne') {
+    if (b.mode !== state.mode) state.modeSince = performance.now();
+    state.mode = b.mode;
+  }
+  if (changed) emit();
+}
+
 export function syncPartySize() {
   const n = Math.max(1, Object.keys(useWorld.getState().party).length);
   if (n === state.players) return;
@@ -142,13 +160,29 @@ export function markLanded() {
   state.landed = true;
   state.modeSince = performance.now();
   syncPartySize();
+  // One client starts the shared pool; the rest simply adopt it.
+  if (isDriver() && !net.boss()) net.callReducer('bossReset', state.maxHp);
   emit();
+}
+
+/**
+ * The lowest identity in the room drives the state machine and tells the
+ * server. Everyone else follows what the server says, so the party is never
+ * told to use two different laws at once.
+ */
+export function isDriver(): boolean {
+  const party = useWorld.getState().party;
+  const me = useWorld.getState().identity;
+  if (!me) return false;
+  const live = Object.keys(party).filter(id => party[id]?.connected).sort();
+  return live.length === 0 || live[0] === me;
 }
 
 export function setMode(mode: BossMode) {
   state.mode = mode;
   state.modeSince = performance.now();
   state.charging = false;
+  if (isDriver()) net.callReducer('bossMode', mode);
   emit();
 }
 
@@ -166,6 +200,7 @@ export function setMode(mode: BossMode) {
 export function tickBoss(now: number) {
   // It waits, hovering, until the party has gathered all three laws.
   if (!state.landed || state.down || state.owned.length < 3) return;
+  if (!isDriver()) return; // followers take the mode from the server
   const held = now - state.modeSince;
   if (held > MODE_MS[state.mode] / aggressionFor(state.players)) {
     if (state.mode === 'charging') setMode('airborne');
@@ -222,12 +257,12 @@ function land(weapon: WeaponId, chargeScale = 1): Effect {
   const effect = MATRIX[state.mode][weapon];
   const dmg = Math.round(WEAPON_DAMAGE[weapon][effect] * chargeScale);
   if (dmg > 0) {
-    state.hp = Math.max(0, state.hp - dmg);
     state.hits++;
-    if (state.hp === 0 && !state.down) {
-      state.down = true;
-      state.downAt = performance.now();
-    }
+    // One boss for the whole party: the damage goes to the server and the
+    // bar everyone sees is whatever comes back.
+    net.callReducer('bossHit', dmg);
+    // Predict locally so the hit feels instant; syncBoss corrects it.
+    state.hp = Math.max(0, state.hp - dmg);
   }
   state.feedback = { effect, weapon, mode: state.mode, at: performance.now() };
   emit();
@@ -416,6 +451,7 @@ export function installAttackInput(): () => void {
     if (holding) setSwordCharge((performance.now() - heldSince) / SWORD_CHARGE_MS);
     tickBoss(performance.now());
     syncPartySize();
+    syncBoss();
   }, 90);
 
   window.addEventListener('keydown', key);

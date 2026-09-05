@@ -5,6 +5,7 @@
 export * from './connection';
 export * from './game';
 export * from './world';
+export * from './boss';
 
 // The entry file must expose the schema as the default export.
 export { default } from './schema';
