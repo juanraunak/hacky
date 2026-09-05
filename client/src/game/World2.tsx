@@ -8,6 +8,8 @@ import { StudyNewton } from './world2/StudyNewton';
 import { Notebook, Portal } from './world2/Portal';
 import { DropTest } from './world2/DropTest';
 import { Fight } from './world2/Fight';
+import { Armoury } from './world2/Armoury';
+import { Practice } from './world2/Practice';
 import { StudyPlayer } from './world2/StudyPlayer';
 import { StudyHud } from './world2/StudyHud';
 import { Director } from './world2/Director';
@@ -60,6 +62,8 @@ export default function World2() {
         <Portal />
         <DropTest />
         <Fight />
+        <Armoury />
+        <Practice />
         <RemotePlayers groundY={FLOOR} />
         <StudyPlayer />
         <Director />

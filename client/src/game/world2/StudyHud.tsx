@@ -13,6 +13,7 @@ import {
 import { fireWorldEvent, resetWorld } from '../world1/sync';
 import { useStudy } from './studyStore';
 import { STONE_ITEM_ID, FEATHER_ITEM_ID } from './DropTest';
+import { SWORD_BITE } from './laws';
 
 function PenIcon() {
   return (
@@ -46,7 +47,13 @@ export function StudyHud() {
   const done = useWorld(s => s.events[FIGHT_DONE]);
   const holding = useWorld(s => (s.identity ? (s.held[s.identity] ?? null) : null));
   const hitAt = useStudy(s => s.hitAt);
+  const nothingAt = useStudy(s => s.nothingAt);
+  const braceAt = useStudy(s => s.braceAt);
+  const charge = useStudy(s => s.charge);
+  const bracing = useStudy(s => s.bracing);
   const [flash, setFlash] = useState(false);
+  const [nothing, setNothing] = useState(false);
+  const [held, setHeld] = useState(false);
   const [locked, setLocked] = useState(false);
 
   useEffect(() => {
@@ -62,6 +69,22 @@ export function StudyHud() {
     return () => window.clearTimeout(t);
   }, [hitAt]);
 
+  // A swing with no wind-up behind it. Grey, and deliberately unsatisfying.
+  useEffect(() => {
+    if (!nothingAt) return;
+    setNothing(true);
+    const t = window.setTimeout(() => setNothing(false), 620);
+    return () => window.clearTimeout(t);
+  }, [nothingAt]);
+
+  // You stood through something that was going to move you.
+  useEffect(() => {
+    if (!braceAt) return;
+    setHeld(true);
+    const t = window.setTimeout(() => setHeld(false), 620);
+    return () => window.clearTimeout(t);
+  }, [braceAt]);
+
   const first = mode === 'first' && !isTouch;
   const paused = !!portal && !ready && !done;
   const label = heldLabel(holding);
@@ -76,6 +99,17 @@ export function StudyHud() {
       )}
 
       {flash && <div className="hit-flash">HIT</div>}
+      {nothing && <div className="hit-flash hit-flash--nothing">…nothing</div>}
+      {held && <div className="hit-flash hit-flash--held">HELD</div>}
+
+      {/* The wind-up. Below the notch a swing carries no force worth having. */}
+      {charge > 0.02 && (
+        <div className="charge">
+          <div className="charge-fill" style={{ width: `${Math.round(charge * 100)}%` }} />
+          <div className="charge-notch" style={{ left: `${SWORD_BITE * 100}%` }} />
+        </div>
+      )}
+      {bracing && <div className="brace">BRACED</div>}
 
       {label && (
         <div className="held-item held-item--label">

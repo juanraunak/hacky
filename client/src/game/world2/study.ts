@@ -37,6 +37,14 @@ export const PORTAL_MOUTH = { x: PORTAL.x, y: 2.1, z: PORTAL.z - 0.6 } as const;
 
 export const NOTEBOOK = { x: ROOM_X - 0.32, y: 2.6, z: -1.5 } as const;
 
+// Wall torches over the open half of the room. Unlit while this is a study;
+// they catch when the portal opens, which is when that end starts to matter.
+export const TORCHES: [number, number][] = [
+  [-ROOM_X + 0.5, 4.2],
+  [ROOM_X - 0.5, 4.2],
+];
+export const TORCH_Y = 3.1;
+
 // Where Newton stands to explain a thing. He walks to the thing he is
 // explaining, because that is what a man explaining something does.
 export const STATIONS: Record<string, { x: number; z: number }> = {
@@ -45,6 +53,8 @@ export const STATIONS: Record<string, { x: number; z: number }> = {
   floor: { x: -0.6, z: -1.6 },
   notebook: { x: ROOM_X - 2.4, z: -1.5 },
   aside: { x: -5.2, z: 1.6 },
+  rack: { x: -7.4, z: 0.2 },
+  cellar: { x: 6.8, z: 3.4 },
 };
 
 export const NEWTON_WALK_SPEED = 1.7;
@@ -72,6 +82,60 @@ export function newtonRoute(x: number, z: number): { x: number; z: number }[] {
   ];
 }
 export const BOOKSHELF = { x: -ROOM_X + 0.45, z: -1.0 } as const;
+/** Where the bookshelf ends up once it has slid aside. */
+export const BOOKSHELF_OPEN_Z = 4.6;
+/** Its live z, so collision follows it as it moves. Written every frame. */
+export const shelf: { z: number } = { z: BOOKSHELF.z };
+
+// The weapon rack behind the bookshelf: three rows along the same wall.
+export const RACK = { x: -ROOM_X + 0.62 } as const;
+export const RACK_ROWS: Record<string, { z0: number; z1: number; y: number }> = {
+  shield: { z0: -3.3, z1: -1.6, y: 1.5 },
+  sword: { z0: -0.9, z1: 0.9, y: 1.4 },
+  gun: { z0: 1.6, z1: 3.3, y: 1.25 },
+};
+
+// --- the practice floor ---------------------------------------------------
+// Two things to try the laws on. Neither is a target in a menu; they are
+// objects in the room that behave the way the laws say they behave.
+
+/** An oak post. A tap will not mark it. An accelerated blade will. */
+export const POST = { x: 3.0, z: 0.4 } as const;
+export const POST_H = 1.9;
+export const POST_R = 0.3;
+
+/** A sandbag on a beam, swinging. It has momentum and does not care. */
+export const PENDULUM = { x: 0, z: 5.2 } as const;
+export const PENDULUM_ARM = 2.4;
+export const PENDULUM_PERIOD_MS = 3400;
+export const PENDULUM_BOB_R = 0.38;
+/** Hung from the ceiling beams, so nothing stands in the middle of the room. */
+export const PENDULUM_PIVOT_Y = 4.6;
+
+/** Where the bob is, and how fast it is going, at a given moment. */
+export function pendulumAt(ms: number): {
+  x: number;
+  y: number;
+  z: number;
+  speed: number;
+  vx: number;
+} {
+  const phase = (ms / PENDULUM_PERIOD_MS) * Math.PI * 2;
+  const angle = Math.sin(phase) * 0.85;
+  return {
+    x: PENDULUM.x + Math.sin(angle) * PENDULUM_ARM,
+    y: PENDULUM_PIVOT_Y - Math.cos(angle) * PENDULUM_ARM,
+    z: PENDULUM.z,
+    speed: Math.abs(Math.cos(phase)),
+    vx: Math.sign(Math.cos(phase)) || 1,
+  };
+}
+
+// The way down. Appears on the far side wall once the fight is over, and
+// stays barred until every last person is holding something.
+export const CELLAR = { x: ROOM_X - 0.28, z: 3.6 } as const;
+export const CELLAR_W = 2.0;
+export const CELLAR_H = 3.1;
 
 export const PLAYER_RADIUS = 0.45;
 export const WALK_SPEED = 4.2;
@@ -88,15 +152,16 @@ export interface Box {
 }
 
 // Things you cannot walk through. Rectangles, because a study is rectangles.
+// The bookshelf is not in the list because it slides; it is added live.
 export const BLOCKERS: Box[] = [
   { x: DESK.x, z: DESK.z, hx: DESK_W / 2 + 0.2, hz: DESK_D / 2 + 0.2 },
-  { x: BOOKSHELF.x, z: BOOKSHELF.z, hx: 0.5, hz: 2.6 },
 ];
 
 export function resolveStudy(x: number, z: number): { x: number; z: number } {
   let px = x;
   let pz = z;
-  for (const b of BLOCKERS) {
+  const boxes = [...BLOCKERS, { x: BOOKSHELF.x, z: shelf.z, hx: 0.5, hz: 2.6 }];
+  for (const b of boxes) {
     const dx = px - b.x;
     const dz = pz - b.z;
     const ox = b.hx + PLAYER_RADIUS - Math.abs(dx);

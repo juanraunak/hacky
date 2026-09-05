@@ -8,27 +8,39 @@ import { useCallback, useEffect, useRef } from 'react';
 import {
   AFTER_WAVE_2,
   BEFORE_FIGHT,
+  CELLAR,
   DONE,
   ENTRY,
   FEATHER,
+  GUN,
+  NOTE_BRACE,
   NOTE_NOT_FASTER,
+  NOTE_RECOIL,
   NOTE_SAME_FALL,
+  NOTE_WINDUP,
   PEN,
   PORTAL,
+  RACK,
+  SHIELD,
   STATION,
   STONE,
   STONE_NOTE,
+  SWORD,
   type Beat,
 } from './story2';
 import { STATIONS } from './study';
 import {
+  CELLAR_OPEN,
   FEATHER_DROPPED,
   FIGHT_DONE,
   FIGHT_READY,
+  GUN_ITEM,
   PEN_DROPPED,
   PORTAL_OPEN,
+  SHIELD_ITEM,
   STONE_DROPPED,
   STUDY_ENTERED,
+  SWORD_ITEM,
   useWorld,
 } from '../world1/store';
 import { fireWorldEvent } from '../world1/sync';
@@ -48,6 +60,8 @@ export function Director() {
   const ready = useWorld(s => s.events[FIGHT_READY]);
   const done = useWorld(s => s.events[FIGHT_DONE]);
   const apples = useWorld(s => s.apples);
+  const cellar = useWorld(s => s.events[CELLAR_OPEN]);
+  const mine = useWorld(s => (s.identity ? (s.held[s.identity] ?? null) : null));
   const notedWave2 = useRef(false);
 
   /** Walk there now, start talking once he has had time to arrive. */
@@ -133,8 +147,37 @@ export function Director() {
 
   useEffect(() => {
     if (!done || Date.now() - done.firedAt > STALE_MS) return;
-    return perform(DONE, 1600);
+    const stopA = perform(DONE, 1600);
+    // Then he walks to the wall the bookshelf just left, and gives up.
+    const stopB = perform(RACK, 15000);
+    return () => {
+      stopA();
+      stopB();
+    };
   }, [done, perform]);
+
+  // Whatever you took off the rack, he explains the law it is. The line only
+  // plays for the person who took it; the rest are getting their own.
+  useEffect(() => {
+    if (!mine) return;
+    if (mine === SHIELD_ITEM) {
+      useStudy.getState().addNote(NOTE_BRACE);
+      return perform(SHIELD, 500);
+    }
+    if (mine === SWORD_ITEM) {
+      useStudy.getState().addNote(NOTE_WINDUP);
+      return perform(SWORD, 500);
+    }
+    if (mine === GUN_ITEM) {
+      useStudy.getState().addNote(NOTE_RECOIL);
+      return perform(GUN, 500);
+    }
+  }, [mine, perform]);
+
+  useEffect(() => {
+    if (!cellar || Date.now() - cellar.firedAt > STALE_MS) return;
+    return perform(CELLAR, 600);
+  }, [cellar, perform]);
 
   return null;
 }

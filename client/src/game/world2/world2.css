@@ -136,3 +136,61 @@
   opacity: 0.45;
   font-style: normal;
 }
+
+/* --- the three laws, on screen ------------------------------------------ */
+
+.hit-flash--nothing {
+  color: #8a8a9a;
+  font-size: 46px;
+}
+
+.hit-flash--held {
+  color: #4be36b;
+  font-size: 58px;
+}
+
+/* The sword's wind-up. The notch is where a tap becomes a blow. */
+.charge {
+  position: absolute;
+  left: 50%;
+  bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 88px));
+  transform: translateX(-50%);
+  width: min(240px, 56vw);
+  height: 20px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--ink);
+  overflow: hidden;
+}
+
+.charge-fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 60ms linear;
+}
+
+.charge-notch {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--ink);
+}
+
+.brace {
+  position: absolute;
+  left: 50%;
+  bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 88px));
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  background: #4be36b;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ink);
+  font-family: var(--font-shout);
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 1px;
+}

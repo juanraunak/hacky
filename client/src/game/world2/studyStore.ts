@@ -19,6 +19,14 @@ export interface StudyState {
   /** How many apples have got through to you. */
   timesHit: number;
   swingAt: number;
+  /** 0 to 1 wind-up on the sword, for the charge bar. */
+  charge: number;
+  /** Feet set, shield up. */
+  bracing: boolean;
+  /** performance.now() of the last swing that bounced off. */
+  nothingAt: number;
+  /** performance.now() of the last hit you stood through. */
+  braceAt: number;
 
   /** Say a whole beat. Later lines wait for the earlier ones to finish. */
   say: (...lines: string[]) => void;
@@ -32,6 +40,10 @@ export interface StudyState {
   markHit: () => void;
   markThump: () => number;
   markSwing: () => void;
+  setCharge: (v: number) => void;
+  setBracing: (v: boolean) => void;
+  markNothing: () => void;
+  markBrace: () => void;
 }
 
 export const useStudy = create<StudyState>((set, get) => ({
@@ -43,6 +55,10 @@ export const useStudy = create<StudyState>((set, get) => ({
   hitAt: 0,
   timesHit: 0,
   swingAt: 0,
+  charge: 0,
+  bracing: false,
+  nothingAt: 0,
+  braceAt: 0,
 
   say: (...lines) => {
     const [first, ...rest] = lines.filter(Boolean);
@@ -67,4 +83,13 @@ export const useStudy = create<StudyState>((set, get) => ({
     return timesHit;
   },
   markSwing: () => set({ swingAt: performance.now() }),
+  // Called from the frame loop, so only write when it actually moved.
+  setCharge: v => {
+    if (Math.abs(get().charge - v) > 0.04 || (v === 0 && get().charge !== 0)) set({ charge: v });
+  },
+  setBracing: v => {
+    if (get().bracing !== v) set({ bracing: v });
+  },
+  markNothing: () => set({ nothingAt: performance.now() }),
+  markBrace: () => set({ braceAt: performance.now() }),
 }));

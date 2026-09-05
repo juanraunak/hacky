@@ -22,7 +22,6 @@ import {
   STUDY_WALL_DARK,
 } from '../world1/palette';
 import {
-  BOOKSHELF,
   CANDLES,
   CANDLE_Y,
   DESK,
@@ -31,6 +30,8 @@ import {
   DESK_W,
   ROOM_X,
   ROOM_Z,
+  TORCHES,
+  TORCH_Y,
   WALL_H,
   WALL_T,
 } from './study';
@@ -215,60 +216,6 @@ function Desk() {
   );
 }
 
-function Bookshelf() {
-  const books = useMemo(() => {
-    const random = rng(5150);
-    const out: { z: number; y: number; h: number; w: number; colour: string }[] = [];
-    for (let shelf = 0; shelf < 4; shelf++) {
-      let z = BOOKSHELF.z - 2.2;
-      while (z < BOOKSHELF.z + 2.2) {
-        const w = 0.12 + random() * 0.08;
-        out.push({
-          z: z + w / 2,
-          y: 0.55 + shelf * 1.02,
-          h: 0.46 + random() * 0.3,
-          w,
-          colour: BOOK_COLOURS[Math.floor(random() * BOOK_COLOURS.length)],
-        });
-        z += w + 0.015;
-      }
-    }
-    return out;
-  }, []);
-
-  return (
-    <group position={[BOOKSHELF.x, 0, BOOKSHELF.z]}>
-      <Part
-        color={STUDY_BEAM}
-        position={[0.05, 2.2, 0]}
-        scale={[0.6, 4.4, 5.0]}
-        outline={0.02}
-        receiveShadow
-      />
-      {[0.5, 1.52, 2.54, 3.56, 4.3].map(y => (
-        <Part
-          key={y}
-          color={DESK_WOOD}
-          position={[0.12, y, 0]}
-          scale={[0.62, 0.1, 4.9]}
-          outline={0.03}
-          castShadow={false}
-        />
-      ))}
-      {books.map((b, i) => (
-        <Part
-          key={i}
-          color={b.colour}
-          position={[0.2, b.y + b.h / 2, b.z - BOOKSHELF.z]}
-          scale={[0.3, b.h, b.w]}
-          outline={0.06}
-          castShadow={false}
-        />
-      ))}
-    </group>
-  );
-}
-
 // Two candles, and the only real light in the room. They gutter when the
 // portal opens and steady again when it closes.
 function Candles() {
@@ -328,13 +275,68 @@ function Candles() {
   );
 }
 
+// Two brackets on the side walls. Dead while this is a study; they catch
+// when the portal opens and the far half of the room becomes somewhere you
+// have to see. Orange, flickering, no shadows: the candles do the shape.
+function Torches() {
+  const lights = useRef<(THREE.PointLight | null)[]>([null, null]);
+  const flames = useRef<(THREE.Group | null)[]>([null, null]);
+  const lit = useWorld(s => !!s.events[PORTAL_OPEN]);
+
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    for (let i = 0; i < 2; i++) {
+      const flicker = 0.8 + Math.sin(t * (7 + i * 2.3) + i) * 0.13 + Math.sin(t * 19 + i) * 0.07;
+      const light = lights.current[i];
+      if (light) light.intensity = lit ? 11 * flicker : 0;
+      const flame = flames.current[i];
+      if (flame) {
+        flame.visible = lit;
+        flame.scale.set(1, 0.8 + flicker * 0.35, 1);
+      }
+    }
+  });
+
+  return (
+    <group>
+      {TORCHES.map(([x, z], i) => (
+        <group key={i} position={[x, TORCH_Y, z]}>
+          <Part
+            color={STUDY_BEAM}
+            position={[x > 0 ? -0.18 : 0.18, -0.16, 0]}
+            rotation={[0, 0, x > 0 ? 0.5 : -0.5]}
+            scale={[0.14, 0.5, 0.14]}
+            outline={0.12}
+            castShadow={false}
+          />
+          <group ref={el => { flames.current[i] = el; }} position={[x > 0 ? -0.3 : 0.3, 0.18, 0]}>
+            <mesh
+              geometry={GEO.cone}
+              material={basicMaterial(CANDLE_FLAME)}
+              scale={[0.13, 0.36, 0.13]}
+            />
+          </group>
+          <pointLight
+            ref={el => { lights.current[i] = el; }}
+            position={[x > 0 ? -0.5 : 0.5, 0.2, 0]}
+            color="#ffa347"
+            intensity={0}
+            distance={22}
+            decay={1.5}
+          />
+        </group>
+      ))}
+    </group>
+  );
+}
+
 export function StudyRoom() {
   return (
     <group>
       <Shell />
       <Desk />
-      <Bookshelf />
       <Candles />
+      <Torches />
     </group>
   );
 }

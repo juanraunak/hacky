@@ -13,11 +13,46 @@ import * as THREE from 'three';
 import { Kid, type KidAnim } from '../world1/Character';
 import { lookFor } from '../world1/palette';
 import { EYE_HEIGHT, WALK_SPEED, resolveStudy, studySpawn } from './study';
-import { consumeLook, consumeTaps, input, interactables, local } from '../world1/local';
-import { FIGHT_DONE, FIGHT_READY, PEN_ITEM, PORTAL_OPEN, useWorld } from '../world1/store';
-import { dropItem, movePlayer, pickUpItem } from '../world1/sync';
+import {
+  beginHold,
+  consumeLook,
+  consumeRelease,
+  consumeTaps,
+  endHold,
+  holdMs,
+  input,
+  interactables,
+  local,
+} from '../world1/local';
+import {
+  FIGHT_DONE,
+  FIGHT_READY,
+  GUN_ITEM,
+  PEN_ITEM,
+  PORTAL_OPEN,
+  SHIELD_ITEM,
+  SWORD_ITEM,
+  isWeapon,
+  useWorld,
+} from '../world1/store';
+import { dropItem, equipItem, movePlayer, pickUpItem } from '../world1/sync';
 import { dropEventFor, fireDrop, isDroppable } from './DropTest';
 import { useStudy } from './studyStore';
+import {
+  BOB_RADIUS,
+  BRACE_MS,
+  GUN_COOLDOWN_MS,
+  RECOIL,
+  RECOIL_MS,
+  SHOVE,
+  SHOVE_MS,
+  SWORD_REACH,
+  bites,
+  chargeOf,
+} from './laws';
+import { POST, POST_R, pendulumAt } from './study';
+import { beginPush, chipPost, fireBolt, pushDistance, stepBolts, stepPush } from './combat';
+import { thud } from './sound';
 
 const TP_TARGET_HEIGHT = 1.35;
 const TP_DISTANCE = 5.2;
@@ -58,6 +93,8 @@ export function StudyPlayer() {
   const camInit = useRef(false);
   const lastSent = useRef({ x: NaN, z: NaN, h: NaN });
   const placed = useRef(false);
+  const lastBob = useRef(0);
+  const lastShot = useRef(0);
 
   // Everyone lands in a loose arc facing the desk. Ordered by identity so the
   // party does not shuffle between clients.
@@ -93,18 +130,27 @@ export function StudyPlayer() {
     const up = (e: KeyboardEvent) => input.keys.delete(e.code);
     const blur = () => input.keys.clear();
     // Pointer locked: the crosshair is the finger, so a click is a tap.
-    const click = () => {
+    // A click is a tap. Holding the button is a wind-up or a brace, so the
+    // press and the release are both events, not just the press.
+    const press = (e: MouseEvent) => {
+      if (e.button !== 0) return;
       if (document.pointerLockElement) input.taps.push({ x: 0, y: 0 });
+      beginHold();
+    };
+    const release = (e: MouseEvent) => {
+      if (e.button === 0) endHold();
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     window.addEventListener('blur', blur);
-    document.addEventListener('mousedown', click);
+    document.addEventListener('mousedown', press);
+    document.addEventListener('mouseup', release);
     return () => {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
       window.removeEventListener('blur', blur);
-      document.removeEventListener('mousedown', click);
+      document.removeEventListener('mousedown', press);
+      document.removeEventListener('mouseup', release);
     };
   }, []);
 
@@ -182,6 +228,7 @@ export function StudyPlayer() {
 
     // --- camera ---------------------------------------------------------
     const now = performance.now();
+    const store = s;
     let shakeX = 0;
     let shakeY = 0;
     if (now < s.shakeUntil) {
@@ -212,38 +259,115 @@ export function StudyPlayer() {
       camera.lookAt(local.x + shakeX, TP_TARGET_HEIGHT + shakeY, local.z);
     }
 
+    // --- the three laws ---------------------------------------------------
+    const study = useStudy.getState();
+    const mine = s.identity ? (s.held[s.identity] ?? null) : null;
+    const done = s.events[FIGHT_DONE];
+    stepBolts(dt);
+
+    // A push in progress moves you whatever you are doing about it. That is
+    // rather the point of both the recoil and the sandbag.
+    const shove = stepPush(dt, pushDistance.value);
+    if (shove.x !== 0 || shove.z !== 0) {
+      const moved = resolveStudy(local.x + shove.x, local.z + shove.z);
+      local.x = moved.x;
+      local.z = moved.z;
+    }
+
+    // FIRST LAW — set your feet and the forces cancel, so nothing happens
+    // to you. Stand there and the sandbag keeps its motion, through you.
+    const bracing = mine === SHIELD_ITEM && holdMs() > BRACE_MS;
+    study.setBracing(bracing);
+    if (done && !paused) {
+      const bob = pendulumAt(performance.now() - done.receivedAt);
+      const reach = Math.hypot(bob.x - local.x, bob.z - local.z);
+      if (reach < BOB_RADIUS && bob.speed > 0.3 && now - lastBob.current > 900) {
+        lastBob.current = now;
+        if (bracing) {
+          store.shake(0.12, 240);
+          thud(1.2);
+          study.markBrace();
+        } else {
+          beginPush(bob.vx, 0, SHOVE_MS, SHOVE);
+          store.shake(0.34, 520);
+          thud(1);
+        }
+      }
+    }
+
+    // The wind-up, for the bar on screen.
+    study.setCharge(mine === SWORD_ITEM ? chargeOf(holdMs()) : 0);
+
+    const releasedMs = consumeRelease();
+    if (releasedMs > 0 && !paused) {
+      // SECOND LAW — the damage is the acceleration you gave the blade, so a
+      // flick slides off oak and a proper swing takes a chip out of it.
+      if (mine === SWORD_ITEM) {
+        const charge = chargeOf(releasedMs);
+        const tipX = local.x + Math.sin(local.heading) * SWORD_REACH;
+        const tipZ = local.z + Math.cos(local.heading) * SWORD_REACH;
+        if (Math.hypot(tipX - POST.x, tipZ - POST.z) < POST_R + 1.0) {
+          if (bites(charge)) {
+            chipPost();
+            study.markHit();
+            store.shake(0.16 + charge * 0.12, 300);
+            thud(1.6);
+          } else {
+            study.markNothing();
+            store.shake(0.04, 140);
+            thud(0.35);
+          }
+        }
+      }
+
+      // THIRD LAW — send something that fast away from you and it sends you
+      // the other way. The kick is the mechanic, not decoration.
+      if (mine === GUN_ITEM && now - lastShot.current > GUN_COOLDOWN_MS) {
+        lastShot.current = now;
+        const sx = Math.sin(local.heading);
+        const sz = Math.cos(local.heading);
+        fireBolt(local.x + sx * 0.6, 1.25, local.z + sz * 0.6, local.heading);
+        beginPush(-sx, -sz, RECOIL_MS, RECOIL);
+        store.shake(0.22, 280);
+        thud(1.7);
+      }
+    }
+
     // --- taps -------------------------------------------------------------
     const taps = consumeTaps();
     if (!taps.length || paused) return;
-    const mine = s.identity ? s.held[s.identity] : null;
 
     for (const tap of taps) {
       // 1. Carrying something off the desk that has not been dropped yet?
-      //    Let go of it. Once its drop has happened the pen is kit, and a tap
-      //    means something else.
+      //    Let go. Once its drop has happened it is kit, not a thing to fumble.
       if (mine && isDroppable(mine) && !s.events[dropEventFor(mine)]) {
         dropItem();
         fireDrop(mine);
         break;
       }
-      // 2. Pen in hand? Swing it. Swinging at nothing is allowed.
-      if (mine === PEN_ITEM) {
-        useStudy.getState().markSwing();
-        continue;
+
+      // 2. Whatever the tap landed on: a weapon off the rack, or a desk item.
+      let took = false;
+      if (interactables.size) {
+        raycaster.setFromCamera(new THREE.Vector2(tap.x, tap.y), camera);
+        const hit = raycaster.intersectObjects([...interactables], true)[0];
+        if (hit) {
+          let o: THREE.Object3D | null = hit.object;
+          while (o && !o.userData.interact) o = o.parent;
+          const what = o?.userData.interact as string | undefined;
+          const near = Math.hypot(hit.point.x - local.x, hit.point.z - local.z);
+          if (what && isWeapon(what) && near < 5) {
+            equipItem(what);
+            took = true;
+          } else if (what && isDroppable(what) && !s.events[dropEventFor(what)] && near < 3.2) {
+            pickUpItem(what);
+            took = true;
+          }
+        }
       }
-      // 3. Otherwise, pick up whatever is under the tap.
-      if (!interactables.size) continue;
-      raycaster.setFromCamera(new THREE.Vector2(tap.x, tap.y), camera);
-      const hit = raycaster.intersectObjects([...interactables], true)[0];
-      if (!hit) continue;
-      let o: THREE.Object3D | null = hit.object;
-      while (o && !o.userData.interact) o = o.parent;
-      const what = o?.userData.interact as string | undefined;
-      if (!what || !isDroppable(what)) continue;
-      if (s.events[dropEventFor(what)]) continue; // already dropped
-      const near = Math.hypot(hit.point.x - local.x, hit.point.z - local.z);
-      if (near > 3.2) continue;
-      pickUpItem(what);
+
+      // 3. Nothing to take, pen in hand: swing it.
+      if (!took && mine === PEN_ITEM) study.markSwing();
     }
   });
 

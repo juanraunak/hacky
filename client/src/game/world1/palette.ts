@@ -116,3 +116,6 @@ export const PORTAL_FRAME = '#6f6f80';
 export const PORTAL_DEEP = '#4a0a12';
 export const PORTAL_MID = '#8f1420';
 export const PORTAL_EDGE = '#c21f2e';
+
+// World 2 armoury
+export const FUTURE_BOLT = '#2fd6c4';

@@ -131,6 +131,7 @@ export interface PartProps {
   scale?: number | [number, number, number];
   castShadow?: boolean;
   receiveShadow?: boolean;
+  visible?: boolean;
   children?: ReactNode;
 }
 
@@ -144,13 +145,14 @@ export function Part({
   scale = 1,
   castShadow = true,
   receiveShadow = false,
+  visible = true,
   children,
 }: PartProps) {
   const mat = toonMaterial(color);
   const geo = flat ? flatGeometry(geometry) : geometry;
   const hull = 1 + outline;
   return (
-    <group position={position} rotation={rotation} scale={scale}>
+    <group position={position} rotation={rotation} scale={scale} visible={visible}>
       <mesh geometry={geo} material={mat} castShadow={castShadow} receiveShadow={receiveShadow} />
       {outline > 0 && <mesh geometry={geo} material={outlineMaterial()} scale={hull} />}
       {children}

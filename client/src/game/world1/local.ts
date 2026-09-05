@@ -22,7 +22,37 @@ export const input = {
   taps: [] as Tap[],
   /** Keyboard state, desktop only. */
   keys: new Set<string>(),
+  /** True while a finger or the mouse button is down. The sword charges on
+   *  this and the shield braces on it, so it is not a tap, it is a hold. */
+  held: false,
+  /** performance.now() when the current hold began. */
+  heldSince: 0,
+  /** Set on release: how long the hold lasted, in ms. Consumed by the game. */
+  released: 0,
 };
+
+export function beginHold() {
+  if (input.held) return;
+  input.held = true;
+  input.heldSince = performance.now();
+}
+
+export function endHold() {
+  if (!input.held) return;
+  input.held = false;
+  input.released = performance.now() - input.heldSince;
+}
+
+export function consumeRelease(): number {
+  const ms = input.released;
+  input.released = 0;
+  return ms;
+}
+
+/** How long the current hold has lasted, or 0 if nothing is held. */
+export function holdMs(): number {
+  return input.held ? performance.now() - input.heldSince : 0;
+}
 
 export const local = {
   x: 0,

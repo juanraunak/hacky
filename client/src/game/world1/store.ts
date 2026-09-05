@@ -194,3 +194,15 @@ export const PORTAL_OPEN = 'study_portal';
 export const FIGHT_READY = 'study_ready';
 export const FIGHT_DONE = 'study_fight_done';
 export const PEN_ITEM = 'pen';
+
+// The rack. One each; nobody carries two. Each one is a law of motion you
+// have to use rather than read.
+export const SWORD_ITEM = 'sword'; // second law: force is mass times acceleration
+export const SHIELD_ITEM = 'shield'; // first law: no net force, no acceleration
+export const GUN_ITEM = 'gun'; // third law: every push has an equal push back
+export const WEAPONS = [SHIELD_ITEM, SWORD_ITEM, GUN_ITEM] as const;
+export const CELLAR_OPEN = 'study_cellar';
+
+export function isWeapon(item: string | null): boolean {
+  return item === SWORD_ITEM || item === SHIELD_ITEM || item === GUN_ITEM;
+}

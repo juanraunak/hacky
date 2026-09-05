@@ -19,6 +19,8 @@ export const STATION = {
   floor: 'floor',
   notebook: 'notebook',
   aside: 'aside',
+  rack: 'rack',
+  cellar: 'cellar',
 } as const;
 
 export const ENTRY: Beat = {
@@ -98,6 +100,62 @@ export const DONE: Beat = {
     'It is a rule about everything. Stones, quills, apples. The Moon, I suspect.',
   ],
 };
+
+// --- the rack, and the three laws ----------------------------------------
+// Each weapon is one law, and the law is how the weapon works. Take the
+// numbers out and the weapon stops functioning, which is the whole idea.
+
+export const RACK: Beat = {
+  at: STATION.rack,
+  lines: [
+    'Don’t touch th— fine. Take one each. ONE.',
+    'They are not three ways to hit something. They are three things I worked out.',
+  ],
+};
+
+/** First law. Brace and the net force is zero, so you do not accelerate. */
+export const SHIELD: Beat = {
+  at: STATION.rack,
+  lines: [
+    'A thing keeps doing what it is doing until something stops it.',
+    'That sandbag is doing something. It will keep doing it through you.',
+    'Set your feet — hold — and you are the something. The forces cancel and you do not move.',
+    'Stand there admiring it and its motion becomes yours. That is the whole first law.',
+  ],
+};
+
+/** Second law. Force is mass times acceleration; a tap has no acceleration. */
+export const SWORD: Beat = {
+  at: STATION.rack,
+  lines: [
+    'A sword is not fearsome because it is heavy. It is fearsome because you make it move.',
+    'Force is mass times acceleration. The mass is fixed. The acceleration is yours.',
+    'Flick it at that post and it will slide off and embarrass you.',
+    'Hold, wind it up, then let go. Same blade, same arm, entirely different outcome.',
+  ],
+};
+
+/** Third law. Firing kicks you back, equal and opposite. */
+export const GUN: Beat = {
+  at: STATION.rack,
+  lines: [
+    'That one’s from the future. Don’t ask.',
+    'Every push has an equal push the other way. That is not a warning, it is arithmetic.',
+    'Send something that small away that fast, and it sends you backwards.',
+    'You will feel it. Fire it near a ledge and you will feel it a great deal.',
+  ],
+};
+
+export const CELLAR: Beat = {
+  at: STATION.cellar,
+  lines: [
+    'Right. Downstairs. Try not to die, it’s a lot of paperwork.',
+  ],
+};
+
+export const NOTE_BRACE = 'brace and nothing moves you.';
+export const NOTE_WINDUP = 'a tap is not a blow. wind it up.';
+export const NOTE_RECOIL = 'push it away, it pushes you back.';
 
 // The page pinned to the wall. Lines are added, never removed.
 export const NOTE_SAME_FALL = 'big or small, same fall.';

@@ -6,7 +6,7 @@
 // With a mouse (desktop third person) a drag orbits and a click is a tap.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { input } from './local';
+import { beginHold, endHold, input } from './local';
 
 const STICK_RADIUS_PX = 64;
 const TAP_MAX_MS = 260;
@@ -71,6 +71,7 @@ export function TouchInput() {
     };
     pointers.current.set(e.pointerId, p);
     if (role === 'move') setMove(p);
+    else beginHold();
   }, [setMove]);
 
   const onMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -96,6 +97,7 @@ export function TouchInput() {
     const el = root.current;
     if (el && el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
     if (p.role === 'move') setMove(null);
+    else endHold();
     const quick = performance.now() - p.t0 < TAP_MAX_MS;
     if (!p.moved && quick && el) {
       input.taps.push({
