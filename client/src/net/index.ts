@@ -413,7 +413,7 @@ async function createRoomOnce(): Promise<string> {
       .subscribe([`SELECT * FROM room WHERE host = 0x${identityHex}`]);
   });
 
-  const existing = findHostedCode(connection);
+  const existing = findHostedCode(connection, true);
   if (existing) {
     await net.connect(existing);
     return existing;
@@ -422,7 +422,7 @@ async function createRoomOnce(): Promise<string> {
   const code = await new Promise<string>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('timed out creating room')), 10000);
     const check = () => {
-      const found = findHostedCode(connection);
+      const found = findHostedCode(connection, true);
       if (!found) return;
       clearTimeout(timer);
       listeners.delete(check);
@@ -437,10 +437,18 @@ async function createRoomOnce(): Promise<string> {
   return code;
 }
 
-function findHostedCode(connection: DbConnection): string | null {
+/**
+ * A room you host that is still in the lobby. Rooms you left mid-run are not
+ * reusable: reusing one dropped you straight back into whatever world it had
+ * reached, skipping the lobby entirely. Only whoever has old rooms sees it,
+ * which is why it looked like it only happened to one person.
+ */
+function findHostedCode(connection: DbConnection, lobbyOnly = false): string | null {
   for (const row of connection.db.room.iter()) {
     const r = row as unknown as RoomRow;
-    if (r.host.toHexString() === identityHex) return r.code;
+    if (r.host.toHexString() !== identityHex) continue;
+    if (lobbyOnly && r.phase !== 'lobby') continue;
+    return r.code;
   }
   return null;
 }
