@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { APPLE_ITEM, useWorld } from './store';
+import { resetWorld } from './sync';
 
 function AppleIcon() {
   return (
@@ -46,6 +47,12 @@ export function Hud() {
 
       {first && !locked && connection === 'online' && (
         <div className="hint">click to look around · V for third person</div>
+      )}
+
+      {connection === 'online' && (
+        <button type="button" className="reset-button" onPointerDown={e => e.stopPropagation()} onClick={() => resetWorld()}>
+          Reset
+        </button>
       )}
 
       {holding === APPLE_ITEM && (

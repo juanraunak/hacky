@@ -16,7 +16,11 @@ import type {
 import { useWorld, WORLD_ID } from './store';
 
 const URI = 'wss://maincloud.spacetimedb.com';
-const DATABASE = 'hacky';
+// 'hacky' is the real database, but the Maincloud account that published it
+// is not the one this machine is logged into, so World 1 went to a sibling
+// database under the available account. Flip this back to 'hacky' once the
+// module is published there (see WORLD1-REPORT.md, "Publish status").
+const DATABASE = import.meta.env.VITE_SPACETIME_DB ?? 'hacky-world1';
 const TOKEN_KEY = 'hacky.token';
 
 let conn: DbConnection | null = null;

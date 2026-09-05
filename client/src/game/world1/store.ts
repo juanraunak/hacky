@@ -124,7 +124,8 @@ export const useWorld = create<World1State>((set, get) => ({
     set(s => {
       const events = { ...s.events };
       delete events[name];
-      return { events };
+      // A reset mid-monologue stops the bubble too.
+      return name === APPLE_EVENT ? { events, storyStartedAt: null } : { events };
     }),
 
   setHeld: (identity, item) => set(s => ({ held: { ...s.held, [identity]: item } })),
