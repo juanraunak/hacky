@@ -157,6 +157,9 @@ export function Controls({ onInput, onAction }: ControlsProps) {
     // Safari ignores touch-action for pinch; these are the only way to stop it.
     const swallow = (event: Event) => event.preventDefault();
 
+    // Scope the fullscreen scroll lock to this component's lifetime.
+    document.documentElement.classList.add('controls-locked');
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', onBlur);
@@ -167,6 +170,7 @@ export function Controls({ onInput, onAction }: ControlsProps) {
     document.addEventListener('contextmenu', swallow);
 
     return () => {
+      document.documentElement.classList.remove('controls-locked');
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);

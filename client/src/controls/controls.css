@@ -1,19 +1,23 @@
 /* Owned by /client/src/controls. Mounting <Controls /> puts the page into
    fullscreen-game mode: no scrolling, no rubber-banding, no text selection.
    100dvh, never 100vh — mobile browser chrome makes 100vh taller than the
-   visible viewport and pushes the thumbstick off screen. */
+   visible viewport and pushes the thumbstick off screen.
 
-html,
-body,
-#root {
+   Every rule below is scoped to .controls-locked, which <Controls /> puts on
+   <html> while it is mounted. Vite bundles this file globally, so an unscoped
+   `overflow: hidden` here silently froze the lobby too and made anything below
+   the fold unreachable. */
+
+html.controls-locked,
+html.controls-locked body,
+html.controls-locked #root {
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none; /* kills pull-to-refresh and scroll chaining */
 }
 
-body {
-  margin: 0;
+html.controls-locked body {
   touch-action: none; /* kills pinch-zoom and double-tap-zoom */
   -webkit-user-select: none;
   user-select: none;

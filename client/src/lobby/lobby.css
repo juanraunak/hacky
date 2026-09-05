@@ -2,6 +2,7 @@
   min-height: 100dvh;
   box-sizing: border-box;
   padding: 20px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding-top: 58px;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -142,11 +143,17 @@
   padding: 18px;
 }
 
+/* Pinned, not in the flow: the lobby is taller than a phone screen and this
+   must never be the thing you have to scroll to find. */
 .lobby-leave {
-  align-self: center;
-  margin-top: 4px;
-  background: transparent !important;
-  border-color: #3a2630 !important;
-  color: #c98b9b !important;
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 30;
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  background: rgb(32 18 24 / 92%) !important;
+  border: 1px solid #5e3242 !important;
+  color: #ff9db4 !important;
   font-size: 14px !important;
 }

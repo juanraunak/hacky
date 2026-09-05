@@ -5,7 +5,9 @@
 html,
 body,
 #root {
-  height: 100dvh;
+  /* min-height, not height: the lobby is taller than the viewport on a phone
+     and must be allowed to scroll. */
+  min-height: 100dvh;
   margin: 0;
   background: #10131a;
 }
