@@ -177,49 +177,43 @@ export default function App() {
           <h1 id="game-title">Hacky</h1>
           {homeView === 'home' ? (
             <>
-              <p className="title-copy">
-                Turn a topic into a game your whole group plays together, on the
-                phones already in their pockets.
-              </p>
+              {/* One line, first: what this is. Everything else is detail. */}
+              <p className="title-copy">Turn any topic you want to learn into a game.</p>
 
-              {/* "Learning games made to play with your people" told nobody what
-                  this is. Three steps do: what you give it, how people get in,
-                  and what actually happens once they are in. */}
+              {/* The playable thing leads. Putting the two unbuilt options
+                  first made it read as though nothing worked yet -- the
+                  opposite of the truth. */}
+              <button type="button" className="title-play" onClick={() => setHomeView('games')}>
+                Play now
+              </button>
+              <p className="title-under">a full game, ready to play with your friends</p>
+
               <ol className="title-how">
                 <li>
                   <b>1</b>
-                  <span>Pick what to learn — scan a page of the textbook, or type the topic.</span>
+                  <span>Pick a game, get a code.</span>
                 </li>
                 <li>
                   <b>2</b>
-                  <span>Share the code. Everyone joins on their own phone — no app, no login.</span>
+                  <span>Friends join on their own phones — no app, no login.</span>
                 </li>
                 <li>
                   <b>3</b>
                   <span>
-                    Fight your way through it together. Working out{' '}
-                    <em>what beats what</em> is the lesson — no quizzes, no flashcards.
+                    Work out <em>what beats what</em> together. That is the lesson.
                   </span>
                 </li>
               </ol>
 
-              {/* The two ways in that are still being built. They are shown
-                  because they are the plan, and marked because they are not
-                  ready -- a dead button that looks live is worse than an
-                  honest one. */}
-              <p className="title-ways">Ways in</p>
-              <button type="button" className="title-soon" disabled>
-                Scan your book
-                <i>coming soon</i>
-              </button>
-              <button type="button" className="title-soon" disabled>
-                Type a topic
-                <i>coming soon</i>
-              </button>
-
-              <button type="button" className="title-play" onClick={() => setHomeView('games')}>
-                Play a ready-made game
-              </button>
+              <p className="title-ways">More ways in, soon</p>
+              <div className="title-soon-row">
+                <button type="button" className="title-soon" disabled>
+                  Scan your book
+                </button>
+                <button type="button" className="title-soon" disabled>
+                  Type any topic
+                </button>
+              </div>
             </>
           ) : (
             <div className="games-panel" aria-label="Current games">
