@@ -149,7 +149,8 @@ export const net = {
     return { ...room };
   },
 
-  callReducer(name: string, ...args: unknown[]): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  callReducer(name: string, ...args: any[]): void {
     console.log('[net stub] callReducer', name, args);
 
     switch (name) {
