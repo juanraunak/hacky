@@ -8,6 +8,7 @@ import NewtonGame from './game/NewtonGame';
 import World2 from './game/World2';
 import World3 from './game/World3';
 import { Journey } from './game/Journey';
+import { LeaveRoom } from './game/LeaveRoom';
 import { clearLaws, resetCombat } from './game/world3/combat';
 import { connectWorld } from './game/world1/sync';
 import './app-shell.css';
@@ -96,6 +97,7 @@ export default function App() {
       <>
         <World2 />
         <Journey world={2} />
+        <LeaveRoom />
       </>
     );
   }
@@ -220,6 +222,7 @@ export default function App() {
       <>
         <World2 />
         <Journey world={2} />
+        <LeaveRoom />
       </>
     );
   }
@@ -229,6 +232,7 @@ export default function App() {
       <>
         <World3 roomCode={code} name={who} forcedCamera={flags.cam} />
         <Journey world={3} />
+        <LeaveRoom />
       </>
     );
   }

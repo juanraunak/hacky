@@ -418,14 +418,22 @@ export function installAttackInput(): () => void {
 
   window.addEventListener('keydown', key);
   window.addEventListener('keyup', keyUp);
-  window.addEventListener('pointerdown', use);
-  window.addEventListener('pointerup', release);
+  // Mouse only. On a phone a window-level pointerdown means every look-drag
+  // fires the weapon; there, the FIRE button is the only thing that attacks.
+  const mouseDown = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') use();
+  };
+  const mouseUp = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') release();
+  };
+  window.addEventListener('pointerdown', mouseDown);
+  window.addEventListener('pointerup', mouseUp);
   return () => {
     window.clearInterval(tick);
     window.removeEventListener('keydown', key);
     window.removeEventListener('keyup', keyUp);
-    window.removeEventListener('pointerdown', use);
-    window.removeEventListener('pointerup', release);
+    window.removeEventListener('pointerdown', mouseDown);
+    window.removeEventListener('pointerup', mouseUp);
   };
 }
 
