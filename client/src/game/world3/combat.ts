@@ -258,6 +258,8 @@ export function fireGun(): Effect | null {
   if (!training.active && (!state.landed || state.down)) return null;
   if (now - state.lastShotAt < GUN_COOLDOWN_MS) return null;
   if (now < state.reloadingUntil) return null;
+  // Ammo is unlimited; the magazine is the only limit, so an empty one just
+  // starts a reload rather than leaving you dry.
   if (state.ammo <= 0) {
     state.reloadingUntil = now + RELOAD_MS;
     state.ammo = MAG_SIZE;

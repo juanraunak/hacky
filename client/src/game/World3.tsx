@@ -13,7 +13,7 @@ import { TouchInput } from './world1/TouchInput';
 import { Hud } from './world3/Hud';
 import { connectWorld } from './world1/sync';
 import { useWorld, type CameraMode } from './world1/store';
-import { installAttackInput, resetCombat } from './world3/combat';
+import { installAttackInput, resetCombat, training } from './world3/combat';
 import './world3/world3.css';
 
 const SKY = '#2a1020'; // volcanic night behind the fire
@@ -28,6 +28,9 @@ export default function World3({ roomCode, name = '', forcedCamera = null }: Wor
   useEffect(() => connectWorld({ roomCode, name }), [roomCode, name]);
 
   useEffect(() => {
+    // World 2 leaves training on. If it stays on, every hit here lands on a
+    // practice dummy and the boss takes nothing.
+    training.active = false;
     resetCombat();
     return installAttackInput();
   }, []);
@@ -43,8 +46,8 @@ export default function World3({ roomCode, name = '', forcedCamera = null }: Wor
   return (
     <div className="world1 world3">
       <Canvas
-        dpr={[1, isTouch ? 1.15 : 1.5]}
-        shadows
+        dpr={[1, isTouch ? 1 : 1.5]}
+        shadows={!isTouch}
         gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
         camera={{ fov: 82, near: 0.1, far: 900, position: [0, 5, 40] }}
         onCreated={({ gl }) => {

@@ -64,6 +64,9 @@ export interface PlayerRigProps {
   /** How far the camera sits back, landscape and portrait. */
   distance?: number;
   distancePortrait?: number;
+  /** How far you may tilt. World 3 needs to look up at something enormous. */
+  pitchMin?: number;
+  pitchMax?: number;
   /**
    * Where to stand. Give a point for rooms you can spawn anywhere in; leave it
    * out to wait for the server's spawn row, which is what World 1 wants.
@@ -76,6 +79,10 @@ export interface PlayerRigProps {
    */
   frozen?: () => boolean;
   cameraTakenOver?: () => boolean;
+  /** Called each frame with the ground height; return true if you are out. */
+  isDead?: () => boolean;
+  /** Put yourself back on your feet. Called once, when the timer is up. */
+  onRespawn?: () => { x: number; z: number } | void;
   /** Jump and sprint are opt-in per world. */
   allowJump?: boolean;
   allowSprint?: boolean;
@@ -89,9 +96,13 @@ export function PlayerRig({
   walkSpeed,
   distance = 6,
   distancePortrait = 7.6,
+  pitchMin = PITCH_MIN,
+  pitchMax = PITCH_MAX,
   spawnAt,
   frozen,
   cameraTakenOver,
+  isDead,
+  onRespawn,
   allowJump = false,
   allowSprint = false,
   children,
@@ -205,11 +216,22 @@ export function PlayerRig({
       const d = consumeLook();
       const k = isTouch ? LOOK_SPEED_TOUCH : LOOK_SPEED_MOUSE;
       local.yaw -= d.x * k;
-      local.pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, local.pitch + d.y * k * 0.7));
+      local.pitch = Math.min(pitchMax, Math.max(pitchMin, local.pitch + d.y * k * 0.7));
     }
 
     // --- walk: camera-relative, then face where you are going -------------
-    const held = frozen?.() ?? false;
+    // --- down and back up ------------------------------------------------
+    const dead = isDead?.() ?? false;
+    if (dead && onRespawn) {
+      const spot = onRespawn();
+      if (spot) {
+        local.x = spot.x;
+        local.z = spot.z;
+        local.speed = 0;
+      }
+    }
+
+    const held = (frozen?.() ?? false) || dead;
     let mx = held ? 0 : input.move.x;
     let my = held ? 0 : input.move.y;
     for (const code of held ? [] : input.keys) {
@@ -269,6 +291,8 @@ export function PlayerRig({
     if (group.current) {
       group.current.position.set(local.x, gy, local.z);
       group.current.rotation.y = local.heading;
+      const want = dead ? -Math.PI / 2 : 0;
+      group.current.rotation.x += (want - group.current.rotation.x) * (1 - Math.exp(-dt * 7));
     }
 
     // --- camera: passive, fixed orbit, player always centred --------------

@@ -23,6 +23,10 @@ export function LawCrates() {
   useFrame(({ clock }) => {
     const got = collectNearby();
     if (got) grantWeapon(got);
+    // Laws granted by Newton in World 2 count as collected: the crate should
+    // not be sitting there for something already in your hands.
+    const owned = readCombat().owned;
+    for (const p of PICKUPS) if (owned.includes(p.id)) p.taken = true;
     const t = clock.elapsedTime;
     if (!group.current) return;
     group.current.children.forEach((child, i) => {
