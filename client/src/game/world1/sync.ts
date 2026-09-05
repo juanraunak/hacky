@@ -17,11 +17,9 @@ import type {
 } from '../../module_bindings/types';
 import { useWorld, WORLD_ID } from './store';
 
-const URI = 'wss://maincloud.spacetimedb.com';
-// 'hacky' is the real database, but the Maincloud account that published it
-// is not the one this machine is logged into, so World 1 went to a sibling
-// database under the available account. Flip this back to 'hacky' once the
-// module is published there (see WORLD1-REPORT.md, "Publish status").
+// Same two variables the lobby reads, so both halves of the app can never end
+// up pointed at different databases again.
+const URI = import.meta.env.VITE_SPACETIME_URI ?? 'wss://maincloud.spacetimedb.com';
 const DATABASE = import.meta.env.VITE_SPACETIME_DB ?? 'hacky-world1';
 const TOKEN_KEY = 'hacky.token';
 

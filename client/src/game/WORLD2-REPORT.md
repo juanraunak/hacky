@@ -132,15 +132,24 @@ Two things worth knowing:
 
 ## Publish status
 
-Done. `spacetime publish hacky-world1` succeeded and bindings were regenerated
-into `client/src/module_bindings`; both are committed. Module logs show
-`Creating table study_apple` and `Database updated`.
+Done. The merged module (Juan's World 3 tables plus World 2's) is published to
+`hacky-world1` and the bindings are regenerated and committed.
 
-One standing caveat: the lobby talks to database `hacky` and the game talks to
-`hacky-world1`, because the Maincloud account logged in on this machine is not a
-collaborator on `hacky`. Both use the same token so identities match. Once
-someone with access runs `npm run pub`, change the one line in
-`world2/../world1/sync.ts` that reads `'hacky-world1'` back to `'hacky'`.
+**The whole app is now on one database, `hacky-world1`.** It used to be split:
+the lobby talked to `hacky` and the game to `hacky-world1`. That broke the
+moment World 3 landed, because its `.env` files set `VITE_SPACETIME_DB=hacky`
+and the game layer reads the same variable, so both halves pointed at `hacky`,
+which has no `study_apple`. The subscription was refused, no rows arrived, no
+spawn point arrived, and the symptom was that you could look around but not
+move.
+
+`hacky` cannot be updated any more: it was published by a CLI identity that no
+longer exists on this machine, and the logged-in account is not a collaborator
+on it. `hacky-world1` is owned by the current account and carries the full
+schema, so that is the one to use. Both env files and the game layer now point
+there. If access to `hacky` is ever recovered, publish the module there and
+change `VITE_SPACETIME_DB` back in `client/.env.development` and
+`client/.env.production`; nothing else needs touching.
 
 ## Time spent
 
