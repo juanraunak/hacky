@@ -137,7 +137,9 @@ export function syncBoss() {
   state.hp = b.hp;
   state.maxHp = b.maxHp;
   if (b.down && !state.down) state.downAt = performance.now();
-  state.down = b.down;
+  // A server row that has not caught up must not bring it back to life.
+  state.down = state.down || b.down;
+  if (state.down) state.hp = 0;
   if (b.mode === 'charging' || b.mode === 'stunned' || b.mode === 'airborne') {
     if (b.mode !== state.mode) state.modeSince = performance.now();
     state.mode = b.mode;
@@ -261,8 +263,15 @@ function land(weapon: WeaponId, chargeScale = 1): Effect {
     // One boss for the whole party: the damage goes to the server and the
     // bar everyone sees is whatever comes back.
     net.callReducer('bossHit', dmg);
-    // Predict locally so the hit feels instant; syncBoss corrects it.
+    // Predict locally so the hit feels instant; syncBoss corrects it when the
+    // server answers. Death is decided here too -- leaving it to the server
+    // alone meant that if the boss row never arrived, the apple could be
+    // ground to zero and simply never die.
     state.hp = Math.max(0, state.hp - dmg);
+    if (state.hp === 0 && !state.down) {
+      state.down = true;
+      state.downAt = performance.now();
+    }
   }
   state.feedback = { effect, weapon, mode: state.mode, at: performance.now() };
   emit();
