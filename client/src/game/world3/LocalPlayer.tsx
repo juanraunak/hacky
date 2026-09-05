@@ -55,6 +55,7 @@ export function LocalPlayer() {
   const lastSent = useRef({ x: NaN, z: NaN, h: NaN });
   const camPos = useRef(new THREE.Vector3());
   const camInit = useRef(false);
+  const lastLook = useRef(0);
 
   // Spawn point from the database, once.
   useEffect(() => {
@@ -149,6 +150,7 @@ export function LocalPlayer() {
       local.yaw = e.y;
     } else {
       const d = consumeLook();
+      if (Math.abs(d.x) > 0.5 || Math.abs(d.y) > 0.5) lastLook.current = now;
       const k = isTouch ? LOOK_SPEED_TOUCH : LOOK_SPEED_MOUSE;
       local.yaw -= d.x * k;
       // Full look: all the way up to the sky, all the way down at your feet.
@@ -212,6 +214,14 @@ export function LocalPlayer() {
       if (!first) local.heading = angleLerp(local.heading, Math.atan2(dx, dz), 1 - Math.exp(-dt * 14));
     }
     if (first) local.heading = local.yaw + Math.PI;
+    // Ease the camera back behind you once your thumb leaves the look side.
+    if (isTouch && mag > 0.05 && now - lastLook.current > 420) {
+      let back = local.heading + Math.PI - local.yaw;
+      while (back > Math.PI) back -= Math.PI * 2;
+      while (back < -Math.PI) back += Math.PI * 2;
+      local.yaw += back * (1 - Math.exp(-dt * 2.4));
+    }
+
     local.speed += (mag - local.speed) * (1 - Math.exp(-dt * 12));
     anim.current.speed = local.speed;
 

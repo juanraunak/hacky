@@ -289,7 +289,7 @@ export function GiantApple() {
     // shield stops one; more players means more of them.
     if (fall.current.landed && !c.down && mode !== 'charging') {
       if (now > nextOrb.current) {
-        nextOrb.current = now + (1500 - phase * 220) / Math.max(1, c.players * 0.7);
+        nextOrb.current = now + (2600 - phase * 200) / Math.max(1, c.players * 0.6);
         const focusNow = partyFocus();
         throwOrb(g.position.y, focusNow.nx, focusNow.nz);
       }
@@ -297,13 +297,13 @@ export function GiantApple() {
 
     // The slam: it goes up, comes down, and everything not braced flies.
     if (fall.current.landed && !c.down && phase >= 1 && now > nextSlam.current) {
-      nextSlam.current = now + 9000 - phase * 1800;
+      nextSlam.current = now + 14000 - phase * 1500;
       shake(2.0, 700);
       const myD = Math.hypot(local.x - applePos.x, local.z - applePos.z) || 1;
       if (myD < 46) {
         const px = (local.x - applePos.x) / myD;
         const pz = (local.z - applePos.z) / myD;
-        bossHits(24 + phase * 8, px * 62, pz * 62);
+        bossHits(10 + phase * 3, px * 34, pz * 34);
       }
     }
 
@@ -315,11 +315,11 @@ export function GiantApple() {
       if (c.mode === 'charging' && c.charging) {
         // Mass in motion: a wide, hard shove.
         if (myDist < R + 13) {
-          const hit = bossHits(22 + phase * 6, px * 34, pz * 34);
+          const hit = bossHits(9 + phase * 2, px * 20, pz * 20);
           if (hit) shake(hit === 'blocked' ? 0.5 : 1.2, 320);
         }
       } else if (myDist < R + 6.5) {
-        const hit = bossHits(9 + phase * 3, px * 12, pz * 12);
+        const hit = bossHits(4 + phase, px * 8, pz * 8);
         if (hit) shake(hit === 'blocked' ? 0.35 : 0.7, 260);
       }
     }

@@ -25,7 +25,7 @@ export function ShotsView() {
       void dx;
       void dz;
       // An orb only lands if you are not braced. First law, enforced.
-      bossHits(18 + 4 * (c.players - 1), (Math.random() - 0.5) * 26, (Math.random() - 0.5) * 26);
+      bossHits(7 + 2 * (c.players - 1), (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14);
     }
 
     let f = 0;

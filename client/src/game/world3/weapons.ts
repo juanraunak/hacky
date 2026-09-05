@@ -67,9 +67,9 @@ export const MATRIX: Record<BossMode, Record<WeaponId, Effect>> = {
 };
 
 export const WEAPON_DAMAGE: Record<WeaponId, Record<Effect, number>> = {
-  sword: { strong: 38, weak: 6, none: 0 },
-  gun: { strong: 12, weak: 3, none: 0 },
-  shield: { strong: 26, weak: 0, none: 0 },
+  sword: { strong: 46, weak: 12, none: 0 },
+  gun: { strong: 20, weak: 8, none: 0 },
+  shield: { strong: 34, weak: 0, none: 0 },
 };
 
 export const LAW_LINE: Record<WeaponId, string> = {
@@ -96,7 +96,8 @@ export const RELOAD_MS = 1500;
 export function bossHpFor(players: number): number {
   // The whole journey is 5-10 minutes, so World 3 gets about two and a half
   // of them solo. Scaling still makes a party harder, not faster.
-  return Math.round(560 * (1 + 0.7 * (Math.max(1, players) - 1)));
+  // Deliberately easy for now: the point is finishing the journey.
+  return Math.round(240 * (1 + 0.4 * (Math.max(1, players) - 1)));
 }
 
 export function aggressionFor(players: number): number {

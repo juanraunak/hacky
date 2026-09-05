@@ -94,6 +94,7 @@ export function StudyPlayer() {
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const camPos = useRef(new THREE.Vector3());
   const camInit = useRef(false);
+  const lastLook = useRef(0);
   const lastSent = useRef({ x: NaN, z: NaN, h: NaN });
   const placed = useRef(false);
   const lastBob = useRef(0);
@@ -174,6 +175,7 @@ export function StudyPlayer() {
   }, []);
 
   useFrame((_, rawDt) => {
+    const now = performance.now();
     const dt = Math.min(rawDt, 0.05);
     const first = mode === 'first' && !isTouch;
     const s = useWorld.getState();
@@ -185,6 +187,7 @@ export function StudyPlayer() {
       local.yaw = e.y;
     } else {
       const d = consumeLook();
+      if (Math.abs(d.x) > 0.5 || Math.abs(d.y) > 0.5) lastLook.current = now;
       const k = isTouch ? LOOK_SPEED_TOUCH : LOOK_SPEED_MOUSE;
       local.yaw -= d.x * k;
       const hi = isTouch ? 0.58 : 1.05;
@@ -223,6 +226,14 @@ export function StudyPlayer() {
       }
     }
     if (first) local.heading = local.yaw + Math.PI;
+    // Ease the camera back behind you once your thumb leaves the look side.
+    if (isTouch && mag > 0.05 && now - lastLook.current > 420) {
+      let back = local.heading + Math.PI - local.yaw;
+      while (back > Math.PI) back -= Math.PI * 2;
+      while (back < -Math.PI) back += Math.PI * 2;
+      local.yaw += back * (1 - Math.exp(-dt * 2.4));
+    }
+
     local.speed += (mag - local.speed) * (1 - Math.exp(-dt * 12));
     anim.current.speed = local.speed;
 
@@ -248,7 +259,6 @@ export function StudyPlayer() {
     }
 
     // --- camera ---------------------------------------------------------
-    const now = performance.now();
     const store = s;
     let shakeX = 0;
     let shakeY = 0;
