@@ -1,6 +1,22 @@
 # hacky
 
-SpacetimeDB database name `hacky`, running on Maincloud.
+A room-based multiplayer learning game. SpacetimeDB database `hacky` on
+Maincloud.
+
+**Topic: Newton's laws of motion.** The engine is topic-agnostic — all content
+lives in `content.json` — but we are shipping one polished topic rather than a
+shallow generic one. Dynamic topics are the roadmap, not the demo.
+
+Three worlds, played in sequence, party travelling together:
+
+1. **The Orchard** — Newton under the tree; the apple falls. History framing the physics.
+2. **Newton's House** — the three laws taught through props and weapons. Small bosses, baby apples. Where the matrix lives.
+3. **The Giant Apple** — boss fight, winnable only with tools learned in World 2.
+
+Monsters have visible properties, players carry tools in limited slots, and a
+hidden matrix decides strong / weak / none. The matrix is never shown. No
+quizzes, no tooltips, no text questions — players infer it by swinging and
+watching. Story and NPC dialogue are fine; a quiz UI is not.
 
 ## Setup
 
@@ -10,41 +26,76 @@ npm i
 npm run dev
 ```
 
+## Workflow
+
+We are both pushing to the same repo all night. Pull often.
+
+```bash
+# before starting any task
+git pull --rebase origin main
+
+# after finishing and testing
+git add -A && git commit && git push origin main
+```
+
 ## Publish the module
 
-```bash
-cd module
-spacetime publish
-```
-
-## Regenerate bindings
-
-From `module/`:
+From the repo root:
 
 ```bash
-spacetime generate --lang typescript --out-dir ../client/src/module_bindings
+npm run pub
 ```
 
-Bindings are committed. You should not need to run this unless you changed the module.
+Publishes, regenerates the TypeScript bindings into
+`client/src/module_bindings`, and stages them. **Never use a raw
+`spacetime publish`** — the committed bindings would drift from the deployed
+module, and the other person would not find out until their client broke.
 
-## Nuke and republish (schema changes)
+Bindings are committed, so nobody needs the CLI just to run the client.
+
+## Schema changes
+
+Adding tables or columns is safe and auto-migrates.
+
+Retyping or reordering an existing column needs:
 
 ```bash
-spacetime publish -c
+cd module && spacetime publish -c
 ```
 
-Wipes all data. Use when the schema changed and a migration is not possible.
+which **WIPES all live rooms**. Warn the other person first.
 
 ## Ownership
 
-| Folder | Owner |
+**Ean owns the game, server and client both:**
+
+| Path | What |
 | --- | --- |
-| `/module` | Juan |
-| `/client/src/lobby` | Juan |
-| `/client/src/net` | Juan |
-| `/client/src/controls` | Juan |
-| `/client/src/game` | Ean |
+| `module/spacetimedb/src/game.ts` | monster, worlds, progression, bosses, and any schema he needs |
+| `client/src/game` | the entire engine: worlds, characters, props, bosses |
+| `content` | `content.json`, his to own and rewrite for Newton's laws |
 
-Nobody edits the other's folders.
+Ean adds and changes game tables freely. No permission required.
 
-**Ean:** never import the SpacetimeDB SDK. Everything goes through `/client/src/net`.
+**Juan owns connectivity:**
+
+| Path | What |
+| --- | --- |
+| `module/spacetimedb/src/connection.ts` | room and player tables |
+| `client/src/lobby` | join, avatars, topic, QR |
+| `client/src/net` | connection, subscriptions, reducer calls |
+| `client/src/controls` | thumbstick and action buttons |
+
+**Shared:** `module/spacetimedb/src/schema.ts` and
+`module/spacetimedb/src/index.ts`. Either may edit; tell the other after.
+
+**Ean:** never import the SpacetimeDB SDK from the client. Everything goes
+through `client/src/net`.
+
+## Known gap
+
+`content/duality.json` is the wrong topic — it was the wave-particle worked
+example. It needs replacing with Newton's laws content. Until it does, the
+lobby's fixed-topic option still loads it.
+
+See `CLAUDE.md` for the full shared context and the SpacetimeDB 2.9.0 gotchas.

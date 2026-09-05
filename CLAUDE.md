@@ -10,22 +10,49 @@ room code, and shares it (QR in the lobby). Everyone joins on their phone,
 picks a name and colour, and drops into a shared world with a thumbstick and
 action buttons.
 
-The host picks a topic. That topic becomes a `content.json`: a set of **tools**
-and a set of **monsters**, plus a **matrix** saying what each tool does to each
-monster — `"strong"`, `"weak"`, or `"none"`. Players swing tools at monsters and
-watch the feedback. That is the whole teaching mechanic.
+## Scope: one topic, built properly
 
-**There are no quizzes.** Players learn the matrix by experiment, so the matrix
-*is* the subject. Someone who internalises it has learned the topic; someone who
-internalises a wrong one has been taught something false. Content authoring is
-therefore a correctness problem, not a flavour problem. Traps — pairings that
+The topic is **Newton's laws of motion**. Not "any topic" — one.
+
+The engine stays topic-agnostic: all content lives in `content.json` and nothing
+about Newton is hardcoded. But tonight we ship one polished experience rather
+than a shallow generic one. Dynamic topics are the roadmap, not the demo.
+
+## Structure: three worlds
+
+Played in sequence. The party travels together.
+
+**World 1 — The Orchard.** Spawn beside Newton under the tree, friends nearby,
+book, apple. The host starts; Newton narrates what physics looked like before
+him, walks to the tree, and the apple falls. History framing the physics.
+
+**World 2 — Newton's House.** The three laws taught through props and weapons.
+Small bosses, baby apples. This is where the effectiveness matrix lives and
+where players learn their tools by using them.
+
+**World 3 — The Giant Apple.** Boss fight, only winnable with tools learned in
+World 2. The boss is the assessment and is never called one.
+
+## The core mechanic (unchanged)
+
+Monsters have **visible properties**. Players carry **tools in limited slots**.
+A **hidden matrix** decides `"strong"`, `"weak"`, or `"none"`.
+
+**The matrix is never shown.** No quizzes, no tooltips, no text questions.
+Players infer it by swinging and watching what happens. Story and NPC dialogue
+are welcome — a quiz UI is not.
+
+The matrix *is* the subject. Someone who internalises it has learned the topic;
+someone who internalises a wrong one has been taught something false. Content
+authoring is a correctness problem, not a flavour problem. Traps — pairings
 intuition says should work and don't — are the point, not a garnish.
 
 A boss requires two or more specific tools, so nobody finishes by mashing one
 button.
 
-See `content/duality.json` for a complete worked example (wave-particle
-duality: 5 tools, 7 monsters, all 35 cells filled).
+> `content/duality.json` is **the wrong topic now**. It was the wave-particle
+> worked example and needs replacing with Newton's laws content. Ean owns that
+> rewrite. Until it lands, the lobby's fixed-topic option still loads it.
 
 ## Stack
 
@@ -39,16 +66,34 @@ duality: 5 tools, 7 monsters, all 35 cells filled).
 
 ## Ownership
 
-| Folder | Owner |
-| --- | --- |
-| `/module` | Juan |
-| `/client/src/lobby` | Juan |
-| `/client/src/net` | Juan |
-| `/client/src/controls` | Juan |
-| `/client/src/game` | Ean |
-| `/content` | Juan |
+**Ean owns the game — server and client both.**
 
-Nobody edits the other's folders.
+| Path | What |
+| --- | --- |
+| `module/spacetimedb/src/game.ts` | monster, worlds, progression, bosses, and **any schema he needs** |
+| `/client/src/game` | the entire engine: worlds, characters, props, bosses |
+| `/content` | `content.json`, his to own and rewrite for Newton's laws |
+
+Ean adds and changes game tables freely. **No permission required.**
+
+**Juan owns connectivity.**
+
+| Path | What |
+| --- | --- |
+| `module/spacetimedb/src/connection.ts` | room and player tables |
+| `/client/src/lobby` | join, avatars, topic, QR |
+| `/client/src/net` | connection, subscriptions, reducer calls |
+| `/client/src/controls` | thumbstick and action buttons |
+
+**Shared:** `module/spacetimedb/src/schema.ts` and
+`module/spacetimedb/src/index.ts`. Either of us may edit them — tell the other
+afterwards.
+
+### The rule that still holds
+
+Adding tables or columns is safe and auto-migrates. **Retyping or reordering an
+existing column needs `publish -c`, which WIPES all live rooms.** Warn the other
+person before you do it.
 
 ## The two client interface points
 
@@ -100,9 +145,9 @@ calls the other through it.
 
 ```jsonc
 {
-  "topic": "wave-particle duality",
-  "tools":    [{ "id", "name", "icon" }],            // 5
-  "monsters": [{ "id", "name", "props": [], "sprite" }], // 7
+  "topic": "Newton's laws of motion",
+  "tools":    [{ "id", "name", "icon" }],
+  "monsters": [{ "id", "name", "props": [], "sprite" }],
   "matrix":   { "<toolId>": { "<monsterId>": "strong" | "weak" | "none" } },
   "boss":     { "id", "name", "props": [], "requires": ["<toolId>", ...] },
   "lore":     { "<entityId>": "one sentence, shown AFTER a correct hit" }
@@ -117,6 +162,10 @@ Rules a content file must satisfy:
 - At least two traps.
 - The boss requires 2+ tools.
 - `lore` covers every tool id, monster id, and the boss id.
+
+Shape and rules are Ean's to extend — worlds and progression will need more
+than this. The rules above are what makes a matrix teachable, not a schema
+someone else has to approve.
 
 **Wiring gotcha:** the server looks up `matrix[toolId][monster.kind]`, so a
 monster row's `kind` column must equal the monster's `id` in the content file.
@@ -145,6 +194,23 @@ Fifteen carry two each, so a boss that needs several property-counters landing
 together forces specialisation and shouting — which is the point.
 
 Map size stays **fixed**. Monster count scales with player count.
+
+## Workflow
+
+We are both pushing to the same repo all night. Pull often.
+
+```bash
+# before starting any task
+git pull --rebase origin main
+
+# after finishing and testing
+git add -A && git commit && git push origin main
+```
+
+Publish the module with **`npm run pub`** from the repo root, never a raw
+`spacetime publish` — `pub` publishes, regenerates the bindings, and stages
+them, which is what keeps `client/src/module_bindings` in sync with the
+deployed module.
 
 ## Module gotchas — SpacetimeDB 2.9.0
 
@@ -188,15 +254,16 @@ module/
   spacetimedb/src/
     index.ts       entry: re-exports only (see gotcha 1)
     schema.ts      all tables + schema() + Ctx type
-    connection.ts  room/player reducers, lifecycle
-    game.ts        monster reducers, damage
+    connection.ts  room/player reducers, lifecycle   (Juan)
+    game.ts        monsters, worlds, progression, bosses  (Ean)
 client/
-  src/lobby/       join, avatars, topic input, QR
-  src/net/         connection, subscriptions, reducer calls
-  src/controls/    thumbstick + action buttons
-  src/game/        Ean's
+  src/lobby/       join, avatars, topic input, QR        (Juan)
+  src/net/         connection, subscriptions, reducer calls (Juan)
+  src/controls/    thumbstick + action buttons           (Juan)
+  src/game/        the whole engine                      (Ean)
+  src/placeholder/ throwaway game view, delete once src/game/ exists
   src/module_bindings/   generated, committed — do not gitignore
-content/           content.json per topic
+content/           content.json                          (Ean)
 ```
 
 `README.md` has the commands.
