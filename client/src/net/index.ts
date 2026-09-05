@@ -38,8 +38,27 @@ export interface Room {
 
 export type Status = 'idle' | 'connecting' | 'connected' | 'error';
 
-const URI = import.meta.env.VITE_SPACETIMEDB_URI ?? 'wss://maincloud.spacetimedb.com';
-const DB_NAME = 'hacky';
+// The SDK maps https -> wss and http -> ws, and leaves an explicit ws:/wss:
+// alone (db_connection_impl.ts). So an https:// URI is what puts production on
+// a secure socket.
+const RAW_URI = import.meta.env.VITE_SPACETIME_URI ?? 'https://maincloud.spacetimedb.com';
+const DB_NAME = import.meta.env.VITE_SPACETIME_DB ?? 'hacky';
+
+/**
+ * A production build must never talk to SpacetimeDB in the clear. Upgrade
+ * rather than throw: a misconfigured env should not white-screen the app, but
+ * it must not put session tokens on an unencrypted socket either.
+ */
+function resolveUri(raw: string): string {
+  if (!import.meta.env.PROD) return raw;
+  const secure = raw.replace(/^http:\/\//i, 'https://').replace(/^ws:\/\//i, 'wss://');
+  if (secure !== raw) {
+    console.error(`[net] insecure URI in a production build, upgraded: ${raw} -> ${secure}`);
+  }
+  return secure;
+}
+
+const URI = resolveUri(RAW_URI);
 
 // Anonymous auth. SpacetimeDB mints an Identity on first connect and hands
 // back a token; we keep it so reopening the link rejoins as the SAME player
