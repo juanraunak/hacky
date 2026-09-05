@@ -350,6 +350,9 @@ export const net = {
       case 'bossMode':
         conn.reducers.bossMode({ mode: args[0] });
         return;
+      case 'logEvent':
+        conn.reducers.logEvent({ kind: args[0], name: args[1] ?? '' });
+        return;
       case 'advanceWorld':
         conn.reducers.advanceWorld({ world: args[0] });
         return;
@@ -427,6 +430,42 @@ export const net = {
   onChange(listener: () => void): () => void {
     listeners.add(listener);
     return () => listeners.delete(listener);
+  },
+
+  /** Every milestone anyone has reached. Admin view only. */
+  runEvents(): { identity: string; name: string; room: string; kind: string; at: number }[] {
+    if (!conn) return [];
+    const out: { identity: string; name: string; room: string; kind: string; at: number }[] = [];
+    for (const row of conn.db.runEvent.iter()) {
+      const r = row as unknown as {
+        identity: { toHexString(): string };
+        name: string;
+        roomCode: string;
+        kind: string;
+        at: { microsSinceUnixEpoch: bigint };
+      };
+      out.push({
+        identity: r.identity.toHexString(),
+        name: r.name,
+        room: r.roomCode,
+        kind: r.kind,
+        at: Number(r.at.microsSinceUnixEpoch / 1000n),
+      });
+    }
+    return out;
+  },
+
+  /** Subscribe to the whole log. Only the admin page calls this. */
+  watchRunEvents(): void {
+    if (!conn) return;
+    try {
+      conn
+        .subscriptionBuilder()
+        .onError(() => console.warn('[net] run_event subscription rejected'))
+        .subscribe(['SELECT * FROM run_event']);
+    } catch (err) {
+      console.warn('[net] run_event subscription threw', err);
+    }
   },
 
   /** The room's shared boss, or null before the fight has been started. */

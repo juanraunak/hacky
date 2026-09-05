@@ -4,9 +4,10 @@
 
 import { useEffect, useState } from 'react';
 
-export type Route = { kind: 'host' } | { kind: 'room'; code: string };
+export type Route = { kind: 'host' } | { kind: 'room'; code: string } | { kind: 'admin' };
 
 export function parseRoute(pathname: string): Route {
+  if (/^\/admin\/?$/.test(pathname)) return { kind: 'admin' };
   const match = /^\/r\/([A-Za-z0-9]{1,12})\/?$/.exec(pathname);
   if (match) return { kind: 'room', code: match[1].toUpperCase() };
   return { kind: 'host' };
