@@ -143,13 +143,13 @@ export function Briefing() {
     }
 
     if (scene.ask) {
-      briefing.active = true;
+      briefing.active = false; // you keep the controls the whole way through
       drill.shove = false;
       return; // waits for the button
     }
 
     if (scene.enter) {
-      briefing.active = true;
+      briefing.active = false;
       newtonEntrance.playing = true;
       newtonEntrance.startedAt = performance.now();
       const t = window.setTimeout(() => setStep(s => s + 1), scene.ms ?? 3400);

@@ -133,10 +133,13 @@ function Victory({ at }: { at: number }) {
       window.setTimeout(() => setStep(1), 1900), // debris has landed
       window.setTimeout(() => setStep(2), 5200), // start the cut
       window.setTimeout(() => {
-        // Strip any ?world= flag or the lobby would bounce straight back in.
-        window.history.replaceState({}, '', window.location.pathname);
         resetCombat();
         net.callReducer('advanceWorld', 0);
+        // Land on the clean room URL. A reload guarantees the party screen,
+        // with no stale flag and no phase that has not propagated yet.
+        window.setTimeout(() => {
+          window.location.href = window.location.pathname;
+        }, 700);
       }, 6400),
     ];
     return () => timers.forEach(window.clearTimeout);

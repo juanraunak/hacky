@@ -15,9 +15,13 @@ export function LeaveRoom() {
   const toLobby = () => {
     resetCombat();
     clearLaws();
-    window.history.replaceState({}, '', window.location.pathname);
     net.callReducer('advanceWorld', 0);
     setConfirm(false);
+    // Same as the end of a run: reload onto the clean room URL so the party
+    // screen is the only thing that can come up.
+    window.setTimeout(() => {
+      window.location.href = window.location.pathname;
+    }, 700);
   };
 
   const go = () => {
