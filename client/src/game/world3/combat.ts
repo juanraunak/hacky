@@ -1,7 +1,7 @@
 // World 3 combat: three weapons, three boss states, one matrix between them.
 //
-// NOTE: client-side. Every device runs its own copy, so two phones will
-// disagree. Shared HP needs a monster row per room and a damage reducer.
+// NOTE: the boss's health, phase and death are the server's (see boss.ts), so
+// every phone reads the same bar. Everything else here is per-device.
 
 import { useSyncExternalStore } from 'react';
 import { local } from '../world1/local';
@@ -150,10 +150,15 @@ export function syncBoss() {
 export function syncPartySize() {
   const n = Math.max(1, Object.keys(useWorld.getState().party).length);
   if (n === state.players) return;
-  const ratio = state.hp / state.maxHp;
   state.players = n;
-  state.maxHp = bossHpFor(n);
-  state.hp = Math.round(state.maxHp * ratio);
+  // The pool belongs to the server once the fight has started. Rescaling it
+  // per phone gave the same hp two different denominators, and so two
+  // different-looking bars.
+  if (!net.boss()) {
+    const ratio = state.hp / state.maxHp;
+    state.maxHp = bossHpFor(n);
+    state.hp = Math.round(state.maxHp * ratio);
+  }
   emit();
 }
 
@@ -263,14 +268,19 @@ function land(weapon: WeaponId, chargeScale = 1): Effect {
     // One boss for the whole party: the damage goes to the server and the
     // bar everyone sees is whatever comes back.
     net.callReducer('bossHit', dmg);
-    // Predict locally so the hit feels instant; syncBoss corrects it when the
-    // server answers. Death is decided here too -- leaving it to the server
-    // alone meant that if the boss row never arrived, the apple could be
-    // ground to zero and simply never die.
-    state.hp = Math.max(0, state.hp - dmg);
-    if (state.hp === 0 && !state.down) {
-      state.down = true;
-      state.downAt = performance.now();
+    // Do NOT subtract locally while a shared boss exists. Predicting only your
+    // own hits meant each phone sat below the truth by its own in-flight
+    // damage, so two players watched two different bars drain to the same
+    // death. The hit already feels instant through the STRONG/weak text and
+    // the impact; the number is the party's, and it comes from the server.
+    // The local fallback stays for a client with no boss row -- without it,
+    // the apple could be ground to zero and simply never die.
+    if (!net.boss()) {
+      state.hp = Math.max(0, state.hp - dmg);
+      if (state.hp === 0 && !state.down) {
+        state.down = true;
+        state.downAt = performance.now();
+      }
     }
   }
   state.feedback = { effect, weapon, mode: state.mode, at: performance.now() };
@@ -342,9 +352,12 @@ export function bossHits(amount: number, pushX: number, pushZ: number): 'blocked
     // A charge stopped by a braced player rebounds off its own momentum.
     if (state.mode === 'charging') {
       const dmg = WEAPON_DAMAGE.shield.strong;
-      state.hp = Math.max(0, state.hp - dmg);
       state.hits++;
-      if (state.hp === 0 && !state.down) {
+      // A rebound is real damage. It used to land on the blocker's screen
+      // only, so their bar and everyone else's told different stories.
+      net.callReducer('bossHit', dmg);
+      if (!net.boss()) state.hp = Math.max(0, state.hp - dmg);
+      if (state.hp <= 0 && !state.down) {
         state.down = true;
         state.downAt = now;
       } else {
