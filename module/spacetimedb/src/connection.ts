@@ -38,6 +38,43 @@ function spawnCoord(ctx: Ctx): number {
   return (ctx.random() * 2 - 1) * SPAWN_HALF_EXTENT;
 }
 
+/**
+ * The room this caller hosts. Prefer the one they are standing in: a host who
+ * opened "/" twice hosts more than one room, and scanning would pick an
+ * arbitrary one of them.
+ */
+function hostedRoom(ctx: Ctx) {
+  const player = ctx.db.player.identity.find(ctx.sender);
+  if (player) {
+    const current = ctx.db.room.code.find(player.room_code);
+    if (current && current.host.equals(ctx.sender)) return current;
+  }
+  for (const room of ctx.db.room.iter()) {
+    if (room.host.equals(ctx.sender)) return room;
+  }
+  return null;
+}
+
+/**
+ * Every tool id in the room's content. A player who joins mid-game gets the
+ * whole kit: a one-link join must never drop someone into a running world with
+ * nothing to swing.
+ */
+function toolkitFor(contentJson: string): string[] {
+  if (!contentJson) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(contentJson);
+  } catch {
+    return [];
+  }
+  const tools = (parsed as { tools?: unknown } | null)?.tools;
+  if (!Array.isArray(tools)) return [];
+  return tools
+    .map(tool => (tool as { id?: unknown } | null)?.id)
+    .filter((id): id is string => typeof id === 'string');
+}
+
 export const init = spacetimedb.init(_ctx => {
   // Called when the module is initially published
 });
@@ -59,26 +96,34 @@ export const createRoom = spacetimedb.reducer(ctx => {
     topic: '',
     content_json: '',
     phase: 'lobby',
+    current_world: 0,
   });
 });
 
 export const joinRoom = spacetimedb.reducer(
   { code: t.string(), name: t.string() },
   (ctx, { code, name }) => {
-    if (!ctx.db.room.code.find(code)) {
+    const room = ctx.db.room.code.find(code);
+    if (!room) {
       throw new SenderError(`no room with code ${code}`);
     }
+
+    // Past the lobby, anyone arriving is a late joiner and is equipped in full.
+    const toolkit = room.phase === 'lobby' ? [] : toolkitFor(room.content_json);
 
     // One identity is only ever one player row; a second would be a duplicate
     // player in the world. So an existing row is either a reconnect to the same
     // room or a move to a different one.
     const existing = ctx.db.player.identity.find(ctx.sender);
     if (existing) {
+      // Keep the tools they already hold in this room; otherwise equip them.
+      // Switching rooms, or reconnecting empty-handed into a running world,
+      // both land here.
+      const keepTools = existing.room_code === code && existing.tools.length > 0;
       ctx.db.player.identity.update({
         ...existing,
         room_code: code,
-        // Tools belong to the room, so a switch starts empty like a fresh join.
-        tools: existing.room_code === code ? existing.tools : [],
+        tools: keepTools ? existing.tools : toolkit,
         connected: true,
       });
       return;
@@ -91,9 +136,18 @@ export const joinRoom = spacetimedb.reducer(
       color: COLORS[ctx.random.integerInRange(0, COLORS.length - 1)],
       x: spawnCoord(ctx),
       y: spawnCoord(ctx),
-      tools: [],
+      tools: toolkit,
       connected: true,
     });
+  }
+);
+
+export const setTopic = spacetimedb.reducer(
+  { topic: t.string() },
+  (ctx, { topic }) => {
+    const room = hostedRoom(ctx);
+    if (!room) throw new SenderError('only the host can set the topic');
+    ctx.db.room.code.update({ ...room, topic });
   }
 );
 

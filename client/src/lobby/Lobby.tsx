@@ -3,12 +3,14 @@ import QRCode from 'qrcode';
 import { net } from '../net';
 import { roomUrl } from '../routing';
 import { animalName } from './names';
-import duality from '../../../content/duality.json';
+import content from '../../../content/newton.json';
 import './lobby.css';
 
-// The only content file we have. Its own `topic` field labels the option, so
-// the label cannot drift from what actually gets sent to start_game.
-const BUNDLED_CONTENT = duality;
+// content/newton.json is the contract: the filename is fixed, the contents are
+// Ean's. It still holds the wave-particle placeholder until he rewrites it for
+// Newton's laws. The option label reads the file's own `topic` field so it can
+// never drift from what actually gets sent to start_game.
+const BUNDLED_CONTENT = content;
 
 type TopicMode = 'scan' | 'enter' | 'fixed';
 
@@ -30,7 +32,12 @@ export function Lobby({ version }: LobbyProps) {
   const [copied, setCopied] = useState(false);
   const [mode, setMode] = useState<TopicMode>('fixed');
   const [typedTopic, setTypedTopic] = useState('');
+  const [topicSaved, setTopicSaved] = useState(false);
   const [starting, setStarting] = useState(false);
+
+  useEffect(() => {
+    if (room.topic) setTypedTopic(current => current || room.topic);
+  }, [room.topic]);
 
   useEffect(() => {
     if (!url) return;
@@ -55,6 +62,16 @@ export function Lobby({ version }: LobbyProps) {
     } catch {
       setCopied(false);
     }
+  };
+
+  // Persist the typed topic on blur or Enter. Start stays disabled for this
+  // option: the field is real, generating content from it is not.
+  const commitTopic = () => {
+    const next = typedTopic.trim();
+    if (!next || next === room.topic) return;
+    net.callReducer('setTopic', next);
+    setTopicSaved(true);
+    setTimeout(() => setTopicSaved(false), 1400);
   };
 
   const start = () => {
@@ -128,9 +145,20 @@ export function Lobby({ version }: LobbyProps) {
                     placeholder="e.g. Newton's laws"
                     onChange={event => setTypedTopic(event.target.value)}
                     onFocus={() => setMode('enter')}
+                    onBlur={commitTopic}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        commitTopic();
+                      }
+                    }}
                   />
                   <p className="lobby-note">
-                    Needs content generation, which is not wired yet.
+                    {topicSaved
+                      ? 'Saved.'
+                      : room.topic
+                        ? `Saved topic: ${room.topic}. Generating content from it is not wired yet.`
+                        : 'Saved to the room on blur or Enter. Generating content from it is not wired yet.'}
                   </p>
                 </span>
               </label>

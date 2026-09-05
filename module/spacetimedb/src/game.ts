@@ -1,5 +1,6 @@
 import { t, SenderError } from 'spacetimedb/server';
 import spacetimedb from './schema';
+import type { Ctx } from './schema';
 
 // content_json shape this reads:
 //   { "matrix": { "<toolId>": { "<monsterKind>": "strong" | "weak" | "none" } } }
@@ -28,6 +29,38 @@ function damageFor(contentJson: string, toolId: string, kind: string): number {
   }
 }
 
+/**
+ * The room this caller hosts. Prefer the one they are standing in: a host who
+ * opened "/" twice hosts more than one room, and scanning would pick an
+ * arbitrary one of them.
+ */
+function hostedRoom(ctx: Ctx) {
+  const player = ctx.db.player.identity.find(ctx.sender);
+  if (player) {
+    const current = ctx.db.room.code.find(player.room_code);
+    if (current && current.host.equals(ctx.sender)) return current;
+  }
+  for (const room of ctx.db.room.iter()) {
+    if (room.host.equals(ctx.sender)) return room;
+  }
+  return null;
+}
+
+function toolkitFrom(contentJson: string): string[] {
+  if (!contentJson) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(contentJson);
+  } catch {
+    return [];
+  }
+  const tools = (parsed as { tools?: unknown } | null)?.tools;
+  if (!Array.isArray(tools)) return [];
+  return tools
+    .map(tool => (tool as { id?: unknown } | null)?.id)
+    .filter((id): id is string => typeof id === 'string');
+}
+
 export const swing = spacetimedb.reducer(
   { monsterId: t.u32(), toolId: t.string() },
   (ctx, { monsterId, toolId }) => {
@@ -52,15 +85,23 @@ export const swing = spacetimedb.reducer(
 export const startGame = spacetimedb.reducer(
   { contentJson: t.string() },
   (ctx, { contentJson }) => {
-    let hosted = null as ReturnType<typeof ctx.db.room.code.find>;
-    for (const room of ctx.db.room.iter()) {
-      if (room.host.equals(ctx.sender)) {
-        hosted = room;
-        break;
-      }
-    }
+    const hosted = hostedRoom(ctx);
     if (!hosted) throw new SenderError('only the host can start the game');
 
-    ctx.db.room.code.update({ ...hosted, content_json: contentJson, phase: 'playing' });
+    ctx.db.room.code.update({
+      ...hosted,
+      content_json: contentJson,
+      phase: 'world1',
+      current_world: 1,
+    });
+
+    // Equip everyone already in the lobby. Without this only late joiners get
+    // tools, and the people who waited politely start empty-handed.
+    // Placeholder: per-world toolkits are progression, and progression is Ean's.
+    const toolIds = toolkitFrom(contentJson);
+    for (const player of [...ctx.db.player.room_code.filter(hosted.code)]) {
+      if (player.tools.length > 0) continue;
+      ctx.db.player.identity.update({ ...player, tools: toolIds });
+    }
   }
 );

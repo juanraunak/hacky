@@ -58,6 +58,7 @@ export default function App() {
     return <div className="app-message">connecting...</div>;
   }
 
-  // Everyone watches phase and transitions together.
-  return net.room().phase === 'playing' ? <GameView /> : <Lobby version={version} />;
+  // Everyone watches phase and transitions together. The lobby hands off as
+  // soon as phase leaves 'lobby'; which world it is, is the game's business.
+  return net.room().phase === 'lobby' ? <Lobby version={version} /> : <GameView />;
 }

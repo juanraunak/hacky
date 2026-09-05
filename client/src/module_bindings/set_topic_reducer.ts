@@ -10,11 +10,6 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export default __t.row({
-  code: __t.string().primaryKey(),
-  host: __t.identity(),
+export default {
   topic: __t.string(),
-  contentJson: __t.string().name("content_json"),
-  phase: __t.string(),
-  currentWorld: __t.u32().name("current_world"),
-});
+};

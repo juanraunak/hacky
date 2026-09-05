@@ -14,7 +14,12 @@ const spacetimedb = schema({
       host: t.identity(),
       topic: t.string(),
       content_json: t.string(),
-      phase: t.string(), // lobby | generating | playing | done
+      // lobby | world1 | world2 | world3 | done
+      // The lobby hands off to the game as soon as this leaves 'lobby'.
+      phase: t.string(),
+      // 0 while in the lobby, then 1..3. Appended with a default so the column
+      // auto-migrates instead of needing a wiping `publish -c`.
+      current_world: t.u32().default(0),
     }
   ),
 

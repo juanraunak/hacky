@@ -38,6 +38,7 @@ export const Room = __t.object("Room", {
   topic: __t.string(),
   contentJson: __t.string(),
   phase: __t.string(),
+  currentWorld: __t.u32(),
 });
 export type Room = __Infer<typeof Room>;
 

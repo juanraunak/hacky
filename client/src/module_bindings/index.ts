@@ -37,6 +37,7 @@ import {
 import CreateRoomReducer from "./create_room_reducer";
 import JoinRoomReducer from "./join_room_reducer";
 import SetPositionReducer from "./set_position_reducer";
+import SetTopicReducer from "./set_topic_reducer";
 import StartGameReducer from "./start_game_reducer";
 import SwingReducer from "./swing_reducer";
 
@@ -97,6 +98,7 @@ const reducersSchema = __reducers(
   __reducerSchema("create_room", CreateRoomReducer),
   __reducerSchema("join_room", JoinRoomReducer),
   __reducerSchema("set_position", SetPositionReducer),
+  __reducerSchema("set_topic", SetTopicReducer),
   __reducerSchema("start_game", StartGameReducer),
   __reducerSchema("swing", SwingReducer),
 );

@@ -22,6 +22,12 @@ than a shallow generic one. Dynamic topics are the roadmap, not the demo.
 
 Played in sequence. The party travels together.
 
+`room.phase` is the agreed value: `lobby | world1 | world2 | world3 | done`,
+with `room.current_world` as `0` in the lobby then `1..3`. The lobby hands off
+to the game the moment phase leaves `lobby`; everything after that is the
+game's business. `start_game` sets `world1` / `1`; advancing from there is
+Ean's.
+
 **World 1 — The Orchard.** Spawn beside Newton under the tree, friends nearby,
 book, apple. The host starts; Newton narrates what physics looked like before
 him, walks to the tree, and the apple falls. History framing the physics.
@@ -50,9 +56,10 @@ intuition says should work and don't — are the point, not a garnish.
 A boss requires two or more specific tools, so nobody finishes by mashing one
 button.
 
-> `content/duality.json` is **the wrong topic now**. It was the wave-particle
-> worked example and needs replacing with Newton's laws content. Ean owns that
-> rewrite. Until it lands, the lobby's fixed-topic option still loads it.
+> `content/newton.json` is **the contract**: the filename is fixed and the lobby
+> imports it. The contents are still the wave-particle placeholder and need
+> rewriting for Newton's laws. That rewrite is Ean's, and he can change the file
+> freely without touching the lobby.
 
 ## Stack
 
@@ -115,6 +122,9 @@ net.identity(): string
 The game layer calls these and nothing else. It never imports the SpacetimeDB
 SDK or `module_bindings`. That is what lets the netcode be swapped, faked, or
 rewritten without touching the game.
+
+Reducer names for `callReducer`: `createRoom`, `joinRoom`, `setPosition`,
+`swing`, `startGame`, `setTopic`.
 
 `net` also carries additions that do not change any signature above:
 `status()`, `error()`, `isHost()`, `createRoom()`, `onChange()`, `getVersion()`,
@@ -194,6 +204,12 @@ Fifteen carry two each, so a boss that needs several property-counters landing
 together forces specialisation and shouting — which is the point.
 
 Map size stays **fixed**. Monster count scales with player count.
+
+**Not yet in force.** Right now `join_room` and `start_game` hand out the
+**full** toolkit — every tool id in `content_json` — because a one-link join
+must never drop someone into a running world with nothing to swing. Narrowing
+that to `slotsPerPlayer` is progression, and progression is Ean's. The formula
+above is the target, not the current behaviour.
 
 ## Workflow
 

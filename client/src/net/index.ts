@@ -30,7 +30,10 @@ export interface Room {
   code: string;
   topic: string;
   contentJson: string;
+  /** lobby | world1 | world2 | world3 | done */
   phase: string;
+  /** 0 in the lobby, then 1..3. */
+  currentWorld: number;
 }
 
 export type Status = 'idle' | 'connecting' | 'connected' | 'error';
@@ -118,6 +121,7 @@ interface RoomRow {
   topic: string;
   contentJson: string;
   phase: string;
+  currentWorld: number;
 }
 
 function toPlayer(row: PlayerRow): Player {
@@ -250,12 +254,19 @@ export const net = {
       topic: '',
       contentJson: '',
       phase: 'lobby',
+      currentWorld: 0,
     };
     if (!conn) return empty;
     for (const row of conn.db.room.iter()) {
       const r = row as unknown as RoomRow;
       if (!subscribedCode || r.code === subscribedCode) {
-        return { code: r.code, topic: r.topic, contentJson: r.contentJson, phase: r.phase };
+        return {
+          code: r.code,
+          topic: r.topic,
+          contentJson: r.contentJson,
+          phase: r.phase,
+          currentWorld: r.currentWorld,
+        };
       }
     }
     return empty;
@@ -282,6 +293,9 @@ export const net = {
         return;
       case 'startGame':
         conn.reducers.startGame({ contentJson: args[0] });
+        return;
+      case 'setTopic':
+        conn.reducers.setTopic({ topic: args[0] });
         return;
       default:
         console.warn('[net] unknown reducer:', name, args);

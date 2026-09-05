@@ -94,8 +94,9 @@ through `client/src/net`.
 
 ## Known gap
 
-`content/duality.json` is the wrong topic — it was the wave-particle worked
-example. It needs replacing with Newton's laws content. Until it does, the
-lobby's fixed-topic option still loads it.
+`content/newton.json` is the contract — the filename is fixed and the lobby
+imports it. Its contents are still the wave-particle placeholder and need
+rewriting for Newton's laws. That is Ean's, and he can rewrite the file freely
+without touching the lobby.
 
 See `CLAUDE.md` for the full shared context and the SpacetimeDB 2.9.0 gotchas.
