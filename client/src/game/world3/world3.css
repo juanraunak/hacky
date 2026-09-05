@@ -1,0 +1,266 @@
+/* World 3 chrome. Selectors are plain class names on purpose: these class
+   names are used nowhere else, and depending on a .world3 ancestor is what
+   silently broke this stylesheet twice. */
+
+.world3 {
+  --sky: #2a1020;
+  background: var(--sky);
+}
+
+.hud-hint {
+  position: absolute;
+  bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgb(255 248 231 / 62%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.hud-status {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border: 3px solid #111;
+  border-radius: 12px;
+  background: #fff8e7;
+  color: #111;
+  box-shadow: 0 4px 0 #111;
+  font-size: 14px;
+}
+
+/* --- boss bar ----------------------------------------------------------- */
+
+.boss {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(560px, 82vw);
+  text-align: center;
+  pointer-events: none;
+}
+
+.boss-name {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(18px, 4.6vw, 30px);
+  letter-spacing: 0.04em;
+  color: #fff8e7;
+  -webkit-text-stroke: 3px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 3px 0 #111;
+  margin-bottom: 5px;
+}
+
+.boss-bar {
+  position: relative;
+  height: 22px;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #2a1020;
+  box-shadow: 0 4px 0 #111;
+  overflow: hidden;
+}
+
+.boss-fill {
+  height: 100%;
+  background: #ff4d4d;
+  transition: width 130ms steps(5);
+}
+
+.boss-notch {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: #111;
+}
+
+.boss-phase {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: #ffd93b;
+  text-shadow: 0 2px 0 #111;
+}
+
+/* --- your health -------------------------------------------------------- */
+
+.you {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left, 0px));
+  bottom: max(46px, env(safe-area-inset-bottom, 0px));
+  width: min(240px, 46vw);
+  pointer-events: none;
+}
+
+.you-label {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #fff8e7;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+  margin-bottom: 4px;
+}
+
+.you-bar {
+  height: 16px;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #2a1020;
+  box-shadow: 0 3px 0 #111;
+  overflow: hidden;
+}
+
+.you-fill {
+  height: 100%;
+  background: #4be36b;
+  transition: width 120ms steps(4);
+}
+
+.you-fill[data-low='true'] {
+  background: #ff4d4d;
+}
+
+/* --- the opening -------------------------------------------------------- */
+
+.intro {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: #05030a;
+  color: #fff8e7;
+  pointer-events: none;
+  transition: opacity 1200ms ease;
+}
+
+.intro[data-fading='true'] {
+  opacity: 0;
+}
+
+.intro-line {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(26px, 7vw, 56px);
+  letter-spacing: 0.05em;
+  -webkit-text-stroke: 3px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #111;
+}
+
+.intro-sub {
+  margin-top: 10px;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  color: #ffd93b;
+}
+
+/* shouted warning just before the drop */
+.warn {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-content: center;
+  pointer-events: none;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(30px, 9vw, 72px);
+  color: #ffd93b;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 5px 0 #111;
+  animation: warn-pulse 700ms ease-in-out infinite;
+}
+
+@keyframes warn-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.hit-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: #ff4d4d;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* --- the pay-off -------------------------------------------------------- */
+
+.victory {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: rgb(5 3 10 / 72%);
+  pointer-events: none;
+  animation: victory-in 520ms ease-out both;
+}
+
+@keyframes victory-in {
+  from { opacity: 0; transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.victory-line {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(34px, 11vw, 92px);
+  letter-spacing: 0.04em;
+  color: #ffd93b;
+  -webkit-text-stroke: 5px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 #111;
+}
+
+.victory-sub {
+  margin-top: 12px;
+  font-size: clamp(13px, 3.4vw, 18px);
+  letter-spacing: 0.22em;
+  color: #fff8e7;
+  text-shadow: 0 3px 0 #111;
+}
+
+/* --- you are out -------------------------------------------------------- */
+
+.downed {
+  position: absolute;
+  inset: 0;
+  z-index: 44;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: rgb(60 6 14 / 46%);
+  pointer-events: none;
+}
+
+.downed-line {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(28px, 9vw, 68px);
+  color: #ff4d4d;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 5px 0 #111;
+}
+
+.downed-sub {
+  margin-top: 10px;
+  font-size: clamp(13px, 3.4vw, 18px);
+  letter-spacing: 0.22em;
+  color: #fff8e7;
+  text-shadow: 0 3px 0 #111;
+}
