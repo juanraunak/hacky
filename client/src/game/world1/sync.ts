@@ -149,8 +149,15 @@ export function connectWorld({ roomCode, name, reset = false }: ConnectOptions):
 }
 
 function describe(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return String(err);
+  if (err instanceof Error && err.message) return err.message;
+  // The SDK hands back a raw DOM Event when the socket drops, and String()
+  // on that is the useless "[object Event]".
+  if (typeof Event !== 'undefined' && err instanceof Event) {
+    return err.type === 'error' ? 'the connection dropped' : `connection ${err.type}`;
+  }
+  if (err == null) return 'the connection dropped';
+  const text = String(err);
+  return text === '[object Object]' || text === '[object Event]' ? 'the connection dropped' : text;
 }
 
 function swallow(p: Promise<void>, what: string) {

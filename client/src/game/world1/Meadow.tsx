@@ -1,5 +1,6 @@
-// The place: rolling ground, swaying grass, the tree, the boundary wall,
-// rocks and bushes, and the far side you can see but not reach.
+// The place: rolling ground, swaying grass, the tree, the dirt path to the
+// cottage, the boundary wall, rocks and bushes, and a ring of low hills that
+// closes the horizon without ever being reachable.
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -8,9 +9,12 @@ import { GEO, outlineMaterial, Part, toonMaterial } from './toon';
 import {
   BUSH,
   CANOPY,
+  DIRT,
   GRASS,
   GRASS_BLADE,
   HILL,
+  HILL_DARK,
+  INK,
   ROOT,
   STONE,
   STONE_DARK,
@@ -18,7 +22,11 @@ import {
 } from './palette';
 import {
   BUSHES,
+  DETAIL_HALF,
+  DIRT_PATH,
   FAR_WALL_Z,
+  GROUND_HALF,
+  HILLS,
   MEADOW_HALF,
   NEAR_WALL_Z,
   NEWTON,
@@ -28,6 +36,8 @@ import {
   TRUNK_RADIUS,
   WALL_DEPTH,
   groundHeight,
+  hillBase,
+  hillSurface,
 } from './layout';
 
 const GRASS_COUNT = 2600;
@@ -46,13 +56,39 @@ function rng(seed: number) {
 
 function Ground() {
   const geometry = useMemo(() => {
-    const size = MEADOW_HALF * 2;
+    const size = DETAIL_HALF * 2;
     const g = new THREE.PlaneGeometry(size, size, 72, 72);
     g.rotateX(-Math.PI / 2);
     const pos = g.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       pos.setY(i, groundHeight(pos.getX(i), pos.getZ(i)));
     }
+    g.computeVertexNormals();
+    return g;
+  }, []);
+  return <mesh geometry={geometry} material={toonMaterial(GRASS)} receiveShadow />;
+}
+
+// Four flat quads framing the detailed plane, so the hills stand on ground.
+// The heightmap is zero at the seam, so the join is exact.
+function Skirt() {
+  const geometry = useMemo(() => {
+    const a = DETAIL_HALF;
+    const b = GROUND_HALF;
+    const quads: [number, number, number, number][] = [
+      [-b, a, b, b], // beyond +z
+      [-b, -b, b, -a], // beyond -z
+      [a, -a, b, a], // beyond +x
+      [-b, -a, -a, a], // beyond -x
+    ];
+    const positions: number[] = [];
+    for (const [x0, z0, x1, z1] of quads) {
+      // Two triangles per quad, wound so the normal points up.
+      positions.push(x0, 0, z0, x0, 0, z1, x1, 0, z1);
+      positions.push(x0, 0, z0, x1, 0, z1, x1, 0, z0);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     g.computeVertexNormals();
     return g;
   }, []);
@@ -102,6 +138,7 @@ function Grass() {
       if (Math.hypot(x - TREE.x, z - TREE.z) < TRUNK_RADIUS + 0.8) continue;
       if (Math.hypot(x - NEWTON.x, z - NEWTON.z) < 2.2) continue;
       if (Math.abs(z - FAR_WALL_Z) < 1.0) continue;
+      if (nearPath(x, z, 1.6)) continue;
       if (ROCKS.some(r => Math.hypot(x - r.x, z - r.z) < r.r)) continue;
       dummy.position.set(x, groundHeight(x, z) - 0.02, z);
       dummy.rotation.set(0, random() * Math.PI, 0);
@@ -121,6 +158,197 @@ function Grass() {
 
   return <instancedMesh ref={mesh} args={[geometry, material, GRASS_COUNT]} />;
 }
+
+// --- the dirt path ------------------------------------------------------
+
+function resample(points: [number, number][], step: number): [number, number][] {
+  const out: [number, number][] = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    const [ax, az] = points[i - 1];
+    const [bx, bz] = points[i];
+    const d = Math.hypot(bx - ax, bz - az);
+    const n = Math.max(1, Math.ceil(d / step));
+    for (let k = 1; k <= n; k++) {
+      out.push([ax + ((bx - ax) * k) / n, az + ((bz - az) * k) / n]);
+    }
+  }
+  return out;
+}
+
+const PATH_SAMPLES = resample(DIRT_PATH, 1.2);
+
+function nearPath(x: number, z: number, radius: number): boolean {
+  for (const [px, pz] of PATH_SAMPLES) {
+    if (Math.abs(px - x) < radius && Math.abs(pz - z) < radius) return true;
+  }
+  return false;
+}
+
+function ribbon(width: number, lift: number): THREE.BufferGeometry {
+  const positions: number[] = [];
+  const n = PATH_SAMPLES.length;
+  const left: [number, number][] = [];
+  const right: [number, number][] = [];
+  for (let i = 0; i < n; i++) {
+    const prev = PATH_SAMPLES[Math.max(0, i - 1)];
+    const next = PATH_SAMPLES[Math.min(n - 1, i + 1)];
+    let tx = next[0] - prev[0];
+    let tz = next[1] - prev[1];
+    const len = Math.hypot(tx, tz) || 1;
+    tx /= len;
+    tz /= len;
+    const [px, pz] = PATH_SAMPLES[i];
+    // Slight taper at both ends so the path fades into the grass.
+    const endFade = Math.min(1, Math.min(i, n - 1 - i) / 3 + 0.45);
+    const w = (width / 2) * endFade;
+    left.push([px + tz * w, pz - tx * w]);
+    right.push([px - tz * w, pz + tx * w]);
+  }
+  for (let i = 0; i < n - 1; i++) {
+    const a = left[i];
+    const b = right[i];
+    const c = left[i + 1];
+    const d = right[i + 1];
+    const y = (p: [number, number]) => groundHeight(p[0], p[1]) + lift;
+    positions.push(a[0], y(a), a[1], b[0], y(b), b[1], d[0], y(d), d[1]);
+    positions.push(a[0], y(a), a[1], d[0], y(d), d[1], c[0], y(c), c[1]);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function DirtPath() {
+  const edge = useMemo(() => ribbon(2.3, 0.06), []);
+  const fill = useMemo(() => ribbon(1.9, 0.1), []);
+  const inkMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: INK }), []);
+  return (
+    <group>
+      <mesh geometry={edge} material={inkMaterial} />
+      <mesh geometry={fill} material={toonMaterial(DIRT)} receiveShadow />
+    </group>
+  );
+}
+
+// --- the hills ----------------------------------------------------------
+
+function Hills() {
+  const body = useRef<THREE.InstancedMesh>(null);
+  const ink = useRef<THREE.InstancedMesh>(null);
+
+  useEffect(() => {
+    const b = body.current;
+    const k = ink.current;
+    if (!b || !k) return;
+    const dummy = new THREE.Object3D();
+    HILLS.forEach((hill, i) => {
+      dummy.position.set(hill.x, hillBase(hill), hill.z);
+      dummy.rotation.set(0, hill.yaw, 0);
+      dummy.scale.set(hill.rx, hill.ry, hill.rz);
+      dummy.updateMatrix();
+      b.setMatrixAt(i, dummy.matrix);
+      dummy.scale.multiplyScalar(1.015);
+      dummy.updateMatrix();
+      k.setMatrixAt(i, dummy.matrix);
+    });
+    b.instanceMatrix.needsUpdate = true;
+    k.instanceMatrix.needsUpdate = true;
+    b.frustumCulled = false;
+    k.frustumCulled = false;
+  }, []);
+
+  return (
+    <group>
+      <instancedMesh ref={body} args={[GEO.icosa, toonMaterial(HILL), HILLS.length]} receiveShadow />
+      <instancedMesh ref={ink} args={[GEO.icosa, outlineMaterial(), HILLS.length]} />
+    </group>
+  );
+}
+
+interface Placed {
+  x: number;
+  y: number;
+  z: number;
+  s: number;
+  yaw: number;
+}
+
+// Chunky rocks and bushes scattered over the hills, instanced so the whole
+// horizon costs four draw calls.
+function hillDecor(): { rocks: Placed[]; bushes: Placed[] } {
+  const random = rng(90210);
+  const rocks: Placed[] = [];
+  const bushes: Placed[] = [];
+  for (const hill of HILLS) {
+    const count = 2 + Math.floor(random() * 2);
+    for (let i = 0; i < count; i++) {
+      const a = random() * Math.PI * 2;
+      const r = 0.3 + random() * 0.45;
+      const x = hill.x + Math.cos(a) * hill.rx * r;
+      const z = hill.z + Math.sin(a) * hill.rz * r;
+      const y = hillSurface(hill, x, z);
+      if (y === null) continue;
+      const spot: Placed = {
+        x,
+        y: y - 0.6,
+        z,
+        s: 1.6 + random() * 2.4,
+        yaw: random() * Math.PI,
+      };
+      if (random() < 0.55) rocks.push(spot);
+      else bushes.push(spot);
+    }
+  }
+  return { rocks, bushes };
+}
+
+function HillDecor() {
+  const { rocks, bushes } = useMemo(hillDecor, []);
+  const rockMesh = useRef<THREE.InstancedMesh>(null);
+  const rockInk = useRef<THREE.InstancedMesh>(null);
+  const bushMesh = useRef<THREE.InstancedMesh>(null);
+  const bushInk = useRef<THREE.InstancedMesh>(null);
+
+  useEffect(() => {
+    const dummy = new THREE.Object3D();
+    const fill = (
+      list: Placed[],
+      mesh: THREE.InstancedMesh | null,
+      outline: THREE.InstancedMesh | null,
+      squash: number
+    ) => {
+      if (!mesh || !outline) return;
+      list.forEach((p, i) => {
+        dummy.position.set(p.x, p.y, p.z);
+        dummy.rotation.set(0, p.yaw, 0);
+        dummy.scale.set(p.s, p.s * squash, p.s);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        dummy.scale.multiplyScalar(1.05);
+        dummy.updateMatrix();
+        outline.setMatrixAt(i, dummy.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      outline.instanceMatrix.needsUpdate = true;
+      mesh.frustumCulled = false;
+      outline.frustumCulled = false;
+    };
+    fill(rocks, rockMesh.current, rockInk.current, 0.8);
+    fill(bushes, bushMesh.current, bushInk.current, 0.9);
+  }, [rocks, bushes]);
+
+  return (
+    <group>
+      <instancedMesh ref={rockMesh} args={[GEO.rock, toonMaterial(STONE_DARK), rocks.length]} />
+      <instancedMesh ref={rockInk} args={[GEO.rock, outlineMaterial(), rocks.length]} />
+      <instancedMesh ref={bushMesh} args={[GEO.rock, toonMaterial(HILL_DARK), bushes.length]} />
+      <instancedMesh ref={bushInk} args={[GEO.rock, outlineMaterial(), bushes.length]} />
+    </group>
+  );
+}
+
+// --- the tree, the wall, and the close scenery --------------------------
 
 function Tree() {
   const y = groundHeight(TREE.x, TREE.z);
@@ -155,7 +383,6 @@ function Tree() {
           outline={0.06}
         />
       ))}
-      {/* three thick branches reaching into the canopy */}
       <Part
         geometry={GEO.cylinder}
         color={TRUNK}
@@ -210,11 +437,7 @@ function wallStones(): Stone[] {
   const random = rng(4242);
   const stones: Stone[] = [];
   const step = 2.45;
-  const along = (
-    from: [number, number],
-    to: [number, number],
-    yaw: number
-  ) => {
+  const along = (from: [number, number], to: [number, number], yaw: number) => {
     const len = Math.hypot(to[0] - from[0], to[1] - from[1]);
     const n = Math.ceil(len / step);
     for (let i = 0; i <= n; i++) {
@@ -320,14 +543,8 @@ function Bushes() {
   );
 }
 
-// Beyond the wall: hills and a few small trees. Visible from the meadow,
-// never reachable.
-function FarSide() {
-  const hills: [number, number, number][] = [
-    [-34, -54, 22],
-    [8, -58, 26],
-    [44, -52, 20],
-  ];
+// A few trees beyond the far wall. Visible from the meadow, never reachable.
+function FarTrees() {
   const trees: [number, number, number][] = [
     [-22, -44, 0.55],
     [16, -47, 0.6],
@@ -336,21 +553,8 @@ function FarSide() {
   ];
   return (
     <group>
-      {hills.map(([x, z, s], i) => (
-        <Part
-          key={`h${i}`}
-          geometry={GEO.icosa}
-          color={HILL}
-          flat
-          position={[x, -s * 0.55, z]}
-          scale={[s, s * 0.5, s * 0.8]}
-          outline={0.02}
-          castShadow={false}
-          receiveShadow
-        />
-      ))}
       {trees.map(([x, z, s], i) => (
-        <group key={`t${i}`} position={[x, groundHeight(x, z), z]} scale={s}>
+        <group key={i} position={[x, groundHeight(x, z), z]} scale={s}>
           <Part
             geometry={GEO.taperedCylinder}
             color={TRUNK}
@@ -360,13 +564,7 @@ function FarSide() {
             outline={0.05}
           />
           <Part geometry={GEO.icosa} color={CANOPY[2]} flat position={[0, 7.5, 0]} scale={3.8} />
-          <Part
-            geometry={GEO.icosa}
-            color={CANOPY[0]}
-            flat
-            position={[2.2, 6.4, 0.8]}
-            scale={2.8}
-          />
+          <Part geometry={GEO.icosa} color={CANOPY[0]} flat position={[2.2, 6.4, 0.8]} scale={2.8} />
         </group>
       ))}
     </group>
@@ -377,12 +575,16 @@ export function Meadow() {
   return (
     <group>
       <Ground />
+      <Skirt />
       <Grass />
+      <DirtPath />
       <Tree />
       <Wall />
       <Rocks />
       <Bushes />
-      <FarSide />
+      <Hills />
+      <HillDecor />
+      <FarTrees />
     </group>
   );
 }

@@ -30,8 +30,9 @@ export const local = {
   heading: Math.PI,
   /** True once the server gave us a spawn point. */
   spawned: false,
-  /** Camera orbit for third person. */
-  yaw: Math.PI, // camera sits behind the player, who starts facing the tree
+  /** Camera orbit for third person. Always heading + PI: the camera sits
+   *  behind the player, looking the way they walk. */
+  yaw: 0, // heading starts at PI (facing the tree), so the camera starts at 0
   pitch: 0.42,
   /** Walking speed estimate for the animation. */
   speed: 0,

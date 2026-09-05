@@ -6,6 +6,7 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Meadow } from './world1/Meadow';
 import { Newton } from './world1/Newton';
+import { Cottage } from './world1/Cottage';
 import { Apple } from './world1/Apple';
 import { LocalPlayer } from './world1/LocalPlayer';
 import { RemotePlayers } from './world1/RemotePlayers';
@@ -58,6 +59,7 @@ export default function World1({
         <hemisphereLight args={['#bfe6ff', '#4f8f3a', 0.95]} />
         <Meadow />
         <Newton />
+        <Cottage />
         <Apple />
         <RemotePlayers />
         <LocalPlayer />

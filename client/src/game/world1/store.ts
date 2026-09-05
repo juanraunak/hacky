@@ -152,5 +152,7 @@ export const useWorld = create<World1State>((set, get) => ({
 }));
 
 export const APPLE_EVENT = 'apple_fell';
+/** Newton stands, says his last line, and walks home to the cottage. */
+export const NEWTON_LEAVES = 'newton_leaves';
 export const WORLD_ID = 'world1';
 export const APPLE_ITEM = 'apple';

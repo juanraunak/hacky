@@ -47,6 +47,56 @@ export function flatGeometry(geometry: THREE.BufferGeometry): THREE.BufferGeomet
   return flat;
 }
 
+// Unlit flat colour. Only for surfaces that are meant to read as lit from the
+// inside, like a warm window at dusk. Not a glow effect: still flat paint.
+const basics = new Map<string, THREE.MeshBasicMaterial>();
+
+export function basicMaterial(color: string): THREE.MeshBasicMaterial {
+  let mat = basics.get(color);
+  if (!mat) {
+    mat = new THREE.MeshBasicMaterial({ color });
+    basics.set(color, mat);
+  }
+  return mat;
+}
+
+// A triangular prism, for a pitched roof: profile in the yz plane, extruded
+// along x. Non-indexed so the faces stay hard-edged with no shared normals.
+export function prismGeometry(halfWidth: number, halfDepth: number, height: number) {
+  const w = halfWidth;
+  const d = halfDepth;
+  const h = height;
+  const A: [number, number, number] = [-w, 0, -d];
+  const B: [number, number, number] = [-w, 0, d];
+  const C: [number, number, number] = [-w, h, 0];
+  const D: [number, number, number] = [w, 0, -d];
+  const E: [number, number, number] = [w, 0, d];
+  const F: [number, number, number] = [w, h, 0];
+  const tris = [
+    [A, B, C], // left gable
+    [D, F, E], // right gable
+    [A, F, D], // back slope
+    [A, C, F],
+    [B, E, F], // front slope
+    [B, F, C],
+    [A, D, E], // underside
+    [A, E, B],
+  ];
+  const positions = new Float32Array(tris.length * 9);
+  let i = 0;
+  for (const tri of tris) {
+    for (const v of tri) {
+      positions[i++] = v[0];
+      positions[i++] = v[1];
+      positions[i++] = v[2];
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
 let outline: THREE.MeshBasicMaterial | null = null;
 
 export function outlineMaterial(): THREE.MeshBasicMaterial {

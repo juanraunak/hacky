@@ -17,6 +17,17 @@ export const STONE = '#8a8a9a';
 export const STONE_DARK = '#6f6f80';
 export const BUSH = '#3b9d3a';
 export const HILL = '#4fae45';
+export const HILL_DARK = '#469b3d';
+export const DIRT = '#c08a52';
+
+// Newton's cottage
+export const COTTAGE_WALL = '#a89a86';
+export const COTTAGE_STONE = '#8d8071';
+export const COTTAGE_ROOF = '#a1543a';
+export const COTTAGE_DOOR_WOOD = '#7a4a2a';
+export const COTTAGE_DARK = '#241d18'; // the dark of the doorway
+export const WINDOW_WARM = '#ffb03a';
+export const WINDOW_BRIGHT = '#fff0b8';
 
 // Apple
 export const APPLE = '#ff4d4d';
