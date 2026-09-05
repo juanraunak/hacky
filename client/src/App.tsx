@@ -24,6 +24,8 @@ function gameFlags() {
     world: params.get('world') === '1',
     // ?world3=1 drops straight into the giant apple arena. Testing only.
     world3: params.get('world3') === '1',
+    // ?world2=1 drops straight into Newton's study. Testing only.
+    world2: params.get('world2') === '1',
   };
 }
 
@@ -63,14 +65,14 @@ export default function App() {
   useEffect(() => {
     // Only World 2: World 1 and World 3 open their own, and two connectWorld
     // calls would mean two sockets for one player.
-    if (!code || status !== 'connected' || livePhase !== 'world2') return;
+    if (!code || status !== 'connected' || (livePhase !== 'world2' && !flags.world2)) return;
     return connectWorld({ roomCode: code, name: nameOr(net.identity()) });
   }, [code, status, livePhase]);
 
   // Join once the subscription is live. join_room is idempotent server-side:
   // an identity that already has a row is reconnected, never duplicated.
   useEffect(() => {
-    if (!code || status !== 'connected' || flags.world || flags.world3) return;
+    if (!code || status !== 'connected' || flags.world || flags.world3 || flags.world2) return;
     let live = true;
     net.connect(code).then(() => {
       if (live) net.callReducer('joinRoom', code, nameOr(net.identity()));
@@ -89,6 +91,15 @@ export default function App() {
 
   // Straight into World 1, no lobby, no join on Juan's side. The world's own
   // enter_world creates the room if it does not exist yet.
+  if (code && flags.world2) {
+    return (
+      <>
+        <World2 />
+        <Journey world={2} />
+      </>
+    );
+  }
+
   if (code && flags.world3) {
     return (
       <World3 roomCode={code} name={nameOr(net.identity())} forcedCamera={flags.cam} />
