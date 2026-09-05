@@ -97,6 +97,19 @@ const spacetimedb = schema({
     }
   ),
 
+  // Append-only record of who reached what. Additive, auto-migrates.
+  run_event: table(
+    { public: true },
+    {
+      id: t.u32().primaryKey().autoInc(),
+      identity: t.identity(),
+      name: t.string(),
+      room_code: t.string().index('btree'),
+      kind: t.string().index('btree'),
+      at: t.timestamp(),
+    }
+  ),
+
   held_item: table(
     { public: true },
     {

@@ -48,6 +48,7 @@ import FireWorldEventReducer from "./fire_world_event_reducer";
 import JoinRoomReducer from "./join_room_reducer";
 import KillAppleReducer from "./kill_apple_reducer";
 import LeaveRoomReducer from "./leave_room_reducer";
+import LogEventReducer from "./log_event_reducer";
 import MovePlayerReducer from "./move_player_reducer";
 import PickUpItemReducer from "./pick_up_item_reducer";
 import ResetWorldReducer from "./reset_world_reducer";
@@ -67,6 +68,7 @@ import MonsterRow from "./monster_table";
 import PlayerRow from "./player_table";
 import PlayerPositionRow from "./player_position_table";
 import RoomRow from "./room_table";
+import RunEventRow from "./run_event_table";
 import StudyAppleRow from "./study_apple_table";
 import WorldEventRow from "./world_event_table";
 
@@ -152,6 +154,23 @@ const tablesSchema = __schema({
       { name: 'room_code_key', constraint: 'unique', columns: ['code'] },
     ],
   }, RoomRow),
+  runEvent: __table({
+    name: 'run_event',
+    indexes: [
+      { accessor: 'id', name: 'run_event_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'kind', name: 'run_event_kind_idx_btree', algorithm: 'btree', columns: [
+        'kind',
+      ] },
+      { accessor: 'room_code', name: 'run_event_room_code_idx_btree', algorithm: 'btree', columns: [
+        'roomCode',
+      ] },
+    ],
+    constraints: [
+      { name: 'run_event_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, RunEventRow),
   studyApple: __table({
     name: 'study_apple',
     indexes: [
@@ -198,6 +217,7 @@ const reducersSchema = __reducers(
   __reducerSchema("join_room", JoinRoomReducer),
   __reducerSchema("kill_apple", KillAppleReducer),
   __reducerSchema("leave_room", LeaveRoomReducer),
+  __reducerSchema("log_event", LogEventReducer),
   __reducerSchema("move_player", MovePlayerReducer),
   __reducerSchema("pick_up_item", PickUpItemReducer),
   __reducerSchema("reset_world", ResetWorldReducer),
@@ -219,6 +239,8 @@ type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "ta
     readonly "held_item": Omit<typeof tablesSchema.schemaType.tables["heldItem"], "accessorName"> & { readonly accessorName: "held_item" };
     /** @deprecated Use `playerPosition` instead. This alias will be removed in the next major version. */
     readonly "player_position": Omit<typeof tablesSchema.schemaType.tables["playerPosition"], "accessorName"> & { readonly accessorName: "player_position" };
+    /** @deprecated Use `runEvent` instead. This alias will be removed in the next major version. */
+    readonly "run_event": Omit<typeof tablesSchema.schemaType.tables["runEvent"], "accessorName"> & { readonly accessorName: "run_event" };
     /** @deprecated Use `studyApple` instead. This alias will be removed in the next major version. */
     readonly "study_apple": Omit<typeof tablesSchema.schemaType.tables["studyApple"], "accessorName"> & { readonly accessorName: "study_apple" };
     /** @deprecated Use `worldEvent` instead. This alias will be removed in the next major version. */
@@ -243,6 +265,7 @@ const REMOTE_MODULE = {
 const tableAccessorAliases = {
   "held_item": "heldItem",
   "player_position": "playerPosition",
+  "run_event": "runEvent",
   "study_apple": "studyApple",
   "world_event": "worldEvent",
 } as const;
@@ -269,6 +292,8 @@ export type DbView = __DbViewBase & {
   readonly "held_item": __DbViewBase["heldItem"];
   /** @deprecated Use `playerPosition` instead. This alias will be removed in the next major version. */
   readonly "player_position": __DbViewBase["playerPosition"];
+  /** @deprecated Use `runEvent` instead. This alias will be removed in the next major version. */
+  readonly "run_event": __DbViewBase["runEvent"];
   /** @deprecated Use `studyApple` instead. This alias will be removed in the next major version. */
   readonly "study_apple": __DbViewBase["studyApple"];
   /** @deprecated Use `worldEvent` instead. This alias will be removed in the next major version. */
@@ -281,6 +306,8 @@ export type Tables = __TablesBase & {
   readonly "held_item": __TablesBase["heldItem"];
   /** @deprecated Use `playerPosition` instead. This alias will be removed in the next major version. */
   readonly "player_position": __TablesBase["playerPosition"];
+  /** @deprecated Use `runEvent` instead. This alias will be removed in the next major version. */
+  readonly "run_event": __TablesBase["runEvent"];
   /** @deprecated Use `studyApple` instead. This alias will be removed in the next major version. */
   readonly "study_apple": __TablesBase["studyApple"];
   /** @deprecated Use `worldEvent` instead. This alias will be removed in the next major version. */

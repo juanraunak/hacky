@@ -83,6 +83,16 @@ export const Room = __t.object("Room", {
 });
 export type Room = __Infer<typeof Room>;
 
+export const RunEvent = __t.object("RunEvent", {
+  id: __t.u32(),
+  identity: __t.identity(),
+  name: __t.string(),
+  roomCode: __t.string(),
+  kind: __t.string(),
+  at: __t.timestamp(),
+});
+export type RunEvent = __Infer<typeof RunEvent>;
+
 export const StudyApple = __t.object("StudyApple", {
   id: __t.u64(),
   roomCode: __t.string(),

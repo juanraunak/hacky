@@ -9,6 +9,7 @@ import World2 from './game/World2';
 import World3 from './game/World3';
 import { Journey } from './game/Journey';
 import { LeaveRoom } from './game/LeaveRoom';
+import { Admin } from './admin/Admin';
 import { clearLaws, resetCombat } from './game/world3/combat';
 import { connectWorld } from './game/world1/sync';
 import './app-shell.css';
@@ -34,6 +35,9 @@ const flags = gameFlags();
 
 export default function App() {
   const route = useRoute();
+
+  // The admin view is its own thing: no party, no name, no game.
+  if (route.kind === 'admin') return <Admin />;
   const [hostError, setHostError] = useState<Error | null>(null);
   const [launching, setLaunching] = useState(false);
   const [myName, setMyName] = useState<string | null>(() => readName());
@@ -76,7 +80,11 @@ export default function App() {
     if (!code || status !== 'connected' || flags.world || flags.world3 || flags.world2) return;
     let live = true;
     net.connect(code).then(() => {
-      if (live) net.callReducer('joinRoom', code, nameOr(net.identity()));
+      if (live) {
+        const who0 = nameOr(net.identity());
+        net.callReducer('joinRoom', code, who0);
+        net.callReducer('logEvent', 'joined', who0);
+      }
     });
     return () => {
       live = false;
@@ -87,6 +95,7 @@ export default function App() {
   // disbanded. Before that it just means the subscription has not landed yet.
   const hasRoom = net.hasRoom();
   const everHadRoom = useRef(false);
+  const reported = useRef('');
   if (hasRoom) everHadRoom.current = true;
   const disbanded = everHadRoom.current && !hasRoom;
 
@@ -208,6 +217,13 @@ export default function App() {
   if (phase === 'lobby') return <Lobby version={version} />;
 
   const who = nameOr(net.identity());
+
+  // Report the milestone once per phase, so the dashboard shows how far each
+  // player actually got.
+  if (phase && phase !== 'lobby' && reported.current !== phase) {
+    reported.current = phase;
+    net.callReducer('logEvent', phase === 'done' ? 'finished' : phase, who);
+  }
 
   if (phase === 'done') {
     return (

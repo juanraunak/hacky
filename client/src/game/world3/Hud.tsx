@@ -133,6 +133,7 @@ function Victory({ at }: { at: number }) {
       window.setTimeout(() => setStep(1), 1900), // debris has landed
       window.setTimeout(() => setStep(2), 5200), // start the cut
       window.setTimeout(() => {
+        net.callReducer('logEvent', 'finished', '');
         resetCombat();
         net.callReducer('advanceWorld', 0);
         // Land on the clean room URL. A reload guarantees the party screen,
