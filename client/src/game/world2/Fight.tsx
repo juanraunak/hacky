@@ -3,13 +3,14 @@
 // Every apple, small or big, is in the air for exactly the same time. The big
 // ones look like they are arriving first because they are bigger, and they
 // are not. That is the entire lesson and nothing in the game says it out loud
-// except one line in the notebook after the second wave.
+// except one line in the notebook after the second wave, which the Director
+// writes.
 //
 // One client in the room conducts: it decides the wave and inserts the rows.
 // The conductor is simply whoever has the lowest identity, so there is no
 // election, and if they leave the next one picks it up on the following frame.
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GEO, Part } from '../world1/toon';
@@ -36,7 +37,7 @@ import {
 import { fireWorldEvent, killApple, spawnWave, type AppleSpec } from '../world1/sync';
 import { local } from '../world1/local';
 import { useStudy } from './studyStore';
-import { NOTE_NOT_FASTER, SAY } from './story2';
+import { THRICE } from './story2';
 import { thud } from './sound';
 
 const SIZES = ['small', 'big', 'medium', 'big', 'small', 'medium'];
@@ -181,7 +182,6 @@ export function Fight() {
   const lastSwing = useRef(0);
   const clearedAt = useRef<Record<number, number>>({});
   const thumped = useRef<Set<string>>(new Set());
-  const notedWave2 = useRef(false);
   const saidThrice = useRef(false);
 
   // Only apples still worth drawing, capped so a stalled client cannot end up
@@ -193,12 +193,6 @@ export function Fight() {
       .sort((a, b) => a.spawnAt - b.spawnAt)
       .slice(0, MAX_ON_SCREEN);
   }, [apples]);
-
-  useEffect(() => {
-    if (!done) return;
-    const t = window.setTimeout(() => useStudy.getState().say(SAY.biggerNotebook), 1400);
-    return () => window.clearTimeout(t);
-  }, [done]);
 
   useFrame(() => {
     const store = useWorld.getState();
@@ -254,7 +248,7 @@ export function Fight() {
         const times = study.markThump();
         if (times >= 3 && !saidThrice.current) {
           saidThrice.current = true;
-          study.say(SAY.thrice);
+          study.say(...THRICE.lines);
         }
       }
     }
@@ -278,10 +272,6 @@ export function Fight() {
 
     if (!clearedAt.current[wave]) {
       clearedAt.current[wave] = performance.now();
-      if (wave === 2 && !notedWave2.current) {
-        notedWave2.current = true;
-        useStudy.getState().addNote(NOTE_NOT_FASTER);
-      }
       return;
     }
     if (performance.now() - clearedAt.current[wave] < WAVE_GAP_MS) return;
@@ -289,16 +279,6 @@ export function Fight() {
     if (wave >= WAVE_SIZES.length) fireWorldEvent(FIGHT_DONE);
     else startWave(wave + 1, store);
   });
-
-  // The notebook line lands for everyone, conductor or not.
-  useEffect(() => {
-    if (notedWave2.current) return;
-    const waves = Object.values(apples).map(a => a.wave);
-    if (waves.some(w => w >= 3)) {
-      notedWave2.current = true;
-      useStudy.getState().addNote(NOTE_NOT_FASTER);
-    }
-  }, [apples]);
 
   if (!identity) return null;
 

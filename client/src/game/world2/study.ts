@@ -36,6 +36,41 @@ export const PORTAL_H = 4.4;
 export const PORTAL_MOUTH = { x: PORTAL.x, y: 2.1, z: PORTAL.z - 0.6 } as const;
 
 export const NOTEBOOK = { x: ROOM_X - 0.32, y: 2.6, z: -1.5 } as const;
+
+// Where Newton stands to explain a thing. He walks to the thing he is
+// explaining, because that is what a man explaining something does.
+export const STATIONS: Record<string, { x: number; z: number }> = {
+  desk: { x: 0, z: -6.9 },
+  front: { x: 1.7, z: -3.4 },
+  floor: { x: -0.6, z: -1.6 },
+  notebook: { x: ROOM_X - 2.4, z: -1.5 },
+  aside: { x: -5.2, z: 1.6 },
+};
+
+export const NEWTON_WALK_SPEED = 1.7;
+
+/** Where Newton is right now. Written every frame, outside React. */
+export const newtonAt = { x: NEWTON_SPOT.x, z: NEWTON_SPOT.z };
+
+/** Anything past this line is out in the room; behind it is the desk nook. */
+export const DESK_LINE = DESK.z + DESK_D / 2 + 0.7;
+
+/**
+ * A route from where Newton is to where he is going. He cannot walk through
+ * his own desk, so crossing the desk line routes him around the end of it.
+ */
+export function newtonRoute(x: number, z: number): { x: number; z: number }[] {
+  const behindNow = newtonAt.z < DESK_LINE;
+  const behindThen = z < DESK_LINE;
+  if (behindNow === behindThen) return [{ x, z }];
+  const side = (behindThen ? newtonAt.x : x) >= 0 ? 1 : -1;
+  const corner = side * (DESK_W / 2 + 0.95);
+  return [
+    { x: corner, z: DESK.z },
+    { x: corner, z: DESK_LINE },
+    { x, z },
+  ];
+}
 export const BOOKSHELF = { x: -ROOM_X + 0.45, z: -1.0 } as const;
 
 export const PLAYER_RADIUS = 0.45;
@@ -55,7 +90,6 @@ export interface Box {
 // Things you cannot walk through. Rectangles, because a study is rectangles.
 export const BLOCKERS: Box[] = [
   { x: DESK.x, z: DESK.z, hx: DESK_W / 2 + 0.2, hz: DESK_D / 2 + 0.2 },
-  { x: NEWTON_SPOT.x, z: NEWTON_SPOT.z, hx: 0.7, hz: 0.6 },
   { x: BOOKSHELF.x, z: BOOKSHELF.z, hx: 0.5, hz: 2.6 },
 ];
 

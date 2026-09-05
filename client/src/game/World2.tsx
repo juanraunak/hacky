@@ -1,7 +1,6 @@
 // World 2 — Newton's study. Dim room, two candles, a drop test on the desk,
 // then the portal and five waves of apples that all fall at the same rate.
 
-import { useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { StudyRoom } from './world2/StudyRoom';
@@ -11,60 +10,14 @@ import { DropTest } from './world2/DropTest';
 import { Fight } from './world2/Fight';
 import { StudyPlayer } from './world2/StudyPlayer';
 import { StudyHud } from './world2/StudyHud';
+import { Director } from './world2/Director';
 import { TouchInput } from './world1/TouchInput';
 import { RemotePlayers } from './world1/RemotePlayers';
-import {
-  PEN_DROPPED,
-  PORTAL_OPEN,
-  STONE_DROPPED,
-  STUDY_ENTERED,
-  useWorld,
-} from './world1/store';
-import { fireWorldEvent } from './world1/sync';
-import { useStudy } from './world2/studyStore';
-import { SAY } from './world2/story2';
+import { useWorld } from './world1/store';
 import './world1/world1.css';
 import './world2/world2.css';
 
 const FLOOR = () => 0;
-
-/** Newton's opening line, and the portal once the drop test is done. */
-function StudyDirector() {
-  const entered = useWorld(s => s.events[STUDY_ENTERED]);
-  const stone = useWorld(s => s.events[STONE_DROPPED]);
-  const pen = useWorld(s => s.events[PEN_DROPPED]);
-  const portal = useWorld(s => s.events[PORTAL_OPEN]);
-
-  useEffect(() => {
-    if (!entered || Date.now() - entered.firedAt > 15000) return;
-    const t = window.setTimeout(() => useStudy.getState().say(SAY.entry), 1200);
-    return () => window.clearTimeout(t);
-  }, [entered]);
-
-  // The portal waits for the stone and the pen. The feather is not part of it.
-  useEffect(() => {
-    if (!stone || !pen || portal) return;
-    const say = window.setTimeout(() => useStudy.getState().say(SAY.lockedTheDoor), 2600);
-    const open = window.setTimeout(() => fireWorldEvent(PORTAL_OPEN), 6200);
-    return () => {
-      window.clearTimeout(say);
-      window.clearTimeout(open);
-    };
-  }, [stone, pen, portal]);
-
-  // It comes up behind the party, so he tells them to turn round.
-  useEffect(() => {
-    if (!portal || Date.now() - portal.firedAt > 18000) return;
-    const look = window.setTimeout(() => useStudy.getState().say(SAY.lookBehind), 600);
-    const knew = window.setTimeout(() => useStudy.getState().say(SAY.thatsNew), 5200);
-    return () => {
-      window.clearTimeout(look);
-      window.clearTimeout(knew);
-    };
-  }, [portal]);
-
-  return null;
-}
 
 export default function World2() {
   const isTouch = useWorld(s => s.isTouch);
@@ -109,7 +62,7 @@ export default function World2() {
         <Fight />
         <RemotePlayers groundY={FLOOR} />
         <StudyPlayer />
-        <StudyDirector />
+        <Director />
       </Canvas>
       {(isTouch || mode === 'third') && <TouchInput />}
       <StudyHud />

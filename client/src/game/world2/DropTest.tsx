@@ -20,8 +20,6 @@ import {
   type WorldEvent,
 } from '../world1/store';
 import { equipItem, fireWorldEvent } from '../world1/sync';
-import { useStudy } from './studyStore';
-import { SAY, NOTE_SAME_FALL } from './story2';
 import { thud } from './sound';
 
 export const STONE_ITEM_ID = 'stone';
@@ -228,38 +226,13 @@ function localHandZ() {
 }
 
 export function DropTest() {
-  const stone = useWorld(s => s.events[STONE_DROPPED]);
-  const pen = useWorld(s => s.events[PEN_DROPPED]);
-  const feather = useWorld(s => s.events[FEATHER_DROPPED]);
   const items = useMemo(() => ITEMS, []);
+  const pen = useWorld(s => s.events[PEN_DROPPED]);
 
-  // Newton reacts, the notebook writes, and the pen becomes everyone's.
+  // Dropping the pen arms the whole party, not just whoever let go of it.
   useEffect(() => {
-    if (!stone) return;
-    if (Date.now() - stone.firedAt > 8000) {
-      useStudy.getState().addNote(NOTE_SAME_FALL);
-      return;
-    }
-    const t = window.setTimeout(() => {
-      useStudy.getState().say(SAY.stone);
-      useStudy.getState().addNote(NOTE_SAME_FALL);
-    }, 700);
-    return () => window.clearTimeout(t);
-  }, [stone]);
-
-  useEffect(() => {
-    if (!pen) return;
-    equipItem(PEN_ITEM);
-    if (Date.now() - pen.firedAt > 8000) return;
-    const t = window.setTimeout(() => useStudy.getState().say(SAY.pen), 700);
-    return () => window.clearTimeout(t);
+    if (pen) equipItem(PEN_ITEM);
   }, [pen]);
-
-  useEffect(() => {
-    if (!feather || Date.now() - feather.firedAt > 12000) return;
-    const t = window.setTimeout(() => useStudy.getState().say(SAY.feather), 2600);
-    return () => window.clearTimeout(t);
-  }, [feather]);
 
   return (
     <group>
