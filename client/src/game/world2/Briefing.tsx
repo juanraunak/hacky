@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { fireWorldEvent } from '../world1/sync';
+import { net } from '../../net';
 import { useWorld } from '../world1/store';
 import { CELLAR_OPEN } from '../world1/store';
 import { grantWeapon, installAttackInput, selectWeapon, training } from '../world3/combat';
@@ -87,16 +88,23 @@ function WaitingForParty() {
   // Connected only: a disconnected row would hold the whole party hostage.
   const total = Math.max(1, Object.values(party).filter(p => p?.connected).length);
 
+  // Once everybody has trained, take the party through. Advancing the room's
+  // phase directly is the reliable move: relying on the cellar event reaching
+  // a portal button left people stuck in the study with no way out.
   useEffect(() => {
-    if (ready >= total) fireWorldEvent(CELLAR_OPEN);
+    if (ready < total) return;
+    fireWorldEvent(CELLAR_OPEN);
+    const t = window.setTimeout(() => net.callReducer('advanceWorld', 3), 1200);
+    return () => window.clearTimeout(t);
   }, [ready, total]);
 
-  if (ready >= total) return null;
   return (
     <div className="brief-wait">
       <b>TRAINED</b>
       <span>
-        waiting for the others · {ready} / {total}
+        {ready >= total
+          ? 'everyone is ready — going to the giant apple…'
+          : `waiting for the others · ${ready} / ${total}`}
       </span>
     </div>
   );

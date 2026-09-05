@@ -64,6 +64,11 @@ export interface PlayerRigProps {
   /** How far the camera sits back, landscape and portrait. */
   distance?: number;
   distancePortrait?: number;
+  /**
+   * Keep the camera itself inside the world. Small rooms need this or the
+   * camera sits outside the wall and you see through it.
+   */
+  clampCamera?: (x: number, y: number, z: number) => { x: number; y: number; z: number };
   /** How far you may tilt. World 3 needs to look up at something enormous. */
   pitchMin?: number;
   pitchMax?: number;
@@ -96,6 +101,7 @@ export function PlayerRig({
   walkSpeed,
   distance = 6,
   distancePortrait = 7.6,
+  clampCamera,
   pitchMin = PITCH_MIN,
   pitchMax = PITCH_MAX,
   spawnAt,
@@ -318,7 +324,8 @@ export function PlayerRig({
       const wx = tx + Math.sin(local.yaw) * cp * dist;
       const wz = tz + Math.cos(local.yaw) * cp * dist;
       const wy = Math.max(ty + Math.sin(local.pitch) * dist, ground(wx, wz) + 0.7);
-      const want = camPos.current.set(wx, wy, wz);
+      const fixed = clampCamera ? clampCamera(wx, wy, wz) : { x: wx, y: wy, z: wz };
+      const want = camPos.current.set(fixed.x, fixed.y, fixed.z);
       if (!camInit.current) {
         camera.position.copy(want);
         camInit.current = true;

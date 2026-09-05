@@ -21,6 +21,14 @@ export function StudyPlayer() {
       collide={resolveStudy}
       walkSpeed={WALK_SPEED}
       spawnAt={{ x: 0, z: 4, heading: Math.PI }}
+      distance={4.6}
+      distancePortrait={5.6}
+      clampCamera={(x, y, z) => {
+        // The study is 20 x 16 with a low ceiling, so the camera has to stay
+        // in the room or you end up looking through a wall.
+        const inside = resolveStudy(x, z);
+        return { x: inside.x, y: Math.min(y, 4.2), z: inside.z };
+      }}
       cameraTakenOver={() => briefing.active}
     >
       <HeldWeapon />

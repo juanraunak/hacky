@@ -22,6 +22,8 @@ function AppleIcon() {
   );
 }
 
+const SHOW_RESET = false; // no reset buttons anywhere
+
 export function Hud() {
   const connection = useWorld(s => s.connection);
   const error = useWorld(s => s.error);
@@ -49,7 +51,7 @@ export function Hud() {
         <div className="hint">click to look around · V for third person</div>
       )}
 
-      {connection === 'online' && (
+      {SHOW_RESET && connection === 'online' && (
         <button type="button" className="reset-button" onPointerDown={e => e.stopPropagation()} onClick={() => resetWorld()}>
           Reset
         </button>

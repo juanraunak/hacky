@@ -728,3 +728,30 @@
   .brief-dots span { width: 6px; height: 6px; border-width: 2px; }
   .brief-skip { display: none; }
 }
+
+.brief-boss {
+  all: unset;
+  margin-top: 10px;
+  padding: 16px 34px;
+  border: 3px solid #111;
+  border-radius: 16px;
+  background: #ff4d4d;
+  box-shadow: 0 6px 0 #111;
+  color: #fff8e7;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(20px, 5.4vw, 34px);
+  letter-spacing: 0.04em;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+  cursor: pointer;
+  touch-action: none;
+  pointer-events: auto;
+  animation: journey-pulse 1200ms ease-in-out infinite;
+}
+
+.brief-boss:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #111;
+}
+
+.brief-wait { pointer-events: auto; }
