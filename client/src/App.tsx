@@ -183,88 +183,27 @@ export default function App() {
         <div className="title-orbit title-orbit--two" aria-hidden="true" />
         <section className="title-card" aria-labelledby="game-title">
           <h1 id="game-title">Hacky</h1>
-          <div className="games-panel" aria-label="Current games">
-            <p className="title-kicker">Current games</p>
-            <button type="button" className="back-button" onClick={() => setHomeView('home')}>
-              Back
-            </button>
-            <button type="button" className="game-choice" onClick={() => setLaunching(true)}>
-              <span className="game-choice-art" aria-hidden="true" />
-              <span>
-                <b>Newton's Apple</b>
-                <i>Explore Newton's laws together</i>
-              </span>
-              <span className="game-choice-go">Play</span>
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (route.kind === 'host' && !launching) {
-    return (
-      <main className="title-screen">
-        <div className="title-orbit title-orbit--one" aria-hidden="true" />
-        <div className="title-orbit title-orbit--two" aria-hidden="true" />
-        <section className="title-card" aria-labelledby="game-title">
-          <h1 id="game-title">Hacky</h1>
-          {homeView === 'home' ? (
-            <>
-              {/* One line, first: what this is. Everything else is detail. */}
-              <p className="title-copy">Turn any topic you want to learn into a game.</p>
-
-              {/* The playable thing leads. Putting the two unbuilt options
-                  first made it read as though nothing worked yet -- the
-                  opposite of the truth. */}
-              <button type="button" className="title-play" onClick={() => setHomeView('games')}>
-                Play now
-              </button>
-              <p className="title-under">a full game, ready to play with your friends</p>
-
-              <ol className="title-how">
-                <li>
-                  <b>1</b>
-                  <span>Pick a game, get a code.</span>
-                </li>
-                <li>
-                  <b>2</b>
-                  <span>Friends join on their own phones — no app, no login.</span>
-                </li>
-                <li>
-                  <b>3</b>
-                  <span>
-                    Work out <em>what beats what</em> together. That is the lesson.
-                  </span>
-                </li>
-              </ol>
-
-              <p className="title-ways">More ways in, soon</p>
-              <div className="title-soon-row">
-                <button type="button" className="title-soon" disabled>
-                  Scan your book
-                </button>
-                <button type="button" className="title-soon" disabled>
-                  Type any topic
-                </button>
-              </div>
-            </>
-          ) : homeView === 'signin' ? (
+          {homeView === 'signin' ? (
             <SignIn onDone={() => setLaunching(true)} onBack={() => setHomeView('games')} />
           ) : (
             <div className="games-panel" aria-label="Current games">
+              <p className="title-kicker">Current games</p>
               <button type="button" className="back-button" onClick={() => setHomeView('home')}>
                 Back
               </button>
-              <p className="title-kicker">Current games</p>
+              {/* The first game is free. A second one asks who you are --
+                  see lobby/account.ts for why that is the only gate. */}
               <button
                 type="button"
                 className="game-choice"
                 onClick={() => (needsAccount() ? setHomeView('signin') : setLaunching(true))}
               >
-                <span className="game-choice-art" aria-hidden="true"><i /></span>
-                <span><strong>Newton’s Apple</strong><small>Explore Newton’s laws together</small></span>
-                <b>Play</b>
+                <span className="game-choice-art" aria-hidden="true" />
+                <span>
+                  <b>Newton's Apple</b>
+                  <i>Explore Newton's laws together</i>
+                </span>
+                <span className="game-choice-go">Play</span>
               </button>
             </div>
           )}
