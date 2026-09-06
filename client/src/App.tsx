@@ -7,13 +7,14 @@ import { nameOr, readName } from './lobby/playerName';
 import Lobby from './lobby/Lobby';
 import { SignIn } from './lobby/SignIn';
 import { markPlayed, needsAccount } from './lobby/account';
+import { namesToList, rememberRun, WEAPON_WORD } from './lobby/lastRun';
 import NewtonGame from './game/NewtonGame';
 import World2 from './game/World2';
 import World3 from './game/World3';
 import { Journey } from './game/Journey';
 import { LeaveRoom } from './game/LeaveRoom';
 import { Admin } from './admin/Admin';
-import { clearLaws, resetCombat } from './game/world3/combat';
+import { clearLaws, readCombat, resetCombat } from './game/world3/combat';
 import { connectWorld } from './game/world1/sync';
 import './app-shell.css';
 
@@ -248,6 +249,14 @@ export default function App() {
           type="button"
           className="app-button"
           onClick={() => {
+            // Same record the victory card makes: the FINISH button is the
+            // other way out of a run, and Newton's letter needs it either way.
+            rememberRun({
+              name: who,
+              weapon: WEAPON_WORD[readCombat().weapon ?? 'sword'] ?? 'sword',
+              party: namesToList(net.players().map(p => p.name).filter(n => n !== who)),
+              code: code ?? '',
+            });
             resetCombat();
             clearLaws();
             // Send the room back to the lobby for anyone still in it, then

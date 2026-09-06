@@ -1,19 +1,23 @@
-// The welcome mail, from the browser's side of it.
+// The letter Newton sends.
+//
+// Not a product welcome -- a note about a game they have already played: the
+// weapon they walked off with, who was on the wall with them, the code to get
+// back in. Those come from lastRun.ts, recorded on the way out of a run.
 //
 // Two ways to send, in this order:
 //
 // 1. EmailJS, when the three VITE_EMAILJS_* values are set. The mailbox is
-//    connected to EmailJS by OAuth and the browser holds only a public key,
-//    which is meant to be public -- the one way to send AS a Gmail address
-//    without a server. The mail text is composed here because EmailJS takes
-//    it as template parameters.
-// 2. /api/welcome otherwise: the Azure Function in ../api in production, the
-//    middleware in vite.config.ts in development. That path holds a Resend
-//    key server-side and writes its own text, so the browser sends nothing
-//    but an address.
+//    connected by OAuth and the browser holds only a public key, which is
+//    meant to be public -- the one way to send AS a Gmail address with no
+//    server. The letter is composed here because EmailJS takes it as
+//    template parameters.
+// 2. /api/welcome otherwise, which holds a Resend key server-side and writes
+//    the same letter from the same fields.
 //
 // A SpacetimeDB module has no outbound network, which is why neither of these
 // can live on the module.
+
+import { lobbyLink, readLastRun, type LastRun } from './lastRun';
 
 const EMAILJS = {
   service: (import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined) ?? '',
@@ -23,21 +27,46 @@ const EMAILJS = {
 const ENDPOINT =
   (import.meta.env.VITE_WELCOME_EMAIL_URL as string | undefined) || '/api/welcome';
 
-const SUBJECT = 'Welcome to Hacky';
+interface Letter {
+  subject: string;
+  message: string;
+  run: LastRun;
+  link: string;
+}
 
-const BODY = [
-  'You are in.',
-  '',
-  'Hacky turns a topic into a game your whole group plays together on their',
-  'phones. Pick what to learn, share the code, and fight your way through it.',
-  '',
-  'Your first world is Newton’s laws of motion: the orchard, the study, and',
-  'the giant apple. Nobody finishes that one alone.',
-  '',
-  'See you in there.',
-].join('\n');
+/** Newton writes it. Short, in his voice, one link. */
+function letterFor(): Letter {
+  const run = readLastRun();
+  const link = lobbyLink(run.code);
+  const where = run.code ? `Same lobby, same code — ${run.code}.` : 'Same lobby, same door.';
 
-async function sendViaEmailJs(email: string): Promise<boolean> {
+  return {
+    run,
+    link,
+    subject: `The cellar's open. You left your ${run.weapon} on the wall.`,
+    message: [
+      `${run.name},`,
+      '',
+      'Last time you dropped a stone on my floor, fought off a portal of apples,',
+      'and took one of my weapons without asking.',
+      '',
+      "The cellar door is unlocked now. Whatever's been knocking down there has",
+      "stopped knocking, which I'm choosing to find reassuring.",
+      '',
+      `Your party's still on the wall: ${run.party}. ${where}`,
+      '',
+      `Go back down: ${link}`,
+      '',
+      `Bring the ${run.weapon}. It's a lot of paperwork if you don't.`,
+      '',
+      '— I. Newton',
+      '',
+      "P.S. Nobody's touched the feather. Good.",
+    ].join('\n'),
+  };
+}
+
+async function sendViaEmailJs(email: string, letter: Letter): Promise<boolean> {
   const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -45,15 +74,22 @@ async function sendViaEmailJs(email: string): Promise<boolean> {
       service_id: EMAILJS.service,
       template_id: EMAILJS.template,
       user_id: EMAILJS.publicKey,
-      // The template must use these names, and its "To email" field must be
-      // {{to_email}} -- otherwise every welcome mail goes to the account
-      // owner instead of to the player who just signed up. to_email and email
-      // are both sent because EmailJS's starter templates use either one.
+      // subject and message are the whole letter, so a template of just
+      // {{subject}} and {{message}} works with nothing else set up. The
+      // separate fields are there for laying it out in EmailJS instead.
+      //
+      // The template's "To email" must be {{to_email}} or every letter goes
+      // to the account owner rather than to the player who signed up.
       template_params: {
         to_email: email,
         email,
-        subject: SUBJECT,
-        message: BODY,
+        subject: letter.subject,
+        message: letter.message,
+        name: letter.run.name,
+        weapon: letter.run.weapon,
+        party_names: letter.run.party,
+        lobby_code: letter.run.code,
+        lobby_link: letter.link,
       },
     }),
   });
@@ -66,13 +102,20 @@ async function sendViaEmailJs(email: string): Promise<boolean> {
   return true;
 }
 
-async function sendViaEndpoint(email: string): Promise<boolean> {
+async function sendViaEndpoint(email: string, letter: Letter): Promise<boolean> {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    // Only the address. The endpoint writes the mail, so it cannot be talked
-    // into sending arbitrary text to arbitrary people.
-    body: JSON.stringify({ email }),
+    // Fields, not prose. The endpoint writes the letter itself, so it cannot
+    // be talked into mailing arbitrary text to arbitrary people.
+    body: JSON.stringify({
+      email,
+      name: letter.run.name,
+      weapon: letter.run.weapon,
+      party: letter.run.party,
+      code: letter.run.code,
+      link: letter.link,
+    }),
   });
   if (!res.ok) {
     console.warn(`[welcome] ${ENDPOINT} answered ${res.status} for ${email}`);
@@ -87,9 +130,12 @@ async function sendViaEndpoint(email: string): Promise<boolean> {
  * send is our problem, not something a player should be held up by.
  */
 export async function sendWelcome(email: string): Promise<boolean> {
+  const letter = letterFor();
   const viaEmailJs = EMAILJS.service && EMAILJS.template && EMAILJS.publicKey;
   try {
-    return viaEmailJs ? await sendViaEmailJs(email) : await sendViaEndpoint(email);
+    return viaEmailJs
+      ? await sendViaEmailJs(email, letter)
+      : await sendViaEndpoint(email, letter);
   } catch (err) {
     console.warn('[welcome] send failed', err);
     return false;

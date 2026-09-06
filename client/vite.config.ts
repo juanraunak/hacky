@@ -36,18 +36,20 @@ function welcomeApi(env: Record<string, string>): Plugin {
               res.end(JSON.stringify({ ok }));
             };
             try {
-              const email = String(JSON.parse(raw || '{}').email ?? '')
-                .trim()
-                .toLowerCase();
+              const body = JSON.parse(raw || '{}');
               // process.cwd(), not __dirname: this config is ESM (the package
               // is type: module), where __dirname does not exist. The dev
               // server always runs from client/.
+              // The query string busts Node's ESM cache. Without it the first
+              // version imported is the one this dev server keeps, and edits
+              // to the mail only take effect after a full restart.
               const mod = await import(
-                pathToFileURL(resolve(process.cwd(), '../api/welcome-mail.mjs')).href
+                `${pathToFileURL(resolve(process.cwd(), '../api/welcome-mail.mjs')).href}?t=${Date.now()}`
               );
-              const result = await mod.sendWelcomeMail(email, {
+              const result = await mod.sendWelcomeMail(body, {
                 apiKey: env.RESEND_API_KEY,
                 from: env.RESEND_FROM,
+                origin: `http://${req.headers.host ?? 'localhost:5173'}`,
               });
               if (!result.ok) {
                 console.warn(`[welcome] ${result.status}: ${result.detail}`);

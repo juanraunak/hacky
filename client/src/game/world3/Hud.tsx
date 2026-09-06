@@ -15,11 +15,14 @@ import {
   PLAYER_MAX_HP,
   RESPAWN_MS,
   phaseOf,
+  readCombat,
   selectWeapon,
   useCombat,
 } from './combat';
 import { ABILITY_LAW, ABILITY_NAME, BOSS_LINE, LAW_LINE, LAWS, MAG_SIZE } from './weapons';
 import { local } from '../world1/local';
+import { namesToList, rememberRun, WEAPON_WORD } from '../../lobby/lastRun';
+import { nameOr } from '../../lobby/playerName';
 
 /** Black screen, then the drop. Everyone sees the same beats on their own screen. */
 /**
@@ -134,6 +137,19 @@ function Victory({ at }: { at: number }) {
       window.setTimeout(() => setStep(2), 5200), // start the cut
       window.setTimeout(() => {
         net.callReducer('logEvent', 'finished', '');
+        // Newton's letter is about this run: what you were holding, who was
+        // on the wall with you, the code to get back in. Record it before
+        // resetCombat clears it and the redirect leaves the room.
+        rememberRun({
+          name: nameOr(net.identity()),
+          weapon: WEAPON_WORD[readCombat().weapon ?? 'sword'] ?? 'sword',
+          party: namesToList(
+            Object.values(useWorld.getState().party)
+              .map(p => p.name)
+              .filter(n => n !== nameOr(net.identity()))
+          ),
+          code: net.room().code,
+        });
         resetCombat();
         // Send the room back to the lobby for anyone still in it, then leave
         // the room entirely: beating the apple ends the run, so the way out is

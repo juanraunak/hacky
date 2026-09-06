@@ -14,17 +14,19 @@ app.http('welcome', {
   authLevel: 'anonymous',
   route: 'welcome',
   handler: async request => {
-    let email = '';
+    let body;
     try {
-      const body = await request.json();
-      email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+      body = await request.json();
     } catch {
       return { status: 400, jsonBody: { ok: false, error: 'expected JSON' } };
     }
 
-    const result = await sendWelcomeMail(email, {
+    const result = await sendWelcomeMail(body, {
       apiKey: process.env.RESEND_API_KEY,
       from: process.env.RESEND_FROM,
+      // The link in the letter is built from our own origin, never from
+      // anything the caller sends.
+      origin: process.env.SITE_ORIGIN || new URL(request.url).origin,
     });
 
     if (!result.ok) {
