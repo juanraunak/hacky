@@ -229,7 +229,8 @@ export default function App() {
   // soon as phase leaves 'lobby'; which world it is, is the game's business.
   // For now every phase past the lobby is World 1.
   const phase = net.room().phase;
-  if (phase === 'lobby') return <Lobby version={version} demo={flags.demo} />;
+  if (phase === 'lobby')
+    return <Lobby version={version} demo={flags.demo} demoHost={flags.demo && flags.host} />;
 
   const who = nameOr(net.identity());
 
