@@ -37,13 +37,14 @@ export function SignIn({ onDone, onBack }: { onDone: () => void; onBack: () => v
     try {
       const { created } = await net.signIn(address, passwordHash(address, password));
       setSignedIn(address);
-      // New account: say hello. Never block the game on it -- a mail that
-      // fails to send is our problem, not something they should wait for.
-      if (created) {
-        void sendWelcome(address).then(sent => {
-          if (sent) net.callReducer('markWelcomed', address);
-        });
-      }
+      // Every sign-in gets the letter, not just the first. Juan's call: an
+      // account that already existed -- from a test, or a second device --
+      // silently sent nothing, which reads as "the email is broken".
+      // Never block the game on it: a mail that fails to send is our problem.
+      void sendWelcome(address).then(sent => {
+        console.log(`[welcome] ${sent ? 'sent to' : 'FAILED for'} ${address} (new account: ${created})`);
+        if (sent) net.callReducer('markWelcomed', address);
+      });
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not sign you in.');
