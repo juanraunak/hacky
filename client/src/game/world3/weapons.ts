@@ -93,7 +93,17 @@ export const MAG_SIZE = 6;
 export const RELOAD_MS = 1500;
 
 /** More friends is a harder fight, not an easier one. */
+/** The stage demo wants a boss a crowd has to gang up on. */
+let demoMode = false;
+export function setDemo(on: boolean) {
+  demoMode = on;
+}
+
 export function bossHpFor(players: number): number {
+  if (demoMode) {
+    // Tough on purpose: a real wall, and every extra person adds a lot more.
+    return Math.round(900 * (1 + 0.9 * (Math.max(1, players) - 1)));
+  }
   // The whole journey is 5-10 minutes, so World 3 gets about two and a half
   // of them solo. Scaling still makes a party harder, not faster.
   // Deliberately easy for now: the point is finishing the journey.

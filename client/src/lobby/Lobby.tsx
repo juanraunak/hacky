@@ -18,11 +18,13 @@ import './lobby.css';
 const BUNDLED_CONTENT = content;
 
 export interface LobbyProps {
+  /** Stage demo: Start goes straight to the boss. */
+  demo?: boolean;
   /** Bump to re-render; the lobby reads live data from net on each pass. */
   version: number;
 }
 
-export function Lobby({ version }: LobbyProps) {
+export function Lobby({ version, demo = false }: LobbyProps) {
   void version;
 
   const room = net.room();
@@ -30,7 +32,12 @@ export function Lobby({ version }: LobbyProps) {
   const isHost = net.isHost();
   const me = net.identity();
 
-  const url = useMemo(() => (room.code ? roomUrl(room.code) : ''), [room.code]);
+  // Keep the demo flag in the invite link and QR: everyone who scans has to
+  // land in the same two-screen demo, not the full journey.
+  const url = useMemo(
+    () => (room.code ? roomUrl(room.code) + (demo ? '?demo=1' : '') : ''),
+    [room.code, demo]
+  );
   const [qr, setQr] = useState('');
   const [copied, setCopied] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -63,6 +70,9 @@ export function Lobby({ version }: LobbyProps) {
   const start = () => {
     setStarting(true);
     net.callReducer('startGame', JSON.stringify(BUNDLED_CONTENT));
+    // The demo is two screens: this one, then the fight. Skip the orchard and
+    // the study entirely.
+    if (demo) window.setTimeout(() => net.callReducer('advanceWorld', 3), 400);
   };
 
   const ordered = [...players].sort((a, b) => a.identity.localeCompare(b.identity));
