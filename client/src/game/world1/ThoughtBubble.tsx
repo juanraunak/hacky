@@ -64,13 +64,22 @@ export function ThoughtBubble() {
   const [fading, setFading] = useState(false);
   const [anchor, setAnchor] = useState<[number, number, number]>(SEAT_ANCHOR);
 
-  // A client that reconnects after the monologue already played still needs
-  // Newton to go home, so it fires the event itself. Insert-once server-side,
-  // so the racing clients cost nothing.
+  // Newton getting up is one fire-and-forget call, and fireWorldEvent drops
+  // silently when the world socket is not up yet -- which is exactly the case
+  // right after a join. Nothing retried it, so a single dropped call left him
+  // sitting under that tree forever and the party with nowhere to go.
+  //
+  // So keep asking until it lands. Insert-once server-side, so the racing
+  // clients cost nothing, and the effect tears the timer down the moment the
+  // event comes back.
   useEffect(() => {
     if (leaving || !apple) return;
-    if (Date.now() - apple.firedAt < MONOLOGUE_TOTAL_MS + 2000) return;
-    fireWorldEvent(NEWTON_LEAVES);
+    const due = () => Date.now() - apple.firedAt >= MONOLOGUE_TOTAL_MS + 2000;
+    if (due()) fireWorldEvent(NEWTON_LEAVES);
+    const id = window.setInterval(() => {
+      if (due()) fireWorldEvent(NEWTON_LEAVES);
+    }, 3000);
+    return () => window.clearInterval(id);
   }, [leaving, apple]);
 
   // The monologue.
