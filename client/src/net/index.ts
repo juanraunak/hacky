@@ -393,6 +393,9 @@ export const net = {
       case 'logEvent':
         conn.reducers.logEvent({ kind: args[0], name: args[1] ?? '' });
         return;
+      case 'claimHost':
+        conn.reducers.claimHost({});
+        return;
       case 'advanceWorld':
         conn.reducers.advanceWorld({ world: args[0] });
         return;

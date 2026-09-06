@@ -192,6 +192,19 @@ export const advanceWorld = spacetimedb.reducer(
   }
 );
 
+/**
+ * Take the party. Used only by the demo host link: the person holding that
+ * URL runs the demo, and everyone scanning the QR is a guest.
+ */
+export const claimHost = spacetimedb.reducer(ctx => {
+  const player = ctx.db.player.identity.find(ctx.sender);
+  if (!player) throw new SenderError('not in a room');
+  const room = ctx.db.room.code.find(player.room_code);
+  if (!room) throw new SenderError('no such room');
+  if (room.host.equals(ctx.sender)) return;
+  ctx.db.room.code.update({ ...room, host: ctx.sender });
+});
+
 export const setTopic = spacetimedb.reducer(
   { topic: t.string() },
   (ctx, { topic }) => {
