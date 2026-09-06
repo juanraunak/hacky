@@ -1,0 +1,229 @@
+/* Landing page. Split on a laptop, stacked on a phone, with the call to
+   action above the fold in both. */
+
+.lp {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  background: #f4f1ea;
+  color: #14140f;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 800;
+  padding: 0 clamp(18px, 5vw, 64px) 40px;
+  overflow-x: hidden;
+}
+
+.lp-top {
+  display: flex;
+  align-items: center;
+  height: 68px;
+}
+
+.lp-mark {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+  color: #14140f;
+  text-decoration: line-through;
+  text-decoration-thickness: 3px;
+}
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: center;
+  min-height: calc(100dvh - 140px);
+}
+
+/* --- left ---------------------------------------------------------------- */
+
+.lp-kicker,
+.lp-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: #6f6a5c;
+}
+
+.lp-kicker i {
+  width: 26px;
+  height: 2px;
+  background: #14140f;
+}
+
+.lp-meta {
+  margin: 22px 0 24px;
+}
+
+.lp-meta i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4be36b;
+}
+
+.lp-head {
+  margin: 0 0 20px;
+  line-height: 0.94;
+}
+
+.lp-head-a,
+.lp-head-b {
+  display: block;
+}
+
+.lp-head-a {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(44px, 8vw, 86px);
+  letter-spacing: -0.02em;
+}
+
+.lp-head-b {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(48px, 9vw, 96px);
+  letter-spacing: 0.01em;
+  color: #4bbd44;
+}
+
+.lp-line {
+  max-width: 34ch;
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(15px, 1.6vw, 18px);
+  line-height: 1.45;
+  color: #4a473e;
+}
+
+.lp-cta {
+  all: unset;
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 16px 30px;
+  border-radius: 4px;
+  background: #14140f;
+  color: #f4f1ea;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.lp-cta:hover { background: #2a2a20; }
+.lp-cta:active { transform: translateY(2px); }
+
+.lp-soon {
+  margin: 18px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8b8677;
+}
+
+.lp-soon b { color: #4a473e; font-weight: 800; }
+
+/* --- right --------------------------------------------------------------- */
+
+.lp-card {
+  position: relative;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 0 rgb(20 20 15 / 10%), 0 18px 40px rgb(20 20 15 / 12%);
+  overflow: hidden;
+}
+
+.lp-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(20 20 15 / 10%);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.lp-shot {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: #ffd79b;
+}
+
+.lp-frame {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 620ms ease;
+}
+
+.lp-frame[data-on='true'] { opacity: 1; }
+
+.shot-svg { width: 100%; height: 100%; display: block; }
+
+.lp-cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 18px;
+}
+
+.lp-cap p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #14140f;
+}
+
+.lp-dots { display: flex; gap: 5px; flex: none; }
+
+.lp-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #d9d4c6;
+  transition: width 200ms ease, background 200ms ease;
+}
+
+.lp-dots span[data-on='true'] { width: 20px; background: #14140f; }
+
+/* --- phone --------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .lp {
+    padding-bottom: 32px;
+  }
+
+  .lp-top { height: 56px; }
+
+  .lp-grid {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    min-height: 0;
+    align-items: start;
+  }
+
+  /* Text and the button first; the preview sits under it. */
+  .lp-left { order: 1; }
+  .lp-right { order: 2; }
+
+  .lp-kicker { margin-bottom: 12px; }
+  .lp-head { margin-bottom: 14px; }
+  .lp-line { max-width: none; }
+  .lp-meta { margin: 16px 0 18px; }
+
+  .lp-cta {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 17px;
+    font-size: 18px;
+  }
+
+  .lp-soon { text-align: center; }
+  .lp-cap p { font-size: 13px; }
+}

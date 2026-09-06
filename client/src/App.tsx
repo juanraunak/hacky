@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { net, useNet } from './net';
 import { useRoute, replaceWithRoom } from './routing';
 import { NamePrompt } from './lobby/NamePrompt';
+import { Landing } from './lobby/Landing';
 import { nameOr, readName } from './lobby/playerName';
 import Lobby from './lobby/Lobby';
 import NewtonGame from './game/NewtonGame';
@@ -165,6 +166,33 @@ export default function App() {
           Start a new party
         </button>
       </div>
+    );
+  }
+
+  if (route.kind === 'host' && !launching) {
+    if (homeView === 'home') return <Landing onPlay={() => setHomeView('games')} />;
+    return (
+      <main className="title-screen">
+        <div className="title-orbit title-orbit--one" aria-hidden="true" />
+        <div className="title-orbit title-orbit--two" aria-hidden="true" />
+        <section className="title-card" aria-labelledby="game-title">
+          <h1 id="game-title">Hacky</h1>
+          <div className="games-panel" aria-label="Current games">
+            <p className="title-kicker">Current games</p>
+            <button type="button" className="back-button" onClick={() => setHomeView('home')}>
+              Back
+            </button>
+            <button type="button" className="game-choice" onClick={() => setLaunching(true)}>
+              <span className="game-choice-art" aria-hidden="true" />
+              <span>
+                <b>Newton's Apple</b>
+                <i>Explore Newton's laws together</i>
+              </span>
+              <span className="game-choice-go">Play</span>
+            </button>
+          </div>
+        </section>
+      </main>
     );
   }
 
