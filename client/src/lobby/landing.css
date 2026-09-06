@@ -4,8 +4,8 @@
 .lp {
   min-height: 100dvh;
   box-sizing: border-box;
-  background: #f4f1ea;
-  color: #14140f;
+  background: #ffd79b;
+  color: #111;
   font-family: 'Nunito', system-ui, sans-serif;
   font-weight: 800;
   padding: 0 clamp(18px, 5vw, 64px) 40px;
@@ -20,9 +20,12 @@
 
 .lp-mark {
   font-family: 'Press Start 2P', monospace;
-  font-size: clamp(15px, 2.4vw, 20px);
+  font-size: clamp(14px, 2.2vw, 19px);
   letter-spacing: 0.02em;
-  color: #14140f;
+  color: #ffd93b;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #111;
 }
 
 .lp-grid {
@@ -43,13 +46,13 @@
   margin: 0 0 18px;
   font-size: 11px;
   letter-spacing: 0.22em;
-  color: #6f6a5c;
+  color: #6b5636;
 }
 
 .lp-kicker i {
-  width: 26px;
-  height: 2px;
-  background: #14140f;
+  width: 24px;
+  height: 3px;
+  background: #111;
 }
 
 .lp-meta {
@@ -76,20 +79,22 @@
 
 .lp-head-a,
 .lp-head-b {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-style: italic;
+  font-family: 'Bangers', Impact, sans-serif;
   font-weight: 400;
-  font-size: clamp(34px, 5.4vw, 62px);
-  letter-spacing: -0.02em;
+  font-size: clamp(38px, 6vw, 70px);
+  letter-spacing: 0.02em;
+  color: #111;
 }
 
 .lp-head-c {
-  margin-top: 8px;
+  margin-top: 12px;
   font-family: 'Press Start 2P', monospace;
-  font-size: clamp(26px, 4.4vw, 50px);
+  font-size: clamp(22px, 3.6vw, 42px);
   line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: #4bbd44;
+  color: #ff4d4d;
+  -webkit-text-stroke: 5px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 #111;
 }
 
 .lp-line {
@@ -108,57 +113,54 @@
   all: unset;
   box-sizing: border-box;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 15px 18px;
-  border: 1.5px solid rgb(20 20 15 / 22%);
-  border-radius: 5px;
-  background: transparent;
-  color: #14140f;
-  font-size: 16px;
+  border: 3px solid #111;
+  border-radius: 13px;
+  background: #fff8e7;
+  box-shadow: 0 5px 0 #111;
+  color: #111;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(19px, 2.4vw, 24px);
+  letter-spacing: 0.03em;
   cursor: not-allowed;
-  transition: transform 120ms ease, background 120ms ease;
+  opacity: 0.72;
+  transition: transform 110ms ease;
 }
 
 .lp-cta i {
+  font-family: 'Nunito', system-ui, sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 800;
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #8b8677;
+  color: #8a7a5a;
   flex: none;
 }
 
 .lp-cta--live {
-  background: #14140f;
-  border-color: #14140f;
-  color: #f4f1ea;
+  background: #ffd93b;
+  opacity: 1;
   cursor: pointer;
+  box-shadow: 0 6px 0 #111;
+  font-size: clamp(22px, 2.8vw, 28px);
 }
 
-.lp-cta--live i { color: #8fe27f; }
-.lp-cta--live:hover { background: #2a2a20; }
-.lp-cta--live:active { transform: translateY(2px); }
+.lp-cta--live i { color: #7a5a10; }
+.lp-cta--live:active { transform: translateY(4px); box-shadow: 0 2px 0 #111; }
 
 /* --- right --------------------------------------------------------------- */
 
 .lp-card {
   position: relative;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 0 rgb(20 20 15 / 10%), 0 18px 40px rgb(20 20 15 / 12%);
+  border: 3px solid #111;
+  border-radius: 16px;
+  background: #fff8e7;
+  box-shadow: 0 8px 0 #111;
   overflow: hidden;
-}
-
-.lp-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgb(20 20 15 / 10%);
-  border-radius: 8px;
-  pointer-events: none;
 }
 
 .lp-shot {
@@ -188,9 +190,9 @@
 
 .lp-cap p {
   margin: 0;
-  font-weight: 600;
+  font-weight: 800;
   font-size: 14px;
-  color: #14140f;
+  color: #111;
 }
 
 .lp-dots { display: flex; gap: 5px; flex: none; }
@@ -199,11 +201,12 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #d9d4c6;
+  border: 2px solid #111;
+  background: #e6dcc2;
   transition: width 200ms ease, background 200ms ease;
 }
 
-.lp-dots span[data-on='true'] { width: 20px; background: #14140f; }
+.lp-dots span[data-on='true'] { width: 20px; background: #ff4d4d; }
 
 /* --- phone --------------------------------------------------------------- */
 
