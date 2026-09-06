@@ -85,3 +85,17 @@
   font: 800 11px/1.35 'Nunito', system-ui, sans-serif;
   color: #8a7a5a;
 }
+
+/* The mail outcome, said out loud on the screen rather than in a console
+   nobody has open on a phone. */
+.signin-mail {
+  margin: 0.6rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid #111;
+  border-radius: 8px;
+  background: #fff8e7;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-align: center;
+  word-break: break-word;
+}

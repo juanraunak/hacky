@@ -66,7 +66,13 @@ function letterFor(): Letter {
   };
 }
 
-async function sendViaEmailJs(email: string, letter: Letter): Promise<boolean> {
+export interface SendResult {
+  ok: boolean;
+  /** EmailJS answers in plain text and the text is the actual reason. */
+  detail: string;
+}
+
+async function sendViaEmailJs(email: string, letter: Letter): Promise<SendResult> {
   const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -93,16 +99,18 @@ async function sendViaEmailJs(email: string, letter: Letter): Promise<boolean> {
       },
     }),
   });
+  const body = await res.text().catch(() => '');
   if (!res.ok) {
-    // EmailJS answers in plain text and the text is the real reason: wrong
-    // template id, origin not on the allowlist, and so on.
-    console.warn(`[welcome] emailjs ${res.status}: ${await res.text().catch(() => '')}`);
-    return false;
+    // Wrong template id, origin not on the allowlist, and so on. The text is
+    // worth surfacing: it is the difference between "we sent it and Gmail ate
+    // it" and "EmailJS rejected us".
+    console.warn(`[welcome] emailjs ${res.status}: ${body}`);
+    return { ok: false, detail: `EmailJS ${res.status}: ${body || 'no reason given'}` };
   }
-  return true;
+  return { ok: true, detail: `EmailJS accepted it for ${email}` };
 }
 
-async function sendViaEndpoint(email: string, letter: Letter): Promise<boolean> {
+async function sendViaEndpoint(email: string, letter: Letter): Promise<SendResult> {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -119,9 +127,9 @@ async function sendViaEndpoint(email: string, letter: Letter): Promise<boolean> 
   });
   if (!res.ok) {
     console.warn(`[welcome] ${ENDPOINT} answered ${res.status} for ${email}`);
-    return false;
+    return { ok: false, detail: `${ENDPOINT} answered ${res.status}` };
   }
-  return true;
+  return { ok: true, detail: `${ENDPOINT} accepted it` };
 }
 
 /**
@@ -129,15 +137,21 @@ async function sendViaEndpoint(email: string, letter: Letter): Promise<boolean> 
  * whether to mark the account as welcomed. Never throws: a mail that fails to
  * send is our problem, not something a player should be held up by.
  */
-export async function sendWelcome(email: string): Promise<boolean> {
+export async function sendWelcome(email: string): Promise<SendResult> {
   const letter = letterFor();
   const viaEmailJs = EMAILJS.service && EMAILJS.template && EMAILJS.publicKey;
+  if (!viaEmailJs && ENDPOINT === '/api/welcome') {
+    // Worth saying out loud: this is the state the deployed site was in for
+    // hours -- a build that did not pick the keys up sends nothing at all and
+    // says nothing about it.
+    console.warn('[welcome] no EmailJS keys in this build; falling back to', ENDPOINT);
+  }
   try {
     return viaEmailJs
       ? await sendViaEmailJs(email, letter)
       : await sendViaEndpoint(email, letter);
   } catch (err) {
     console.warn('[welcome] send failed', err);
-    return false;
+    return { ok: false, detail: err instanceof Error ? err.message : String(err) };
   }
 }
