@@ -11,8 +11,13 @@ const SHOTS: { caption: string; art: 'orchard' | 'study' | 'apple' }[] = [
   { caption: 'Then something enormous falls on the party.', art: 'apple' },
 ];
 
-function Art({ kind }: { kind: 'orchard' | 'study' | 'apple' }) {
+function Art({ kind }: { kind: string }) {
+  // A real frame from the game. The other two are still drawn until I can
+  // capture them cleanly.
   if (kind === 'orchard') {
+    return <img className="shot-img" src="/shots/orchard.jpg" alt="Newton under the tree in World 1" />;
+  }
+  if (kind === 'orchard-drawn') {
     return (
       <svg viewBox="0 0 320 200" className="shot-svg" aria-hidden="true">
         <rect width="320" height="200" fill="#ffd79b" />
@@ -104,31 +109,39 @@ export function Landing({ onPlay }: LandingProps) {
   return (
     <main className="lp">
       <header className="lp-top">
-        <span className="lp-mark">hacky</span>
+        <span className="lp-mark">HACKY</span>
       </header>
 
       <div className="lp-grid">
         <section className="lp-left">
-          <p className="lp-kicker"><i /> LEARN IT BY PLAYING IT</p>
-
           <h1 className="lp-head">
-            <span className="lp-head-a">Any topic,</span>
-            <span className="lp-head-b">playable.</span>
+            <span className="lp-head-a">Any topic</span>
+            <span className="lp-head-b">you want to learn,</span>
+            <span className="lp-head-c">playable.</span>
           </h1>
 
           <p className="lp-line">
-            Turn the topic that you want to learn into a game that you can play.
+            Turn the topic you want to learn into a game you want to play.
           </p>
 
           <p className="lp-meta"><i /> 5 MINUTES · ONE LINK · NO APP</p>
 
-          <button type="button" className="lp-cta" onClick={onPlay}>
-            Play now →
-          </button>
-
-          <p className="lp-soon">
-            Coming soon: <b>scan your book</b> · <b>type any topic</b>
-          </p>
+          {/* Three ways in. Scanning leads because that is the pitch; the
+              preset games are the one that works today. */}
+          <div className="lp-ways">
+            <button type="button" className="lp-cta lp-cta--main" disabled>
+              Scan your textbook
+              <i>coming soon</i>
+            </button>
+            <button type="button" className="lp-cta lp-cta--live" onClick={onPlay}>
+              See preset games
+              <i>play now</i>
+            </button>
+            <button type="button" className="lp-cta" disabled>
+              Type a topic
+              <i>coming soon</i>
+            </button>
+          </div>
         </section>
 
         <section className="lp-right" aria-label="What the game looks like">

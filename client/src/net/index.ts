@@ -342,7 +342,11 @@ export const net = {
     if (!conn) return empty;
     for (const row of conn.db.room.iter()) {
       const r = row as unknown as RoomRow;
-      if (!subscribedCode || r.code === subscribedCode) {
+      // Must match. Falling back to "the first room in the cache" meant that
+      // before the subscription applied -- or when another query had pulled
+      // some other room in -- you got a stranger's phase and were dropped
+      // into whatever world they were in, instead of your own lobby.
+      if (subscribedCode && r.code === subscribedCode) {
         return {
           code: r.code,
           topic: r.topic,

@@ -19,13 +19,10 @@
 }
 
 .lp-mark {
-  font-family: 'Bangers', Impact, sans-serif;
-  font-weight: 400;
-  font-size: 30px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(15px, 2.4vw, 20px);
   letter-spacing: 0.02em;
   color: #14140f;
-  text-decoration: line-through;
-  text-decoration-thickness: 3px;
 }
 
 .lp-grid {
@@ -68,27 +65,30 @@
 
 .lp-head {
   margin: 0 0 20px;
-  line-height: 0.94;
+  line-height: 1.02;
+}
+
+.lp-head-a,
+.lp-head-b,
+.lp-head-c {
+  display: block;
 }
 
 .lp-head-a,
 .lp-head-b {
-  display: block;
-}
-
-.lp-head-a {
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(44px, 8vw, 86px);
+  font-size: clamp(34px, 5.4vw, 62px);
   letter-spacing: -0.02em;
 }
 
-.lp-head-b {
-  font-family: 'Bangers', Impact, sans-serif;
-  font-weight: 400;
-  font-size: clamp(48px, 9vw, 96px);
-  letter-spacing: 0.01em;
+.lp-head-c {
+  margin-top: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(26px, 4.4vw, 50px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   color: #4bbd44;
 }
 
@@ -101,32 +101,46 @@
   color: #4a473e;
 }
 
+/* Three ways in, stacked. The live one is the only filled button. */
+.lp-ways { display: grid; gap: 9px; max-width: 380px; }
+
 .lp-cta {
   all: unset;
-  display: inline-block;
   box-sizing: border-box;
-  padding: 16px 30px;
-  border-radius: 4px;
-  background: #14140f;
-  color: #f4f1ea;
-  font-size: 17px;
-  letter-spacing: 0.02em;
-  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px;
+  border: 1.5px solid rgb(20 20 15 / 22%);
+  border-radius: 5px;
+  background: transparent;
+  color: #14140f;
+  font-size: 16px;
+  cursor: not-allowed;
   transition: transform 120ms ease, background 120ms ease;
 }
 
-.lp-cta:hover { background: #2a2a20; }
-.lp-cta:active { transform: translateY(2px); }
-
-.lp-soon {
-  margin: 18px 0 0;
-  font-size: 12px;
+.lp-cta i {
+  font-style: normal;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #8b8677;
+  flex: none;
 }
 
-.lp-soon b { color: #4a473e; font-weight: 800; }
+.lp-cta--live {
+  background: #14140f;
+  border-color: #14140f;
+  color: #f4f1ea;
+  cursor: pointer;
+}
+
+.lp-cta--live i { color: #8fe27f; }
+.lp-cta--live:hover { background: #2a2a20; }
+.lp-cta--live:active { transform: translateY(2px); }
 
 /* --- right --------------------------------------------------------------- */
 
@@ -226,4 +240,11 @@
 
   .lp-soon { text-align: center; }
   .lp-cap p { font-size: 13px; }
+}
+
+.shot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
