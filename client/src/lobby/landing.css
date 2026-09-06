@@ -251,3 +251,33 @@
   object-fit: cover;
   display: block;
 }
+
+/* Signed-in state and the two ways out of it. Deliberately quiet: it sits
+   under the calls to action and must never compete with them. */
+.lp-account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.8rem;
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 2px dashed rgba(17, 17, 17, 0.22);
+  font-size: 0.8rem;
+}
+.lp-account-who { color: rgba(17, 17, 17, 0.7); }
+.lp-account-who b { color: #111; font-weight: 700; }
+.lp-account-note { font-weight: 700; }
+.lp-account-acts { display: flex; gap: 0.5rem; }
+.lp-account-btn {
+  border: 2px solid #111;
+  border-radius: 7px;
+  background: #fff8e7;
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #111;
+}
+.lp-account-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+.lp-account-btn--danger { background: #ffdad6; }

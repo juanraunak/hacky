@@ -41,6 +41,7 @@ import BossResetReducer from "./boss_reset_reducer";
 import ClaimHostReducer from "./claim_host_reducer";
 import ClearStudyReducer from "./clear_study_reducer";
 import CreateRoomReducer from "./create_room_reducer";
+import DeleteAccountReducer from "./delete_account_reducer";
 import DisbandRoomReducer from "./disband_room_reducer";
 import DropItemReducer from "./drop_item_reducer";
 import EnterWorldReducer from "./enter_world_reducer";
@@ -225,6 +226,7 @@ const reducersSchema = __reducers(
   __reducerSchema("claim_host", ClaimHostReducer),
   __reducerSchema("clear_study", ClearStudyReducer),
   __reducerSchema("create_room", CreateRoomReducer),
+  __reducerSchema("delete_account", DeleteAccountReducer),
   __reducerSchema("disband_room", DisbandRoomReducer),
   __reducerSchema("drop_item", DropItemReducer),
   __reducerSchema("enter_world", EnterWorldReducer),

@@ -408,6 +408,9 @@ export const net = {
       case 'startFinalBattle':
         conn.reducers.startFinalBattle({});
         return;
+      case 'deleteAccount':
+        conn.reducers.deleteAccount({ email: String(args[0] ?? '') });
+        return;
       case 'leaveRoom':
         conn.reducers.leaveRoom({});
         return;

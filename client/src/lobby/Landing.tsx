@@ -3,7 +3,85 @@
 // stays above the fold.
 
 import { useEffect, useState } from 'react';
+import { net } from '../net';
+import { signedInEmail, signOut, forgetDevice } from './account';
 import './landing.css';
+
+/**
+ * Signed-in state, and the two ways out of it.
+ *
+ * Sign out forgets the address on this device; the account still exists and
+ * the same email and password bring it back. Delete removes the account row
+ * itself and then forgets the device entirely, so the next visit is somebody's
+ * first visit -- free game included.
+ */
+function AccountRow() {
+  const [email, setEmail] = useState<string | null>(() => signedInEmail());
+  const [confirming, setConfirming] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  if (!email) return null;
+
+  return (
+    <div className="lp-account">
+      <span className="lp-account-who">
+        Signed in as <b>{email}</b>
+      </span>
+
+      {note ? (
+        <span className="lp-account-note">{note}</span>
+      ) : confirming ? (
+        <span className="lp-account-acts">
+          <button
+            type="button"
+            className="lp-account-btn lp-account-btn--danger"
+            onClick={() => {
+              // Server first, while the address is still known here.
+              try {
+                net.callReducer('deleteAccount', email);
+              } catch {
+                // Never leave someone stuck signed in because a call failed.
+              }
+              forgetDevice();
+              setEmail(null);
+              setNote('Account deleted.');
+            }}
+          >
+            Yes, delete it
+          </button>
+          <button
+            type="button"
+            className="lp-account-btn"
+            onClick={() => setConfirming(false)}
+          >
+            Cancel
+          </button>
+        </span>
+      ) : (
+        <span className="lp-account-acts">
+          <button
+            type="button"
+            className="lp-account-btn"
+            onClick={() => {
+              signOut();
+              setEmail(null);
+              setNote('Signed out.');
+            }}
+          >
+            Sign out
+          </button>
+          <button
+            type="button"
+            className="lp-account-btn lp-account-btn--danger"
+            onClick={() => setConfirming(true)}
+          >
+            Delete account
+          </button>
+        </span>
+      )}
+    </div>
+  );
+}
 
 const SHOTS: { caption: string; art: 'orchard' | 'study' | 'apple' }[] = [
   { caption: 'Meet Newton. He is not having a good day.', art: 'orchard' },
@@ -142,6 +220,8 @@ export function Landing({ onPlay }: LandingProps) {
               <i>coming soon</i>
             </button>
           </div>
+
+          <AccountRow />
         </section>
 
         <section className="lp-right" aria-label="What the game looks like">

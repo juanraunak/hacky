@@ -47,6 +47,30 @@ export function setSignedIn(email: string): void {
   write(EMAIL_KEY, email.trim().toLowerCase());
 }
 
+function forget(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Same as write: storage can be disabled, and it is not worth failing over.
+  }
+}
+
+/**
+ * Sign out. The account itself is untouched -- signing back in with the same
+ * address and password returns you to it. `hacky.played` stays: this device
+ * really has played, and clearing it would hand out another free game to
+ * anyone who signs out.
+ */
+export function signOut(): void {
+  forget(EMAIL_KEY);
+}
+
+/** Sign out AND forget that this device ever played, for a true clean slate. */
+export function forgetDevice(): void {
+  forget(EMAIL_KEY);
+  forget(PLAYED_KEY);
+}
+
 /**
  * The gate, in one place: a second game, from someone we have never met.
  */

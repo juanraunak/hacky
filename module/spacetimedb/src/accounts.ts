@@ -8,7 +8,7 @@
 // itself. It records the account and says whether this call created it; the
 // browser sends the mail and calls markWelcomed.
 
-import { t } from 'spacetimedb/server';
+import { SenderError, t } from 'spacetimedb/server';
 import spacetimedb from './schema';
 import type { Ctx } from './schema';
 
@@ -94,5 +94,26 @@ export const markWelcomed = spacetimedb.reducer(
     const existing = ctx.db.account.email.find(address);
     if (!existing || existing.welcome_sent) return;
     ctx.db.account.email.update({ ...existing, welcome_sent: true });
+  }
+);
+
+/**
+ * Delete the account for the signed-in address. The row is removed outright
+ * rather than flagged: there is nothing in it worth keeping, and a player who
+ * asks to be forgotten should be forgotten.
+ *
+ * Only the identity currently attached to the account may delete it, so
+ * knowing somebody's address is not enough to remove their account.
+ */
+export const deleteAccount = spacetimedb.reducer(
+  { email: t.string() },
+  (ctx, { email }) => {
+    const address = email.trim().toLowerCase();
+    const existing = ctx.db.account.email.find(address);
+    if (!existing) return;
+    if (!existing.identity.equals(ctx.sender)) {
+      throw new SenderError('that account belongs to someone else');
+    }
+    ctx.db.account.email.delete(address);
   }
 );
