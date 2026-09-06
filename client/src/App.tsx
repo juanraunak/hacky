@@ -31,6 +31,9 @@ function gameFlags() {
     world3: params.get('world3') === '1',
     // ?world2=1 drops straight into Newton's study. Testing only.
     world2: params.get('world2') === '1',
+    // ?demo=1 is the stage demo: party screen, then straight into a much
+    // harder boss. No orchard, no study.
+    demo: params.get('demo') === '1',
   };
 }
 
@@ -220,7 +223,7 @@ export default function App() {
   // soon as phase leaves 'lobby'; which world it is, is the game's business.
   // For now every phase past the lobby is World 1.
   const phase = net.room().phase;
-  if (phase === 'lobby') return <Lobby version={version} />;
+  if (phase === 'lobby') return <Lobby version={version} demo={flags.demo} />;
 
   const who = nameOr(net.identity());
 

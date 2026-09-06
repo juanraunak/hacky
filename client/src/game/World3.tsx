@@ -13,7 +13,8 @@ import { TouchInput } from './world1/TouchInput';
 import { Hud } from './world3/Hud';
 import { connectWorld } from './world1/sync';
 import { useWorld, type CameraMode } from './world1/store';
-import { installAttackInput, resetCombat, training } from './world3/combat';
+import { grantWeapon, installAttackInput, resetCombat, training } from './world3/combat';
+import { setDemo } from './world3/weapons';
 import './world3/world3.css';
 
 const SKY = '#2a1020'; // volcanic night behind the fire
@@ -31,7 +32,16 @@ export default function World3({ roomCode, name = '', forcedCamera = null }: Wor
     // World 2 leaves training on. If it stays on, every hit here lands on a
     // practice dummy and the boss takes nothing.
     training.active = false;
+    // The stage demo skips Newton, so hand over the three laws here and make
+    // the apple a proper wall of a boss.
+    const demo = new URLSearchParams(window.location.search).get('demo') === '1';
+    setDemo(demo);
     resetCombat();
+    if (demo) {
+      grantWeapon('shield');
+      grantWeapon('sword');
+      grantWeapon('gun');
+    }
     return installAttackInput();
   }, []);
 
