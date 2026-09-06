@@ -35,6 +35,8 @@ function gameFlags() {
     // ?demo=1 is the stage demo: party screen, then straight into a much
     // harder boss. No orchard, no study.
     demo: params.get('demo') === '1',
+    // ?host=1 belongs to the demo link only: whoever holds that URL runs it.
+    host: params.get('host') === '1',
   };
 }
 
@@ -95,6 +97,9 @@ export default function App() {
         const who0 = nameOr(net.identity());
         net.callReducer('joinRoom', code, who0);
         net.callReducer('logEvent', 'joined', who0);
+        // The demo host link takes the party outright, so it never matters who
+        // happened to arrive first.
+        if (flags.host) window.setTimeout(() => net.callReducer('claimHost'), 300);
       }
     });
     return () => {

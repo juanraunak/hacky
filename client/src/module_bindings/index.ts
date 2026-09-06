@@ -38,6 +38,7 @@ import AdvanceWorldReducer from "./advance_world_reducer";
 import BossHitReducer from "./boss_hit_reducer";
 import BossModeReducer from "./boss_mode_reducer";
 import BossResetReducer from "./boss_reset_reducer";
+import ClaimHostReducer from "./claim_host_reducer";
 import ClearStudyReducer from "./clear_study_reducer";
 import CreateRoomReducer from "./create_room_reducer";
 import DisbandRoomReducer from "./disband_room_reducer";
@@ -221,6 +222,7 @@ const reducersSchema = __reducers(
   __reducerSchema("boss_hit", BossHitReducer),
   __reducerSchema("boss_mode", BossModeReducer),
   __reducerSchema("boss_reset", BossResetReducer),
+  __reducerSchema("claim_host", ClaimHostReducer),
   __reducerSchema("clear_study", ClearStudyReducer),
   __reducerSchema("create_room", CreateRoomReducer),
   __reducerSchema("disband_room", DisbandRoomReducer),
