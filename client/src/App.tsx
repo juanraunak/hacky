@@ -262,14 +262,14 @@ export default function App() {
             });
             resetCombat();
             clearLaws();
-            // Send the room back to the lobby for anyone still in it, then
-            // leave for the title screen. A real navigation, not a phase
-            // change: `flags` is read once at page load, so staying in the
-            // room with a ?world= flag still in it landed you straight back
-            // in that world the moment the phase became 'lobby'.
-            net.callReducer('advanceWorld', 0);
+            // Leave the room rather than sending it back to the lobby: the
+            // run is over, and putting the party back in 'lobby' is what
+            // pulled people still in the arena into a stale world.
+            // A real navigation, not a phase change -- a full page load is
+            // what guarantees the next game starts from nothing.
+            net.callReducer('leaveRoom');
             window.setTimeout(() => {
-              window.location.href = '/';
+              window.location.replace('/');
             }, 400);
           }}
         >

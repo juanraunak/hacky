@@ -151,12 +151,18 @@ function Victory({ at }: { at: number }) {
           code: net.room().code,
         });
         resetCombat();
-        // Send the room back to the lobby for anyone still in it, then leave
-        // the room entirely: beating the apple ends the run, so the way out is
-        // the title screen you started from, not the party you just finished.
-        net.callReducer('advanceWorld', 0);
+        // Leave the room; do NOT send it back to the lobby. advance_world(0)
+        // flipped the phase for everyone still standing in the arena, so their
+        // client tore the victory cut down mid-animation and re-rendered
+        // whatever the game store had loaded -- which is how people ended up
+        // back in Newton's study instead of at the start.
+        //
+        // Beating the apple ends the run. Each player walks out on their own
+        // timer, and the way out is the title screen, with a full page load so
+        // no combat, world or party state survives into the next game.
+        net.callReducer('leaveRoom');
         window.setTimeout(() => {
-          window.location.href = '/';
+          window.location.replace('/');
         }, 700);
       }, 6400),
     ];
