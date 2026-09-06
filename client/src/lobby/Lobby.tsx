@@ -20,21 +20,16 @@ const BUNDLED_CONTENT = content;
 export interface LobbyProps {
   /** Stage demo: Start goes straight to the boss. */
   demo?: boolean;
-  /**
-   * Demo host link. Holding that URL IS being the host -- no waiting on the
-   * server to agree about who arrived first.
-   */
-  demoHost?: boolean;
   /** Bump to re-render; the lobby reads live data from net on each pass. */
   version: number;
 }
 
-export function Lobby({ version, demo = false, demoHost = false }: LobbyProps) {
+export function Lobby({ version, demo = false }: LobbyProps) {
   void version;
 
   const room = net.room();
   const players = net.players();
-  const isHost = net.isHost() || demoHost;
+  const isHost = net.isHost();
   const me = net.identity();
 
   // Keep the demo flag in the invite link and QR: everyone who scans has to
@@ -152,7 +147,7 @@ export function Lobby({ version, demo = false, demoHost = false }: LobbyProps) {
             onClick={start}
             disabled={starting || !room.code}
           >
-            {starting ? 'Opening the orchard…' : 'Start the adventure'}
+            {starting ? 'Opening the orchard…' : demo ? 'Start the boss battle' : 'Start the adventure'}
           </button>
         </>
       ) : (

@@ -55,7 +55,7 @@ export default function App() {
   // The title screen deliberately creates nothing until the player presses
   // play. Once requested, createRoom is idempotent under StrictMode.
   useEffect(() => {
-    if (route.kind !== 'host' || !launching) return;
+    if (route.kind !== 'host' || !(launching || flags.demo)) return;
     let live = true;
     net
       .createRoom()
@@ -97,9 +97,6 @@ export default function App() {
         const who0 = nameOr(net.identity());
         net.callReducer('joinRoom', code, who0);
         net.callReducer('logEvent', 'joined', who0);
-        // The demo host link takes the party outright, so it never matters who
-        // happened to arrive first.
-        if (flags.host) window.setTimeout(() => net.callReducer('claimHost'), 300);
       }
     });
     return () => {
@@ -230,7 +227,7 @@ export default function App() {
   // For now every phase past the lobby is World 1.
   const phase = net.room().phase;
   if (phase === 'lobby')
-    return <Lobby version={version} demo={flags.demo} demoHost={flags.demo && flags.host} />;
+    return <Lobby version={version} demo={flags.demo} />;
 
   const who = nameOr(net.identity());
 

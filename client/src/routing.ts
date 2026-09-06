@@ -19,7 +19,9 @@ export function roomUrl(code: string): string {
 
 /** Host landing -> room URL, without adding a history entry to go back to. */
 export function replaceWithRoom(code: string): void {
-  window.history.replaceState({}, '', `/r/${code}`);
+  // Keep the query: the demo link carries ?demo=1, and losing it on the
+  // redirect would drop the host back into the full three-world journey.
+  window.history.replaceState({}, '', `/r/${code}${window.location.search}`);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
