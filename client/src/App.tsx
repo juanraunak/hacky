@@ -37,6 +37,9 @@ function gameFlags() {
     demo: params.get('demo') === '1',
     // ?host=1 belongs to the demo link only: whoever holds that URL runs it.
     host: params.get('host') === '1',
+    // ?signin=1 opens the sign-in door on its own, so the mail can be tested
+    // without playing a full run first.
+    signin: params.get('signin') === '1',
   };
 }
 
@@ -50,7 +53,9 @@ export default function App() {
   const [hostError, setHostError] = useState<Error | null>(null);
   const [launching, setLaunching] = useState(false);
   const [myName, setMyName] = useState<string | null>(() => readName());
-  const [homeView, setHomeView] = useState<'home' | 'games' | 'signin'>('home');
+  const [homeView, setHomeView] = useState<'home' | 'games' | 'signin'>(
+    flags.signin ? 'signin' : 'home'
+  );
 
   // The title screen deliberately creates nothing until the player presses
   // play. Once requested, createRoom is idempotent under StrictMode.
