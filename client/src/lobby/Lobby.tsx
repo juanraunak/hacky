@@ -20,16 +20,21 @@ const BUNDLED_CONTENT = content;
 export interface LobbyProps {
   /** Stage demo: Start goes straight to the boss. */
   demo?: boolean;
+  /**
+   * Demo host link. Holding that URL IS being the host -- no waiting on the
+   * server to agree about who arrived first.
+   */
+  demoHost?: boolean;
   /** Bump to re-render; the lobby reads live data from net on each pass. */
   version: number;
 }
 
-export function Lobby({ version, demo = false }: LobbyProps) {
+export function Lobby({ version, demo = false, demoHost = false }: LobbyProps) {
   void version;
 
   const room = net.room();
   const players = net.players();
-  const isHost = net.isHost();
+  const isHost = net.isHost() || demoHost;
   const me = net.identity();
 
   // Keep the demo flag in the invite link and QR: everyone who scans has to
@@ -69,10 +74,14 @@ export function Lobby({ version, demo = false }: LobbyProps) {
 
   const start = () => {
     setStarting(true);
+    if (demo) {
+      // advance_world takes any player, unlike start_game which insists on
+      // being the host. So the demo never depends on the server agreeing
+      // about who owns the party.
+      net.callReducer('advanceWorld', 3);
+      return;
+    }
     net.callReducer('startGame', JSON.stringify(BUNDLED_CONTENT));
-    // The demo is two screens: this one, then the fight. Skip the orchard and
-    // the study entirely.
-    if (demo) window.setTimeout(() => net.callReducer('advanceWorld', 3), 400);
   };
 
   const ordered = [...players].sort((a, b) => a.identity.localeCompare(b.identity));
