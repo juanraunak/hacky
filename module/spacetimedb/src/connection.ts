@@ -108,6 +108,15 @@ export const joinRoom = spacetimedb.reducer(
       throw new SenderError(`no room with code ${code}`);
     }
 
+    // Narrow on purpose: only a room whose host has NEVER joined it can be
+    // claimed. That is the pre-made demo room, where the code was created out
+    // of band and the first person through the link should own the party.
+    // A normal game is untouched -- its host always has a player row, so this
+    // can never take the party off someone who just dropped connection.
+    if (!ctx.db.player.identity.find(room.host)) {
+      ctx.db.room.code.update({ ...room, host: ctx.sender });
+    }
+
     // Past the lobby, anyone arriving is a late joiner and is equipped in full.
     const toolkit = room.phase === 'lobby' ? [] : toolkitFor(room.content_json);
 
