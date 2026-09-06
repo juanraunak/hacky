@@ -180,6 +180,46 @@ someone else has to approve.
 **Wiring gotcha:** the server looks up `matrix[toolId][monster.kind]`, so a
 monster row's `kind` column must equal the monster's `id` in the content file.
 
+## Accounts and the letter — built in Juan's folders
+
+Juan: this touches `lobby/`, `net/`, `schema.ts` and `index.ts`. Change any of
+it freely; this is the map, not a fence.
+
+**The gate.** The FIRST game asks nothing, and joining a link asks nothing
+ever — a guest who meets a form is a guest who leaves. Only creating a room of
+your own spends the free game (`markPlayed()` in App.tsx). Come back to the
+title screen and press Play again and `needsAccount()` sends you to
+`lobby/SignIn.tsx` instead.
+
+- `lobby/account.ts` — the whole rule, in localStorage (`hacky.played`, `hacky.email`)
+- `lobby/sha256.ts` — hashing. Not `crypto.subtle`: that only exists in a secure
+  context, so an account made over http LAN testing would not open on the https
+  site. **SHA-256 is fast and therefore a weak password hash.** Fine for a gate
+  that protects a second game; replace with argon2/bcrypt before this is real.
+- `accounts.ts` (module) — `signIn` creates the account or checks the hash, and
+  never throws: it writes the outcome to `auth_result` so "wrong password" is
+  tellable from "slow network". The `account` table is `public: false`, so no
+  client can read a hash.
+
+**The letter.** Newton writes to people who sign up, naming the weapon they
+finished with, their party and their room code. Runs record that on the way out
+(`lastRun.ts`, written from both exits — the victory card and FINISH).
+
+Sent from the browser, because a SpacetimeDB module has no outbound network:
+
+- **EmailJS** while the three `VITE_EMAILJS_*` values are set. Sends through
+  Gmail, so it reaches real players with no domain. Its keys are public by
+  design; the protection is Account → Security → Allowed origins.
+- **`/api/welcome`** otherwise — Azure Function in `api/`, mirrored as dev
+  middleware in `vite.config.ts`. Holds a Resend key server-side and writes its
+  own letter, so the route can't be used as an open relay. Unused right now:
+  Resend needs DNS on a domain we control, and `*.azurestaticapps.net` is
+  Microsoft's, so it could only ever mail our own inbox.
+
+Deployed Azure needs nothing extra for EmailJS. The Resend path would need
+`api_location: "api"` in the SWA build config and `RESEND_API_KEY` in
+Application Settings.
+
 ## Damage
 
 `module/spacetimedb/src/game.ts`:
