@@ -4,6 +4,8 @@ import { useRoute, replaceWithRoom } from './routing';
 import { NamePrompt } from './lobby/NamePrompt';
 import { nameOr, readName } from './lobby/playerName';
 import Lobby from './lobby/Lobby';
+import { SignIn } from './lobby/SignIn';
+import { markPlayed, needsAccount } from './lobby/account';
 import NewtonGame from './game/NewtonGame';
 import World2 from './game/World2';
 import World3 from './game/World3';
@@ -41,7 +43,7 @@ export default function App() {
   const [hostError, setHostError] = useState<Error | null>(null);
   const [launching, setLaunching] = useState(false);
   const [myName, setMyName] = useState<string | null>(() => readName());
-  const [homeView, setHomeView] = useState<'home' | 'games'>('home');
+  const [homeView, setHomeView] = useState<'home' | 'games' | 'signin'>('home');
 
   // The title screen deliberately creates nothing until the player presses
   // play. Once requested, createRoom is idempotent under StrictMode.
@@ -51,6 +53,10 @@ export default function App() {
     net
       .createRoom()
       .then(code => {
+        // Their free game is spent the moment one of their own actually
+        // starts. Joining someone else's link never comes through here, so a
+        // guest is never counted and never asked to sign in.
+        markPlayed();
         if (live) replaceWithRoom(code);
       })
       .catch((err: unknown) => {
@@ -221,13 +227,19 @@ export default function App() {
                 Play a ready-made game
               </button>
             </>
+          ) : homeView === 'signin' ? (
+            <SignIn onDone={() => setLaunching(true)} onBack={() => setHomeView('games')} />
           ) : (
             <div className="games-panel" aria-label="Current games">
               <button type="button" className="back-button" onClick={() => setHomeView('home')}>
                 Back
               </button>
               <p className="title-kicker">Current games</p>
-              <button type="button" className="game-choice" onClick={() => setLaunching(true)}>
+              <button
+                type="button"
+                className="game-choice"
+                onClick={() => (needsAccount() ? setHomeView('signin') : setLaunching(true))}
+              >
                 <span className="game-choice-art" aria-hidden="true"><i /></span>
                 <span><strong>Newton’s Apple</strong><small>Explore Newton’s laws together</small></span>
                 <b>Play</b>

@@ -270,6 +270,42 @@ function subscribeBoss(connection: DbConnection): void {
   }
 }
 
+/**
+ * Sign-in outcomes. The account table itself is private -- no client ever sees
+ * a password hash -- so the reducer reports how the attempt went here instead.
+ * A row is (identity, ok, created, message): nothing worth hiding, which is
+ * why it can be subscribed unfiltered.
+ */
+let authSubscribed = false;
+function subscribeAuth(connection: DbConnection): void {
+  if (authSubscribed) return;
+  authSubscribed = true;
+  try {
+    connection
+      .subscriptionBuilder()
+      .onError(() => console.warn('[net] auth subscription rejected'))
+      .subscribe(['SELECT * FROM auth_result']);
+  } catch (err) {
+    console.warn('[net] auth subscription threw', err);
+  }
+}
+
+interface AuthRow {
+  identity: { toHexString(): string };
+  ok: boolean;
+  created: boolean;
+  message: string;
+  at: { microsSinceUnixEpoch: bigint };
+}
+
+function readAuth(connection: DbConnection): AuthRow | null {
+  for (const row of connection.db.authResult.iter()) {
+    const r = row as unknown as AuthRow;
+    if (r.identity.toHexString() === identityHex) return r;
+  }
+  return null;
+}
+
 // --- the boundary -------------------------------------------------------
 
 export const net = {
@@ -356,6 +392,9 @@ export const net = {
       case 'advanceWorld':
         conn.reducers.advanceWorld({ world: args[0] });
         return;
+      case 'markWelcomed':
+        conn.reducers.markWelcomed({ email: args[0] });
+        return;
       case 'setTopic':
         conn.reducers.setTopic({ topic: args[0] });
         return;
@@ -425,6 +464,39 @@ export const net = {
 
 
 
+
+  /**
+   * Sign in, or sign up -- the same call. Resolves with whether this created
+   * the account, which is what decides if a welcome mail goes out. Rejects
+   * with the reason when the email or password is not accepted.
+   *
+   * Only the hash leaves the browser; see lobby/sha256.ts.
+   */
+  async signIn(email: string, passwordHash: string): Promise<{ created: boolean }> {
+    const connection = await connectOnce();
+    subscribeAuth(connection);
+
+    // Anything already sitting there is from a previous attempt.
+    const before = readAuth(connection)?.at.microsSinceUnixEpoch ?? -1n;
+    connection.reducers.signIn({ email: email.trim().toLowerCase(), passwordHash });
+
+    return new Promise<{ created: boolean }>((resolve, reject) => {
+      const started = Date.now();
+      const poll = window.setInterval(() => {
+        const row = readAuth(connection);
+        if (row && row.at.microsSinceUnixEpoch > before) {
+          window.clearInterval(poll);
+          if (row.ok) resolve({ created: row.created });
+          else reject(new Error(row.message));
+          return;
+        }
+        if (Date.now() - started > 12000) {
+          window.clearInterval(poll);
+          reject(new Error('The server did not answer. Check your connection.'));
+        }
+      }, 90);
+    });
+  },
 
   /** Subscribe to cache changes. Returns an unsubscribe function. */
   onChange(listener: () => void): () => void {

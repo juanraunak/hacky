@@ -10,6 +10,16 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const Account = __t.object("Account", {
+  email: __t.string(),
+  passwordHash: __t.string(),
+  identity: __t.identity(),
+  createdAt: __t.timestamp(),
+  lastSeenAt: __t.timestamp(),
+  welcomeSent: __t.bool(),
+});
+export type Account = __Infer<typeof Account>;
+
 export const AppleSpec = __t.object("AppleSpec", {
   seq: __t.u32(),
   size: __t.string(),
@@ -22,6 +32,15 @@ export const AppleSpec = __t.object("AppleSpec", {
   delayMs: __t.u32(),
 });
 export type AppleSpec = __Infer<typeof AppleSpec>;
+
+export const AuthResult = __t.object("AuthResult", {
+  identity: __t.identity(),
+  ok: __t.bool(),
+  created: __t.bool(),
+  message: __t.string(),
+  at: __t.timestamp(),
+});
+export type AuthResult = __Infer<typeof AuthResult>;
 
 export const Boss = __t.object("Boss", {
   roomCode: __t.string(),

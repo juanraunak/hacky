@@ -110,6 +110,40 @@ const spacetimedb = schema({
     }
   ),
 
+  // Accounts. The FIRST game is deliberately login-free -- a stranger with a
+  // link must never meet a form -- so a row here means somebody came back for
+  // a second one. Private: hashes must not be readable by any client.
+  account: table(
+    { public: false },
+    {
+      email: t.string().primaryKey(),
+      password_hash: t.string(),
+      identity: t.identity(),
+      created_at: t.timestamp(),
+      last_seen_at: t.timestamp(),
+      // The module cannot make outbound requests, so the browser sends the
+      // welcome mail and flips this back here. See client/src/lobby.
+      welcome_sent: t.bool(),
+    }
+  ),
+
+  // How a sign-in went, for the caller only. The reducer writes the outcome
+  // here instead of throwing: a thrown SenderError is awkward to read back
+  // through the subscription cache, and a wrong password has to be tellable
+  // from a slow network.
+  auth_result: table(
+    { public: true },
+    {
+      identity: t.identity().primaryKey(),
+      ok: t.bool(),
+      // True only when this call created the account, which is what decides
+      // whether a welcome mail goes out.
+      created: t.bool(),
+      message: t.string(),
+      at: t.timestamp(),
+    }
+  ),
+
   held_item: table(
     { public: true },
     {
