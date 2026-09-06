@@ -281,3 +281,82 @@
 }
 
 .title-soon i { display: none; }
+
+
+/* --- current games, in the same language as the landing ------------------- */
+
+.title-screen {
+  background: #ffd79b;
+}
+
+.games-panel {
+  padding: 26px 16px 18px;
+  border: 3px solid #111;
+  border-radius: 18px;
+  box-shadow: 0 8px 0 #111;
+  background: #fff8e7;
+}
+
+.games-panel .title-kicker {
+  margin: 0 0 14px;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: clamp(22px, 5vw, 30px);
+  letter-spacing: 0.04em;
+  color: #111;
+}
+
+.back-button {
+  top: 10px;
+  left: 12px;
+  font: 800 11px/1 'Nunito', system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a7a5a;
+}
+
+.game-choice {
+  grid-template-columns: 78px 1fr auto;
+  gap: 13px;
+  padding: 12px;
+  border: 3px solid #111;
+  border-radius: 14px;
+  box-shadow: 0 5px 0 #111;
+  background: #ffd93b;
+}
+
+.game-choice:active { transform: translateY(3px); box-shadow: 0 2px 0 #111; }
+
+.game-choice b {
+  display: block;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(18px, 4.4vw, 24px);
+  letter-spacing: 0.03em;
+}
+
+.game-choice i {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #6b5636;
+}
+
+.game-choice-go {
+  padding: 9px 14px;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #ff4d4d;
+  color: #fff8e7;
+  font: 400 16px/1 'Bangers', Impact, sans-serif;
+  letter-spacing: 0.06em;
+  -webkit-text-stroke: 1.5px #111;
+  paint-order: stroke fill;
+}
+
+.game-choice-art {
+  height: 66px;
+  border-radius: 10px;
+}
